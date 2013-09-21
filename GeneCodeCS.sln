@@ -1,0 +1,38 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GeneCodeCS", "GeneCodeCS\GeneCodeCS.csproj", "{0A7CCAFD-4FB8-4739-A260-7B384E093469}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GeneCodeCS.Test", "GeneCodeCS.Test\GeneCodeCS.Test.csproj", "{70CC27C4-4073-4C9F-8822-A7B3313038BC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{DA875293-158A-47BB-AA48-1D64F41B6DAA}"
+	ProjectSection(SolutionItems) = preProject
+		GeneCodeCS.vsmdi = GeneCodeCS.vsmdi
+		LICENSE = LICENSE
+		Local.testsettings = Local.testsettings
+		README.md = README.md
+		TraceAndTestImpact.testsettings = TraceAndTestImpact.testsettings
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(TestCaseManagementSettings) = postSolution
+		CategoryFile = GeneCodeCS.vsmdi
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0A7CCAFD-4FB8-4739-A260-7B384E093469}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0A7CCAFD-4FB8-4739-A260-7B384E093469}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0A7CCAFD-4FB8-4739-A260-7B384E093469}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0A7CCAFD-4FB8-4739-A260-7B384E093469}.Release|Any CPU.Build.0 = Release|Any CPU
+		{70CC27C4-4073-4C9F-8822-A7B3313038BC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{70CC27C4-4073-4C9F-8822-A7B3313038BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{70CC27C4-4073-4C9F-8822-A7B3313038BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{70CC27C4-4073-4C9F-8822-A7B3313038BC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
