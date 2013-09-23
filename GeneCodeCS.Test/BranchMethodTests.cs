@@ -19,10 +19,9 @@
 using System;
 using System.Linq;
 using System.Reflection;
-using GeneCodeCS;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace GeneticProgrammingLib.Test
+namespace GeneCodeCS.Test
 {
   [TestClass]
   public class BranchMethodTests
@@ -35,9 +34,9 @@ namespace GeneticProgrammingLib.Test
       var method = methods.First(m => m.Name == name);
 
       var branch = new Branch(method) {
-                                              Left = new ExpressionTree { Node = new Terminal(method) },
-                                              Right = new ExpressionTree { Node = new Terminal(method) }
-                                            };
+                                        Left = new ExpressionTree { Node = new Terminal(method) },
+                                        Right = new ExpressionTree { Node = new Terminal(method) }
+                                      };
       var output = branch.ToString();
       var expected = string.Format("{0}(){1}T {0}(){1}F {0}()", name, Environment.NewLine);
       Assert.AreEqual(expected, output);

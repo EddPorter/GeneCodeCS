@@ -19,14 +19,14 @@
 namespace GeneCodeCS
 {
   /// <summary>
-  /// An interface to represent parts of in an expression tree.
+  ///   An interface to represent parts of in an expression tree.
   /// </summary>
   public interface IExpression
   {
     /// <summary>
-    /// Creates a new, independent instance of the expression, which may contain sub-expressions.
+    ///   Creates a new, independent instance of the expression, which may contain sub-expressions.
     /// </summary>
-    /// <returns>A new, memory-independent copy of this expression.</returns>
+    /// <returns> A new, memory-independent copy of this expression. </returns>
     IExpression Clone();
   }
 }

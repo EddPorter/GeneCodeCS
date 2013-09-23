@@ -18,10 +18,9 @@
 
 using System.Linq;
 using System.Reflection;
-using GeneCodeCS;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace GeneticProgrammingLib.Test
+namespace GeneCodeCS.Test
 {
   [TestClass]
   public class TerminalTests

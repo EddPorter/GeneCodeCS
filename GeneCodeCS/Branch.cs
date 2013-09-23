@@ -22,11 +22,11 @@ using System.Text;
 
 namespace GeneCodeCS
 {
-  public sealed class Branch : IExpression
+  internal sealed class Branch : IExpression, IEquatable<Branch>
   {
     public Branch(MethodInfo mi) : this(mi, new object[] { }) {}
 
-    public Branch(MethodInfo mi, object[] parameters) {
+    private Branch(MethodInfo mi, object[] parameters) {
       MethodInfo = mi;
       Parameters = parameters;
     }
@@ -39,10 +39,25 @@ namespace GeneCodeCS
 
     public ExpressionTree Right { get; set; }
 
+    #region IEquatable<Branch> Members
+
+    public bool Equals(Branch other) {
+      if (ReferenceEquals(null, other)) {
+        return false;
+      }
+      if (ReferenceEquals(this, other)) {
+        return true;
+      }
+      return Equals(other.Left, Left) && Equals(other.MethodInfo, MethodInfo) && Equals(other.Parameters, Parameters) &&
+             Equals(other.Right, Right);
+    }
+
+    #endregion
+
     #region IExpression Members
 
     public IExpression Clone() {
-      var newExpression = new Branch(MethodInfo) { Parameters = (object[])Parameters.Clone() };
+      var newExpression = new Branch(MethodInfo, (object[])Parameters.Clone());
       if (Left != null) {
         newExpression.Left = Left.Clone();
       }
@@ -67,17 +82,6 @@ namespace GeneCodeCS
         return false;
       }
       return ReferenceEquals(this, obj) || Equals(obj as Branch);
-    }
-
-    public bool Equals(Branch other) {
-      if (ReferenceEquals(null, other)) {
-        return false;
-      }
-      if (ReferenceEquals(this, other)) {
-        return true;
-      }
-      return Equals(other.Left, Left) && Equals(other.MethodInfo, MethodInfo) && Equals(other.Parameters, Parameters) &&
-             Equals(other.Right, Right);
     }
 
     public override int GetHashCode() {

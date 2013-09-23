@@ -1,0 +1,91 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="GeneCodeCS.Terminal" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="8.25" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAACAAEgAAAAAAAAAAAAIAAAIAAAAAAAjA=</HashCode>
+      <FileName>Terminal.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="GeneCodeCS.BaseBot" Collapsed="true">
+    <Position X="1.25" Y="1.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAQQAAAAAAAAAAAAAAQAAIAAAAACAAAA=</HashCode>
+      <FileName>BaseBot.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GeneCodeCS.BotBreeder&lt;TBot&gt;" Collapsed="true">
+    <Position X="0.75" Y="0.5" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAgABAACAAAIAEAIAAAAAAgCAAAAAAAAABAAAAAAAAI=</HashCode>
+      <FileName>BotBreeder.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GeneCodeCS.BotGenerator&lt;TBot&gt;" Collapsed="true">
+    <Position X="3.25" Y="0.5" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAQAAUQAAICCAEgUAAAAABAAABAAAEgkAIU=</HashCode>
+      <FileName>BotGenerator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GeneCodeCS.BotReport" Collapsed="true">
+    <Position X="4.25" Y="3" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAgEAAAAACAAAACAAAAAAQAAAAAMAAAAAAAAAAAAAA=</HashCode>
+      <FileName>BotReport.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GeneCodeCS.Branch" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="10" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAACAAEgCAAAAAAAAAAAIAACICAAAAAAjA=</HashCode>
+      <FileName>Branch.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="GeneCodeCS.ExpressionTree" Collapsed="true">
+    <Position X="8.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAEhAAAQAAAAAAAAIAAAAAAAAEAAjA=</HashCode>
+      <FileName>ExpressionTree.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GeneCodeCS.Sequence" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="6.5" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAEgAAAAAAAAAAAAIAAAAAAAgAAAjA=</HashCode>
+      <FileName>Sequence.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="GeneCodeCS.BotRunner&lt;TBot&gt;" Collapsed="true">
+    <Position X="3.75" Y="2" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAgAAAAAAA=</HashCode>
+      <FileName>BotRunner.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GeneCodeCS.BotCodeCreator&lt;TBot&gt;" Collapsed="true">
+    <Position X="3.5" Y="1.25" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAhAAIAEAIAAAIBAAQAQAAAAAAAACAAAAAAAA=</HashCode>
+      <FileName>BotCodeCreator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Interface Name="GeneCodeCS.IExpression" Collapsed="true">
+    <Position X="8.25" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABA=</HashCode>
+      <FileName>IExpression.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="GeneCodeCS.IParameter&lt;T&gt;" Collapsed="true">
+    <Position X="1.75" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAA=</HashCode>
+      <FileName>IParameter.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

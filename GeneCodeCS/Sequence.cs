@@ -22,7 +22,7 @@ using System.Text;
 
 namespace GeneCodeCS
 {
-  public sealed class Sequence : IExpression
+  public sealed class Sequence : IExpression, IEquatable<Sequence>
   {
     public Sequence(ExpressionTree[] expressions) {
       Expressions = expressions;
@@ -30,16 +30,31 @@ namespace GeneCodeCS
 
     public ExpressionTree[] Expressions { get; private set; }
 
+    #region IEquatable<Sequence> Members
+
+    public bool Equals(Sequence other) {
+      if (ReferenceEquals(null, other)) {
+        return false;
+      }
+      return ReferenceEquals(this, other) || Equals(other.Expressions, Expressions);
+    }
+
+    #endregion
+
+    #region IExpression Members
+
+    public IExpression Clone() {
+      return new Sequence(Expressions.Select(e => e.Clone()).ToArray());
+    }
+
+    #endregion
+
     public static bool operator !=(Sequence left, Sequence right) {
       return !Equals(left, right);
     }
 
     public static bool operator ==(Sequence left, Sequence right) {
       return Equals(left, right);
-    }
-
-    public IExpression Clone() {
-      return new Sequence(Expressions.Select(e => e.Clone()).ToArray());
     }
 
     public override bool Equals(object obj) {
@@ -50,13 +65,6 @@ namespace GeneCodeCS
         return true;
       }
       return obj is Sequence && Equals((Sequence)obj);
-    }
-
-    public bool Equals(Sequence other) {
-      if (ReferenceEquals(null, other)) {
-        return false;
-      }
-      return ReferenceEquals(this, other) || Equals(other.Expressions, Expressions);
     }
 
     public override int GetHashCode() {

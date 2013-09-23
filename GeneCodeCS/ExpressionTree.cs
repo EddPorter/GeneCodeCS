@@ -16,20 +16,32 @@
 // along with this program.  If not, see {http://www.gnu.org/licenses/}.
 //  
 
+using System;
+
 namespace GeneCodeCS
 {
   /// <summary>
   ///   A tree of expressions representing the bot behaviour.
   /// </summary>
-  public sealed class ExpressionTree
+  public sealed class ExpressionTree : IEquatable<ExpressionTree>
   {
     public IExpression Node { get; internal set; }
 
-    public ExpressionTree Parent { get; internal set; }
+    internal ExpressionTree Parent { private get; set; }
 
-    public static bool Equals(ExpressionTree a, ExpressionTree b) {
-      return a == b;
+    #region IEquatable<ExpressionTree> Members
+
+    public bool Equals(ExpressionTree value) {
+      if (ReferenceEquals(null, value)) {
+        return false;
+      }
+      if (ReferenceEquals(this, value)) {
+        return true;
+      }
+      return Equals(value.Node, Node);
     }
+
+    #endregion
 
     public static bool operator !=(ExpressionTree a, ExpressionTree b) {
       return !(a == b);
@@ -65,16 +77,6 @@ namespace GeneCodeCS
         return true;
       }
       return obj is ExpressionTree && Equals((ExpressionTree)obj);
-    }
-
-    public bool Equals(ExpressionTree value) {
-      if (ReferenceEquals(null, value)) {
-        return false;
-      }
-      if (ReferenceEquals(this, value)) {
-        return true;
-      }
-      return Equals(value.Node, Node);
     }
 
     public override int GetHashCode() {

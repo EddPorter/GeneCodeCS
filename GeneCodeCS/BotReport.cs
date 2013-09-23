@@ -20,8 +20,10 @@ using System;
 
 namespace GeneCodeCS
 {
-  public class BotReport
+  public sealed class BotReport
   {
+    // TODO: This class is trying to be two things.
+
     public BotReport(string name, string parent1, string parent2, ExpressionTree tree) {
       Name = name;
       Parent1 = parent1;

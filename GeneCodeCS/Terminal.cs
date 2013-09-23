@@ -16,14 +16,15 @@
 // along with this program.  If not, see {http://www.gnu.org/licenses/}.
 //  
 
+using System;
 using System.Linq;
 using System.Reflection;
 
 namespace GeneCodeCS
 {
-  public sealed class Terminal : IExpression
+  public sealed class Terminal : IExpression, IEquatable<Terminal>
   {
-    public Terminal(MethodInfo mi, object[] parameters) {
+    private Terminal(MethodInfo mi, object[] parameters) {
       MethodInfo = mi;
       Parameters = parameters;
     }
@@ -33,6 +34,20 @@ namespace GeneCodeCS
     public MethodInfo MethodInfo { get; private set; }
 
     public object[] Parameters { get; private set; }
+
+    #region IEquatable<Terminal> Members
+
+    public bool Equals(Terminal value) {
+      if (ReferenceEquals(null, value)) {
+        return false;
+      }
+      if (ReferenceEquals(this, value)) {
+        return true;
+      }
+      return Equals(value.MethodInfo, MethodInfo) && Parameters.Zip(value.Parameters, Equals).All(p => p);
+    }
+
+    #endregion
 
     #region IExpression Members
 
@@ -61,16 +76,6 @@ namespace GeneCodeCS
         return false;
       }
       return ReferenceEquals(this, obj) || Equals(obj as Terminal);
-    }
-
-    public bool Equals(Terminal value) {
-      if (ReferenceEquals(null, value)) {
-        return false;
-      }
-      if (ReferenceEquals(this, value)) {
-        return true;
-      }
-      return Equals(value.MethodInfo, MethodInfo) && Parameters.Zip(value.Parameters, Equals).All(p => p);
     }
 
     /// <summary>
