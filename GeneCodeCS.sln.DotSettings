@@ -1,5 +1,4 @@
 ﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
-	<s:String x:Key="/Default/CodeInspection/ExcludedFiles/GeneratedFilesAndFolders/=0A7CCAFD_002D4FB8_002D4739_002DA260_002D7B384E093469_002Ff_003AJetBrains_002EAnnotations_002Ecs/@EntryIndexedValue">0A7CCAFD-4FB8-4739-A260-7B384E093469/f:JetBrains.Annotations.cs</s:String>
 	<s:String x:Key="/Default/CodeStyle/FileHeader/FileHeaderText/@EntryValue">&#xD;
 GeneCodeCS - Genetic programming library for code bot natural selection.&#xD;
 Copyright (C) 2013 Edd Porter &lt;genecodecs@eddporter.com&gt;&#xD;

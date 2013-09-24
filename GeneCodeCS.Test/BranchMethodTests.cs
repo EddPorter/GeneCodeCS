@@ -27,16 +27,14 @@ namespace GeneCodeCS.Test
   public class BranchMethodTests
   {
     [TestMethod]
-    public void BranchMethod_ToString_Returns_branched_method_structure() {
+    public void BranchMethod_ToString_Returns_branched_method_structure()
+    {
       const string name = "Terminal_ToString_Returns_method_name";
       const BindingFlags flags = BindingFlags.Public | BindingFlags.Instance;
       var methods = typeof(TerminalTests).GetMethods(flags);
       var method = methods.First(m => m.Name == name);
 
-      var branch = new Branch(method) {
-                                        Left = new ExpressionTree { Node = new Terminal(method) },
-                                        Right = new ExpressionTree { Node = new Terminal(method) }
-                                      };
+      var branch = new BranchInstance(method, trueBranch: new ExpressionTree { Node = new TerminalInstance(method) }, falseBranch: new ExpressionTree { Node = new TerminalInstance(method) });
       var output = branch.ToString();
       var expected = string.Format("{0}(){1}T {0}(){1}F {0}()", name, Environment.NewLine);
       Assert.AreEqual(expected, output);

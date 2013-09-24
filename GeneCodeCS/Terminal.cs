@@ -1,4 +1,4 @@
-﻿// 
+// 
 // GeneCodeCS - Genetic programming library for code bot natural selection.
 // Copyright (C) 2013 Edd Porter <genecodecs@eddporter.com>
 // 
@@ -17,81 +17,21 @@
 //  
 
 using System;
-using System.Linq;
 using System.Reflection;
 
 namespace GeneCodeCS
 {
-  public sealed class Terminal : IExpression, IEquatable<Terminal>
+  public class Terminal : IExpression
   {
-    private Terminal(MethodInfo mi, object[] parameters) {
+    public Terminal(MethodInfo mi) {
+      if (mi == null) {
+        throw new ArgumentNullException("mi");
+      }
+
       MethodInfo = mi;
-      Parameters = parameters;
     }
 
-    public Terminal(MethodInfo mi) : this(mi, new object[] { }) {}
-
+    /// <remarks>Not null.</remarks>
     public MethodInfo MethodInfo { get; private set; }
-
-    public object[] Parameters { get; private set; }
-
-    #region IEquatable<Terminal> Members
-
-    public bool Equals(Terminal value) {
-      if (ReferenceEquals(null, value)) {
-        return false;
-      }
-      if (ReferenceEquals(this, value)) {
-        return true;
-      }
-      return Equals(value.MethodInfo, MethodInfo) && Parameters.Zip(value.Parameters, Equals).All(p => p);
-    }
-
-    #endregion
-
-    #region IExpression Members
-
-    public IExpression Clone() {
-      return new Terminal(MethodInfo, (object[])Parameters.Clone());
-    }
-
-    #endregion
-
-    public static bool operator !=(Terminal a, Terminal b) {
-      return !(a == b);
-    }
-
-    public static bool operator ==(Terminal a, Terminal b) {
-      if (ReferenceEquals(a, b)) {
-        return true;
-      }
-      if (((object)a == null) || ((object)b == null)) {
-        return false;
-      }
-      return a.Equals(b);
-    }
-
-    public override bool Equals(object obj) {
-      if (ReferenceEquals(null, obj)) {
-        return false;
-      }
-      return ReferenceEquals(this, obj) || Equals(obj as Terminal);
-    }
-
-    /// <summary>
-    ///   Serves as a hash function for a particular type.
-    /// </summary>
-    /// <returns> A hash code for the current see cref="T:System.Object"/>. </returns>
-    /// <filterpriority>2</filterpriority>
-    public override int GetHashCode() {
-      unchecked {
-        return ((MethodInfo != null ? MethodInfo.GetHashCode() : 0) * 397) ^
-               (Parameters != null ? Parameters.GetHashCode() : 0);
-      }
-    }
-
-    public override string ToString() {
-      return string.Format("{0}({1})", MethodInfo.Name, string.Join(", ", Parameters));
-    }
   }
 }

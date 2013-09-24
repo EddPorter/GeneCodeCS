@@ -1,4 +1,4 @@
-﻿// 
+// 
 // GeneCodeCS - Genetic programming library for code bot natural selection.
 // Copyright (C) 2013 Edd Porter <genecodecs@eddporter.com>
 // 
@@ -18,105 +18,23 @@
 
 using System;
 using System.Reflection;
-using System.Text;
 
 namespace GeneCodeCS
 {
-  internal sealed class Branch : IExpression, IEquatable<Branch>
+  internal class Branch : IExpression
   {
-    public Branch(MethodInfo mi) : this(mi, new object[] { }) {}
+    public Branch(MethodInfo mi) {
+      if (mi == null) {
+        throw new ArgumentNullException("mi");
+      }
 
-    private Branch(MethodInfo mi, object[] parameters) {
       MethodInfo = mi;
-      Parameters = parameters;
     }
 
-    public ExpressionTree Left { get; set; }
-
+    /// <summary>
+    ///   Gets the method used by this <see cref="T:GeneCodeCS.Branch" /> object.
+    /// </summary>
+    /// <remarks>Not null.</remarks>
     public MethodInfo MethodInfo { get; private set; }
-
-    public object[] Parameters { get; private set; }
-
-    public ExpressionTree Right { get; set; }
-
-    #region IEquatable<Branch> Members
-
-    public bool Equals(Branch other) {
-      if (ReferenceEquals(null, other)) {
-        return false;
-      }
-      if (ReferenceEquals(this, other)) {
-        return true;
-      }
-      return Equals(other.Left, Left) && Equals(other.MethodInfo, MethodInfo) && Equals(other.Parameters, Parameters) &&
-             Equals(other.Right, Right);
-    }
-
-    #endregion
-
-    #region IExpression Members
-
-    public IExpression Clone() {
-      var newExpression = new Branch(MethodInfo, (object[])Parameters.Clone());
-      if (Left != null) {
-        newExpression.Left = Left.Clone();
-      }
-      if (Right != null) {
-        newExpression.Right = Right.Clone();
-      }
-      return newExpression;
-    }
-
-    #endregion
-
-    public static bool operator !=(Branch left, Branch right) {
-      return !Equals(left, right);
-    }
-
-    public static bool operator ==(Branch left, Branch right) {
-      return Equals(left, right);
-    }
-
-    public override bool Equals(object obj) {
-      if (ReferenceEquals(null, obj)) {
-        return false;
-      }
-      return ReferenceEquals(this, obj) || Equals(obj as Branch);
-    }
-
-    public override int GetHashCode() {
-      unchecked {
-        var result = (Left != null ? Left.GetHashCode() : 0);
-        result = (result * 397) ^ (MethodInfo != null ? MethodInfo.GetHashCode() : 0);
-        result = (result * 397) ^ (Parameters != null ? Parameters.GetHashCode() : 0);
-        return (result * 397) ^ (Right != null ? Right.GetHashCode() : 0);
-      }
-    }
-
-    public override string ToString() {
-      var output = new StringBuilder();
-      output.AppendFormat("{0}({1}){2}", MethodInfo.Name, string.Join(", ", Parameters), Environment.NewLine);
-      BranchToString(output, Left, "T");
-      BranchToString(output, Right, "F");
-      return output.ToString().TrimEnd();
-    }
-
-    private static void BranchToString(StringBuilder output, ExpressionTree branch, string prefix) {
-      if (branch == null) {
-        return;
-      }
-      var branchString = branch.ToString();
-      var first = true;
-      foreach (var line in branchString.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries)) {
-        if (first) {
-          output.Append(prefix);
-          output.Append(" ");
-          first = false;
-        } else {
-          output.Append("| ");
-        }
-        output.AppendLine(line);
-      }
-    }
   }
 }

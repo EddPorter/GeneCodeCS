@@ -101,7 +101,7 @@ namespace GeneCodeCS
       while (true) {
         var bot = generator.CreateRandomBot(_maxTreeDepth, _optimise);
         const int generation = 0;
-        var thisGeneration = new List<BotReport> { bot };
+        var thisGeneration = new List<BotReport> {bot};
         var bots = _codeCreator.CreateBotCode(generation, thisGeneration);
         var newBot = _runner.RunGeneration(bots, parameters, thisGeneration).FirstOrDefault();
 

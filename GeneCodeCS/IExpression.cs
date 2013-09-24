@@ -23,10 +23,14 @@ namespace GeneCodeCS
   /// </summary>
   public interface IExpression
   {
+  }
+
+  public interface IExpressionInstance
+  {
     /// <summary>
     ///   Creates a new, independent instance of the expression, which may contain sub-expressions.
     /// </summary>
     /// <returns> A new, memory-independent copy of this expression. </returns>
-    IExpression Clone();
+    IExpressionInstance Clone();
   }
 }

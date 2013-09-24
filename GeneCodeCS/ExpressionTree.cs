@@ -25,7 +25,7 @@ namespace GeneCodeCS
   /// </summary>
   public sealed class ExpressionTree : IEquatable<ExpressionTree>
   {
-    public IExpression Node { get; internal set; }
+    public IExpressionInstance Node { get; internal set; }
 
     internal ExpressionTree Parent { private get; set; }
 
@@ -58,7 +58,7 @@ namespace GeneCodeCS
     }
 
     public static ExpressionTree ReplaceNodeWithCopy(ExpressionTree removedNode, ExpressionTree insertedNode) {
-      return new ExpressionTree { Node = insertedNode.Node, Parent = removedNode.Parent };
+      return new ExpressionTree {Node = insertedNode.Node, Parent = removedNode.Parent};
     }
 
     /// <summary>
@@ -66,7 +66,7 @@ namespace GeneCodeCS
     /// </summary>
     /// <returns> A new, memory-independent copy of this expression tree. </returns>
     public ExpressionTree Clone() {
-      return new ExpressionTree { Node = Node.Clone(), Parent = Parent };
+      return new ExpressionTree {Node = Node.Clone(), Parent = Parent};
     }
 
     public override bool Equals(object obj) {

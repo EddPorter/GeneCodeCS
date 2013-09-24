@@ -33,12 +33,12 @@ namespace GeneCodeCS.Test
       var methods = typeof(TerminalTests).GetMethods(flags);
       var method = methods.First(m => m.Name == name);
       var tree = new[] {
-                         new ExpressionTree { Node = new Terminal(method) },
-                         new ExpressionTree { Node = new Terminal(method) }
+                         new ExpressionTree { Node = new TerminalInstance(method) },
+                         new ExpressionTree { Node = new TerminalInstance(method) }
                        };
-      var sequence = new Sequence(tree);
+      var sequence = new SequenceInstance(tree);
       var output = sequence.ToString();
-      var expected = string.Format("Sequence:{1}* {0}(){1}* {0}()", name, Environment.NewLine);
+      var expected = string.Format("SequenceInstance:{1}* {0}(){1}* {0}()", name, Environment.NewLine);
       Assert.AreEqual(expected, output);
     }
   }

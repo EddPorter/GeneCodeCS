@@ -30,7 +30,7 @@ namespace GeneCodeCS.Test
       const string name = "Terminal_ToString_Returns_method_name";
       const BindingFlags flags = BindingFlags.Public | BindingFlags.Instance;
       var methods = typeof(TerminalTests).GetMethods(flags);
-      var terminal = new Terminal(methods.First(m => m.Name == name));
+      var terminal = new TerminalInstance(methods.First(m => m.Name == name));
       var output = terminal.ToString();
       Assert.AreEqual(name + "()", output);
     }

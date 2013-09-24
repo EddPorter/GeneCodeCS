@@ -42,7 +42,7 @@ namespace GeneCodeCS
     }
 
     private static CodeMemberMethod CreateConstructor() {
-      var constructor = new CodeConstructor { Attributes = MemberAttributes.Public };
+      var constructor = new CodeConstructor {Attributes = MemberAttributes.Public};
       constructor.Parameters.Add(new CodeParameterDeclarationExpression(typeof(ILog), "log"));
       constructor.BaseConstructorArgs.Add(new CodeVariableReferenceExpression("log"));
       return constructor;
@@ -96,7 +96,7 @@ namespace GeneCodeCS
       var statements = GenerateStatements(expressionTree);
 
       var loopCondition = new CodeMethodInvokeExpression(new CodeThisReferenceExpression(), "NotFinished",
-                                                         new CodeExpression[] { });
+                                                         new CodeExpression[] {});
       var whileLoop = new CodeIterationStatement(new CodeSnippetStatement(""), loopCondition,
                                                  new CodeSnippetStatement(""), statements);
       m.Statements.Add(whileLoop);
@@ -106,7 +106,7 @@ namespace GeneCodeCS
     private CompilerResults CompileCode(string generatedNamespaceName) {
       var provider = new CSharpCodeProvider();
       var cp = new CompilerParameters
-               { GenerateInMemory = true, GenerateExecutable = false, IncludeDebugInformation = true };
+               {GenerateInMemory = true, GenerateExecutable = false, IncludeDebugInformation = true};
       cp.ReferencedAssemblies.Add("System.dll");
       cp.ReferencedAssemblies.Add("Common.dll");
       cp.ReferencedAssemblies.Add(Assembly.GetExecutingAssembly().ManifestModule.ScopeName);
@@ -164,22 +164,22 @@ namespace GeneCodeCS
     private CodeStatement[] GenerateStatements(ExpressionTree expressionTree) {
       var codeStatements = new CodeStatementCollection();
       var node = expressionTree.Node;
-      if (node is Branch) {
-        var branchMethod = node as Branch;
+      if (node is BranchInstance) {
+        var branchMethod = node as BranchInstance;
 
         var ifCondition = new CodeMethodInvokeExpression(new CodeThisReferenceExpression(), branchMethod.MethodInfo.Name,
                                                          GenerateParameters(branchMethod.MethodInfo.GetParameters(),
                                                                             branchMethod.Parameters));
-        var ifTrue = GenerateStatements(branchMethod.Left);
-        var ifFalse = GenerateStatements(branchMethod.Right);
+        var ifTrue = GenerateStatements(branchMethod.TrueBranch);
+        var ifFalse = GenerateStatements(branchMethod.FalseBranch);
         var ifStatement = new CodeConditionStatement(ifCondition, ifTrue, ifFalse);
         codeStatements.Add(ifStatement);
-      } else if (node is Sequence) {
-        foreach (var expression in ((Sequence)node).Expressions) {
+      } else if (node is SequenceInstance) {
+        foreach (var expression in ((SequenceInstance)node).Expressions) {
           codeStatements.AddRange(GenerateStatements(expression));
         }
-      } else if (node is Terminal) {
-        var terminal = node as Terminal;
+      } else if (node is TerminalInstance) {
+        var terminal = node as TerminalInstance;
         var expression = new CodeMethodInvokeExpression(new CodeThisReferenceExpression(), terminal.MethodInfo.Name,
                                                         GenerateParameters(terminal.MethodInfo.GetParameters(),
                                                                            terminal.Parameters));
