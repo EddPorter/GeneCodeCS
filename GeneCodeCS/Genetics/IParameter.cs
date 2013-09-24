@@ -16,7 +16,7 @@
 // along with this program.  If not, see {http://www.gnu.org/licenses/}.
 //  
 
-namespace GeneCodeCS
+namespace GeneCodeCS.Genetics
 {
   /// <summary>
   ///   An interface for specifying parameters to bot methods. All bot methods must use the <code>IParameter</code> interface for parameter types and implement a constructor taking a <code>Random</code> object to generate a value returned through the <code>Value</code> property. An additional constructor taking a parameter of type <code>T</code> must also be provided that simply sets the <code>Value</code> property to this value.

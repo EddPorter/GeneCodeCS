@@ -25,19 +25,27 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Common.Logging;
+using GeneCodeCS.Genetics;
+using GeneCodeCS.Properties;
 using Microsoft.CSharp;
 
 namespace GeneCodeCS
 {
   /// <summary>
-  ///   This class converts bot expression trees into code.
+  ///   This class converts Chromosomes into C# code and then compiles them into an assembly.
   /// </summary>
   /// <typeparam name="TBot"> The bot class type to breed. Must inherit from BaseBot. </typeparam>
-  internal sealed class BotCodeCreator<TBot> where TBot : BaseBot
+  internal sealed class Compilation<TBot> where TBot : BaseBot
   {
     private readonly ILog _log;
 
-    public BotCodeCreator(ILog log) {
+    public Compilation(ILog log) {
+      if (log == null) {
+        throw new ArgumentNullException("log", Resources.NonNullLogClassRequired);
+      }
+
+      log.Trace("GeneCodeCS.Compilation`1: Constructing class.");
+
       _log = log;
     }
 
@@ -58,15 +66,15 @@ namespace GeneCodeCS
       }
     }
 
-    private CodeTypeDeclaration BuildClass(string name, ExpressionTree expressionTree) {
+    private CodeTypeDeclaration BuildClass(string name, Chromosome chromosome) {
       var codeType = new CodeTypeDeclaration(name);
       codeType.BaseTypes.Add(typeof(TBot).Name);
-      codeType.Members.Add(BuildRunBotLogicMethod(expressionTree));
+      codeType.Members.Add(BuildRunBotLogicMethod(chromosome));
       codeType.Members.Add(CreateConstructor());
       return codeType;
     }
 
-    private CodeCompileUnit BuildCompileUnit(IEnumerable<BotReport> thisGeneration, string generatedNamespaceName) {
+    private CodeCompileUnit BuildCompileUnit(IEnumerable<BotInformation> thisGeneration, string generatedNamespaceName) {
       var codeCompileUnit = new CodeCompileUnit();
       codeCompileUnit.ReferencedAssemblies.Add(typeof(TBot).Assembly.FullName);
       codeCompileUnit.ReferencedAssemblies.Add(typeof(ILog).Assembly.FullName);
@@ -84,7 +92,7 @@ namespace GeneCodeCS
       return codeCompileUnit;
     }
 
-    private CodeTypeMember BuildRunBotLogicMethod(ExpressionTree expressionTree) {
+    private CodeTypeMember BuildRunBotLogicMethod(Chromosome chromosome) {
       var m = new CodeMemberMethod {
                                      ReturnType = new CodeTypeReference(typeof(void)),
                                      // ReSharper disable BitwiseOperatorOnEnumWihtoutFlags
@@ -93,7 +101,7 @@ namespace GeneCodeCS
                                      Name = "RunBotLogic"
                                    };
 
-      var statements = GenerateStatements(expressionTree);
+      var statements = GenerateStatements(chromosome);
 
       var loopCondition = new CodeMethodInvokeExpression(new CodeThisReferenceExpression(), "NotFinished",
                                                          new CodeExpression[] {});
@@ -138,19 +146,20 @@ namespace GeneCodeCS
       return cr;
     }
 
-    private static CodeExpression[] GenerateParameters(ParameterInfo[] methodParameters, object[] parameterValues) {
+    private static CodeExpression[] GenerateParameters(IList<ParameterInfo> methodParameters,
+                                                       IList<object> parameterValues) {
       if (methodParameters == null) {
         throw new ArgumentNullException("methodParameters");
       }
       if (parameterValues == null) {
         throw new ArgumentNullException("parameterValues");
       }
-      if (methodParameters.Length != parameterValues.Length) {
+      if (methodParameters.Count != parameterValues.Count) {
         throw new InvalidOperationException("Array lengths not equal.");
       }
 
       var parameterCollection = new CodeExpressionCollection();
-      for (var index = 0; index < methodParameters.Length; ++index) {
+      for (var index = 0; index < methodParameters.Count; ++index) {
         var expression =
           new CodeObjectCreateExpression(new CodeTypeReference(methodParameters[index].ParameterType.Name),
                                          new CodePrimitiveExpression(parameterValues[index]));
@@ -161,11 +170,11 @@ namespace GeneCodeCS
       return parameters;
     }
 
-    private CodeStatement[] GenerateStatements(ExpressionTree expressionTree) {
+    private CodeStatement[] GenerateStatements(Chromosome chromosome) {
       var codeStatements = new CodeStatementCollection();
-      var node = expressionTree.Node;
-      if (node is BranchInstance) {
-        var branchMethod = node as BranchInstance;
+      var node = chromosome.Node;
+      if (node is BranchExpression) {
+        var branchMethod = node as BranchExpression;
 
         var ifCondition = new CodeMethodInvokeExpression(new CodeThisReferenceExpression(), branchMethod.MethodInfo.Name,
                                                          GenerateParameters(branchMethod.MethodInfo.GetParameters(),
@@ -174,12 +183,12 @@ namespace GeneCodeCS
         var ifFalse = GenerateStatements(branchMethod.FalseBranch);
         var ifStatement = new CodeConditionStatement(ifCondition, ifTrue, ifFalse);
         codeStatements.Add(ifStatement);
-      } else if (node is SequenceInstance) {
-        foreach (var expression in ((SequenceInstance)node).Expressions) {
+      } else if (node is SequenceExpression) {
+        foreach (var expression in ((SequenceExpression)node).Expressions) {
           codeStatements.AddRange(GenerateStatements(expression));
         }
-      } else if (node is TerminalInstance) {
-        var terminal = node as TerminalInstance;
+      } else if (node is TerminalExpression) {
+        var terminal = node as TerminalExpression;
         var expression = new CodeMethodInvokeExpression(new CodeThisReferenceExpression(), terminal.MethodInfo.Name,
                                                         GenerateParameters(terminal.MethodInfo.GetParameters(),
                                                                            terminal.Parameters));
@@ -192,7 +201,7 @@ namespace GeneCodeCS
       return statementArray;
     }
 
-    public IEnumerable<TBot> CreateBotCode(int generation, IEnumerable<BotReport> thisGeneration) {
+    public IList<TBot> CompileBots(IList<BotInformation> thisGeneration, int generation) {
       var generatedNamespaceName = string.Concat(typeof(TBot).Namespace,
                                                  generation.ToString(CultureInfo.InvariantCulture));
 
@@ -204,7 +213,12 @@ namespace GeneCodeCS
       var a = cr.CompiledAssembly;
 
       var types = a.GetTypes();
-      return types.Select(t => (TBot)Activator.CreateInstance(t, _log));
+      var bots = types.Select(t => {
+                                var b = (TBot)Activator.CreateInstance(t, _log);
+                                b.FitnessReport = new BotReport(thisGeneration.Single(bi => bi.Name == t.Name));
+                                return b;
+                              }).ToList();
+      return bots;
     }
   }
 }

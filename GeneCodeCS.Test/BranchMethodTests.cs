@@ -19,6 +19,7 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using GeneCodeCS.Genetics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace GeneCodeCS.Test
@@ -26,17 +27,22 @@ namespace GeneCodeCS.Test
   [TestClass]
   public class BranchMethodTests
   {
-    [TestMethod]
-    public void BranchMethod_ToString_Returns_branched_method_structure()
-    {
-      const string name = "Terminal_ToString_Returns_method_name";
-      const BindingFlags flags = BindingFlags.Public | BindingFlags.Instance;
-      var methods = typeof(TerminalTests).GetMethods(flags);
-      var method = methods.First(m => m.Name == name);
+    public bool TestBranchMethod() {
+      return true;
+    }
 
-      var branch = new BranchInstance(method, trueBranch: new ExpressionTree { Node = new TerminalInstance(method) }, falseBranch: new ExpressionTree { Node = new TerminalInstance(method) });
+    [TestMethod]
+    public void BranchMethod_ToString_Returns_branched_method_structure() {
+      const BindingFlags flags = BindingFlags.Public | BindingFlags.Instance;
+      var methods = GetType().GetMethods(flags);
+      var branchMethod = methods.First(m => m.DeclaringType == GetType() && m.ReturnType == typeof(bool));
+      var terminalMethod = methods.First(m => m.DeclaringType == GetType() && m.ReturnType == typeof(void));
+
+      var branch = new BranchExpression(branchMethod, new Chromosome {Node = new TerminalExpression(terminalMethod)},
+                                        new Chromosome {Node = new TerminalExpression(terminalMethod)});
       var output = branch.ToString();
-      var expected = string.Format("{0}(){1}T {0}(){1}F {0}()", name, Environment.NewLine);
+      var expected = string.Format("{0}(){1}T {2}(){1}F {2}()", branchMethod.Name, Environment.NewLine,
+                                   terminalMethod.Name);
       Assert.AreEqual(expected, output);
     }
   }

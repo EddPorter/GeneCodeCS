@@ -1,4 +1,4 @@
-﻿// 
+// 
 // GeneCodeCS - Genetic programming library for code bot natural selection.
 // Copyright (C) 2013 Edd Porter <genecodecs@eddporter.com>
 // 
@@ -16,24 +16,22 @@
 // along with this program.  If not, see {http://www.gnu.org/licenses/}.
 //  
 
-using System.Linq;
-using System.Reflection;
+using System;
 using GeneCodeCS.Genetics;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace GeneCodeCS.Test
+namespace GeneCodeCS.Test.Helpers
 {
-  [TestClass]
-  public class TerminalTests
+  public class TestParameter : IParameter<int>
   {
-    [TestMethod]
-    public void Terminal_ToString_Returns_method_name() {
-      const string name = "Terminal_ToString_Returns_method_name";
-      const BindingFlags flags = BindingFlags.Public | BindingFlags.Instance;
-      var methods = typeof(TerminalTests).GetMethods(flags);
-      var terminal = new TerminalExpression(methods.First(m => m.Name == name));
-      var output = terminal.ToString();
-      Assert.AreEqual(name + "()", output);
+    public TestParameter(Random random) {
     }
+
+    #region IParameter<int> Members
+
+    public int Value {
+      get { return 1; }
+    }
+
+    #endregion
   }
 }

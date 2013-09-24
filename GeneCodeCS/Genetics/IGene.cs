@@ -16,22 +16,13 @@
 // along with this program.  If not, see {http://www.gnu.org/licenses/}.
 //  
 
-using System;
-using System.Reflection;
-
-namespace GeneCodeCS
+namespace GeneCodeCS.Genetics
 {
-  public class Terminal : IExpression
+  /// <summary>
+  ///   A gene definition that can be incorporated into the chromosomes of a bot. One <see cref="T:GeneCodeCS.Genetics.IGene" /> can be replaced with another <see
+  ///    cref="T:GeneCodeCS.Genetics.IGene" /> in the chromosomal tree.
+  /// </summary>
+  public interface IGene
   {
-    public Terminal(MethodInfo mi) {
-      if (mi == null) {
-        throw new ArgumentNullException("mi");
-      }
-
-      MethodInfo = mi;
-    }
-
-    /// <remarks>Not null.</remarks>
-    public MethodInfo MethodInfo { get; private set; }
   }
 }

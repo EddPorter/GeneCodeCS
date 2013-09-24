@@ -17,24 +17,36 @@
 //  
 
 using System;
-using System.Reflection;
+using GeneCodeCS.Genetics;
 
 namespace GeneCodeCS
 {
-  internal class Branch : IExpression
+  public sealed class BotInformation
   {
-    public Branch(MethodInfo mi) {
-      if (mi == null) {
-        throw new ArgumentNullException("mi");
+    public BotInformation(string name, Chromosome tree, string parent1 = null, string parent2 = null) {
+      if (string.IsNullOrEmpty(name)) {
+        throw new ArgumentNullException("name");
+      }
+      if (tree == null) {
+        throw new ArgumentNullException("tree");
       }
 
-      MethodInfo = mi;
+      Name = name;
+      Tree = tree;
+      Parent1 = parent1 ?? string.Empty;
+      Parent2 = parent2 ?? string.Empty;
     }
 
-    /// <summary>
-    ///   Gets the method used by this <see cref="T:GeneCodeCS.Branch" /> object.
-    /// </summary>
     /// <remarks>Not null.</remarks>
-    public MethodInfo MethodInfo { get; private set; }
+    public string Name { get; private set; }
+
+    /// <remarks>Not null.</remarks>
+    public string Parent1 { get; private set; }
+
+    /// <remarks>Not null.</remarks>
+    public string Parent2 { get; private set; }
+
+    /// <remarks>Not null.</remarks>
+    public Chromosome Tree { get; private set; }
   }
 }

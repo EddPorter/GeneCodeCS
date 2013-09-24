@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Common.Logging;
+using GeneCodeCS.Genetics;
 using GeneCodeCS.Properties;
 
 namespace GeneCodeCS
@@ -29,14 +30,26 @@ namespace GeneCodeCS
   ///   This class generates new bot expression trees.
   /// </summary>
   /// <typeparam name="TBot"> The bot class type to breed. Must inherit from BaseBot. </typeparam>
-  internal sealed class BotGenerator<TBot> where TBot : BaseBot
+  public sealed class Reproduction<TBot> where TBot : BaseBot
   {
-    private readonly ILog _log;
-    private readonly List<IExpression> _nonTerminals = new List<IExpression>();
-    private readonly Random _random;
-    private readonly List<IExpression> _terminals = new List<IExpression>();
+    #region Delegates
 
-    public BotGenerator(ILog log, int randomSeed = 0) {
+    public delegate Chromosome ChromosomeOptimiser(Chromosome c);
+
+    #endregion
+
+    private readonly ILog _log;
+    private readonly List<IGene> _nonTerminals = new List<IGene>();
+    private readonly Random _random;
+    private readonly List<TerminalGene> _terminals = new List<TerminalGene>();
+
+    public Reproduction(ILog log, int randomSeed = 0) {
+      if (log == null) {
+        throw new ArgumentNullException("log", Resources.NonNullLogClassRequired);
+      }
+
+      log.Trace("GeneCodeCS.Reproduction`1: Constructing class.");
+
       _log = log;
       MutationRate = 5;
 
@@ -49,18 +62,19 @@ namespace GeneCodeCS
 
     public int MutationRate { get; set; }
 
-    internal List<BotReport> CreateNewGeneration(int generationNumber, List<BotReport> lastGeneration, int population,
-                                                 int maxTreeDepth, Func<ExpressionTree, ExpressionTree> optimise = null) {
-      var thisGeneration = new List<BotReport>();
+    internal List<BotInformation> BreedGeneration(int generationNumber, List<BotReport> lastGeneration,
+                                                      int population, int maxTreeDepth,
+                                                      ChromosomeOptimiser optimise = null) {
+      var thisGeneration = new List<BotInformation>();
       if (generationNumber == 0) {
         if (lastGeneration != null) {
-          thisGeneration.AddRange(lastGeneration);
+          thisGeneration.AddRange(lastGeneration.Select(report => report.Bot));
         }
         PopulateGenerationWithUniqueBots(thisGeneration, generationNumber, population, maxTreeDepth, optimise);
       } else {
         // Take the top 10% of bots and copy them verbatim.
         var tenPercent = population / 10;
-        thisGeneration.AddRange(lastGeneration.Take(tenPercent));
+        thisGeneration.AddRange(lastGeneration.Take(tenPercent).Select(report => report.Bot));
 
         // Generate 10% of the new population as random bots.
         PopulateGenerationWithUniqueBots(thisGeneration, generationNumber, 2 * tenPercent, maxTreeDepth, optimise);
@@ -84,13 +98,13 @@ namespace GeneCodeCS
           }
 
           if (thisGeneration.All(b => b.Tree != child1)) {
-            var childResult1 = new BotReport(CreateBotName(generationNumber, ++n), parents[0].Name, parents[1].Name,
-                                             child1);
+            var childResult1 = new BotInformation(CreateBotName(generationNumber, ++n), child1, parents[0].Name,
+                                                  parents[1].Name);
             thisGeneration.Add(childResult1);
           }
           if (thisGeneration.All(b => b.Tree != child2)) {
-            var childResult2 = new BotReport(CreateBotName(generationNumber, ++n), parents[1].Name, parents[0].Name,
-                                             child2);
+            var childResult2 = new BotInformation(CreateBotName(generationNumber, ++n), child2, parents[1].Name,
+                                                  parents[0].Name);
             thisGeneration.Add(childResult2);
           }
         }
@@ -98,7 +112,7 @@ namespace GeneCodeCS
       return thisGeneration;
     }
 
-    internal BotReport CreateRandomBot(int maxTreeDepth, Func<ExpressionTree, ExpressionTree> optimise = null) {
+    internal BotInformation CreateBot(int maxTreeDepth, ChromosomeOptimiser optimise = null) {
       var tree = CreateRandomExpressionTree(maxTreeDepth);
       if (optimise != null) {
         _log.Trace("Optimising bot tree.");
@@ -108,7 +122,7 @@ namespace GeneCodeCS
       _log.Info(botName);
       _log.Info(tree.ToString());
 
-      return new BotReport(botName, "", "", tree);
+      return new BotInformation(botName, tree);
     }
 
     /// <summary>
@@ -128,8 +142,8 @@ namespace GeneCodeCS
       return string.Format(Resources.BotNameStringFormat, typeof(TBot).Name, generation, botIndex);
     }
 
-    private void PopulateGenerationWithUniqueBots(ICollection<BotReport> thisGeneration, int generationNumber, int limit,
-                                                  int maxTreeDepth, Func<ExpressionTree, ExpressionTree> optimise) {
+    private void PopulateGenerationWithUniqueBots(ICollection<BotInformation> thisGeneration, int generationNumber,
+                                                  int limit, int maxTreeDepth, ChromosomeOptimiser optimise) {
       var n = thisGeneration.Count - 1;
       while (thisGeneration.Count < limit) {
         var newTree = CreateRandomExpressionTree(maxTreeDepth);
@@ -144,27 +158,27 @@ namespace GeneCodeCS
         _log.Trace(newTree.ToString());
 
         var name = CreateBotName(generationNumber, ++n);
-        thisGeneration.Add(new BotReport(name, "", "", newTree));
+        thisGeneration.Add(new BotInformation(name, newTree));
       }
     }
 
-    private ExpressionTree CreateRandomExpressionTree(int maxTreeDepth, ExpressionTree parent = null) {
+    private Chromosome CreateRandomExpressionTree(int maxTreeDepth, Chromosome parent = null) {
       var node = maxTreeDepth > 0 ? GetRandomFunctionOrTerminal() : GetRandomTerminal();
 
-      if (node is BranchInstance) {
-        return InstantiateBranch(maxTreeDepth, node, parent);
+      if (node is BranchGene) {
+        return InstantiateBranch(maxTreeDepth, node as BranchGene, parent);
       }
-      if (node is SequenceInstance) {
-        return InstantiateSequence(maxTreeDepth, node, parent);
+      if (node is SequenceGene) {
+        return InstantiateSequence(maxTreeDepth, node as SequenceGene, parent);
       }
-      if (node is TerminalInstance) {
-        return InstantiateTerminal(node, parent);
+      if (node is TerminalGene) {
+        return InstantiateTerminal(node as TerminalGene, parent);
       }
 
       throw new InvalidOperationException();
     }
 
-    private ExpressionTree[] CrossoverAndMutate(ExpressionTree parent1, ExpressionTree parent2) {
+    private Chromosome[] CrossoverAndMutate(Chromosome parent1, Chromosome parent2) {
       var parent1Nodes = FlattenExpressionTree(parent1);
       var parent2Nodes = FlattenExpressionTree(parent2);
       // select a random subree from each
@@ -177,14 +191,14 @@ namespace GeneCodeCS
       return new[] {child1, child2};
     }
 
-    private List<ExpressionTree> FlattenExpressionTree(ExpressionTree tree) {
-      var flat = new List<ExpressionTree> {tree};
-      if (tree.Node is BranchInstance) {
-        var branch = tree.Node as BranchInstance;
+    private List<Chromosome> FlattenExpressionTree(Chromosome tree) {
+      var flat = new List<Chromosome> {tree};
+      if (tree.Node is BranchExpression) {
+        var branch = tree.Node as BranchExpression;
         flat.AddRange(FlattenExpressionTree(branch.TrueBranch));
         flat.AddRange(FlattenExpressionTree(branch.FalseBranch));
-      } else if (tree.Node is SequenceInstance) {
-        foreach (var sequence in ((SequenceInstance)tree.Node).Expressions) {
+      } else if (tree.Node is SequenceExpression) {
+        foreach (var sequence in ((SequenceExpression)tree.Node).Expressions) {
           flat.AddRange(FlattenExpressionTree(sequence));
         }
       }
@@ -200,11 +214,11 @@ namespace GeneCodeCS
           parameterInstance => ((dynamic)parameterInstance).Value).Cast<object>().ToArray();
     }
 
-    private IExpression GetRandomFunctionOrTerminal() {
+    private IGene GetRandomFunctionOrTerminal() {
       return _nonTerminals.Union(_terminals).OrderBy(x => _random.Next()).First();
     }
 
-    private IExpression GetRandomTerminal() {
+    private TerminalGene GetRandomTerminal() {
       return _terminals.OrderBy(x => _random.Next()).First();
     }
 
@@ -216,68 +230,66 @@ namespace GeneCodeCS
         // Terminals are void methods.
         if (mi.DeclaringType != typeof(object) && mi.ReturnType == typeof(void) && mi.IsPublic && mi.Name != "Execute" &&
             mi.Name != "Initialise" && !mi.Name.StartsWith("set_") && !mi.Name.StartsWith("get_")) {
-          _terminals.Add(new Terminal(mi));
+          _terminals.Add(new TerminalGene(mi));
         }
         // Branching methods are bool methods.
         if (mi.DeclaringType != typeof(object) && mi.ReturnType == typeof(bool) && mi.IsPublic) {
-          _nonTerminals.Add(new Branch(mi));
+          _nonTerminals.Add(new BranchGene(mi));
         }
       }
       //var totalExpressions = nonTerminals.Count + terminals.Count;
       for (var n = 2; n <= 6; ++n) {
-        _nonTerminals.Add(new Sequence(n));
+        _nonTerminals.Add(new SequenceGene(n));
       }
     }
 
-    private ExpressionTree InstantiateBranch(int maxTreeDepth, IExpression node, ExpressionTree parent) {
-      var branchNode = (BranchInstance)node;
-      var methodParameters = branchNode.MethodInfo.GetParameters();
+    private Chromosome InstantiateBranch(int maxTreeDepth, BranchGene branchGene, Chromosome parent) {
+      var methodParameters = branchGene.MethodInfo.GetParameters();
       var parameters = GenerateParameters(methodParameters);
 
-      var trueBranch = CreateRandomExpressionTree(maxTreeDepth - 1);
-      var falseBranch = CreateRandomExpressionTree(maxTreeDepth - 1);
+      var newTree = new Chromosome();
 
-      var branch = new BranchInstance(branchNode.MethodInfo, parameters, trueBranch, falseBranch);
-      var newTree = new ExpressionTree {Node = branch, Parent = parent};
+      var trueBranch = CreateRandomExpressionTree(maxTreeDepth - 1, newTree);
+      var falseBranch = CreateRandomExpressionTree(maxTreeDepth - 1, newTree);
 
-      branch.TrueBranch.Parent = newTree;
-      branch.FalseBranch.Parent = newTree;
+      var branchInstance = new BranchExpression(branchGene.MethodInfo, parameters, trueBranch, falseBranch);
+      newTree.Node = branchInstance;
+      newTree.Parent = parent;
 
       return newTree;
     }
 
-    private ExpressionTree InstantiateSequence(int maxTreeDepth, IExpression node, ExpressionTree parent) {
-      var newTree = new ExpressionTree {Parent = parent};
-      var sequenceCount = ((SequenceInstance)node).Expressions.Length;
-      var expressions = new ExpressionTree[sequenceCount];
+    private Chromosome InstantiateSequence(int maxTreeDepth, SequenceGene sequenceGene, Chromosome parent) {
+      var newTree = new Chromosome {Parent = parent};
+      var sequenceCount = sequenceGene.Length;
+      var expressions = new Chromosome[sequenceCount];
       for (var n = 0; n < sequenceCount; ++n) {
         expressions[n] = CreateRandomExpressionTree(maxTreeDepth - 1, newTree);
       }
-      var sequence = new SequenceInstance(expressions);
-      newTree.Node = sequence;
+      var sequenceInstance = new SequenceExpression(expressions);
+      newTree.Node = sequenceInstance;
       return newTree;
     }
 
-    private ExpressionTree InstantiateTerminal(IExpression node, ExpressionTree parent) {
-      var terminalNode = (TerminalInstance)node;
-      var methodParameters = terminalNode.MethodInfo.GetParameters();
+    private Chromosome InstantiateTerminal(TerminalGene terminalGene, Chromosome parent) {
+      var methodParameters = terminalGene.MethodInfo.GetParameters();
       var parameters = GenerateParameters(methodParameters);
 
-      var terminal = new TerminalInstance(terminalNode.MethodInfo, parameters);
+      var terminalInstance = new TerminalExpression(terminalGene.MethodInfo, parameters);
 
-      return new ExpressionTree {Node = terminal, Parent = parent};
+      return new Chromosome {Node = terminalInstance, Parent = parent};
     }
 
-    private BotReport[] SelectParents(List<BotReport> lastGeneration) {
-      var parents = new BotReport[2];
+    private BotInformation[] SelectParents(List<BotReport> bots) {
+      var parents = new BotInformation[2];
 
-      parents[0] = SelectRandomParentBasedOnFitness(lastGeneration);
-      parents[1] = SelectRandomParentBasedOnFitness(lastGeneration);
+      parents[0] = SelectRandomParentBasedOnFitness(bots);
+      parents[1] = SelectRandomParentBasedOnFitness(bots);
 
       return parents;
     }
 
-    private BotReport SelectRandomParentBasedOnFitness(List<BotReport> lastGeneration) {
+    private BotInformation SelectRandomParentBasedOnFitness(List<BotReport> lastGeneration) {
       // Make all fitnesses positive.
       var fitnessAdjustment = 1 - lastGeneration.Min(g => g.Fitness);
       var lastGenerationTotalFitness = lastGeneration.Sum(g => g.Fitness + fitnessAdjustment);
@@ -287,31 +299,31 @@ namespace GeneCodeCS
                                               currentSumFitness += g.Fitness + fitnessAdjustment;
                                               return currentSumFitness < target;
                                             }).First();
-      return parent;
+      return parent.Bot;
     }
 
-    private ExpressionTree TreeCombine(ExpressionTree source, ExpressionTree cutPoint, ExpressionTree insertionMaterial) {
+    private Chromosome TreeCombine(Chromosome source, Chromosome cutPoint, Chromosome insertionMaterial) {
       var mTreeCopy = source;
 
       if (ReferenceEquals(source, cutPoint)) {
-        mTreeCopy = ExpressionTree.ReplaceNodeWithCopy(source, insertionMaterial);
-      } else if (mTreeCopy.Node is BranchInstance) {
-        var branch = mTreeCopy.Node as BranchInstance;
+        mTreeCopy = Chromosome.ReplaceNodeWithCopy(source, insertionMaterial);
+      } else if (mTreeCopy.Node is BranchExpression) {
+        var branch = mTreeCopy.Node as BranchExpression;
         branch.TrueBranch = TreeCombine(branch.TrueBranch, cutPoint, insertionMaterial);
         branch.FalseBranch = TreeCombine(branch.FalseBranch, cutPoint, insertionMaterial);
         // Apply mutation
-        if (branch.TrueBranch.Node is TerminalInstance) {
+        if (branch.TrueBranch.Node is TerminalExpression) {
           if (_random.Next(0, 100) < MutationRate) {
             branch.TrueBranch = InstantiateTerminal(GetRandomTerminal(), mTreeCopy);
           }
         }
-        if (branch.FalseBranch.Node is TerminalInstance) {
+        if (branch.FalseBranch.Node is TerminalExpression) {
           if (_random.Next(0, 100) < MutationRate) {
             branch.FalseBranch = InstantiateTerminal(GetRandomTerminal(), mTreeCopy);
           }
         }
-      } else if (mTreeCopy.Node is SequenceInstance) {
-        var sequence = mTreeCopy.Node as SequenceInstance;
+      } else if (mTreeCopy.Node is SequenceExpression) {
+        var sequence = mTreeCopy.Node as SequenceExpression;
         for (var index = 0; index < sequence.Expressions.Length; ++index) {
           sequence.Expressions[index] = TreeCombine(sequence.Expressions[index], cutPoint, insertionMaterial);
         }

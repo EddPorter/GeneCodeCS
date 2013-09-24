@@ -20,7 +20,7 @@ namespace GeneCodeCS
 {
   public abstract class BaseBot
   {
-    public abstract BotReport TerminationReport { get; set; }
+    public abstract BotReport FitnessReport { get; set; }
 
     public virtual void Execute() {
       RunBotLogic();

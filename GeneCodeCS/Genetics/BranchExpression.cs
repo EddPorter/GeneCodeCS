@@ -20,31 +20,31 @@ using System;
 using System.Reflection;
 using System.Text;
 
-namespace GeneCodeCS
+namespace GeneCodeCS.Genetics
 {
   /// <summary>
-  ///   The branch.
+  ///   The BranchGene.
   /// </summary>
-  internal sealed class BranchInstance : Branch, IExpressionInstance, IEquatable<BranchInstance>
+  internal sealed class BranchExpression : BranchGene, IGeneExpression, IEquatable<BranchExpression>
   {
     /// <summary>
-    ///   Initialises a new instance of the <see cref="T:GeneCodeCS.BranchInstance" /> class to represent the specified parameter-less method.
+    ///   Initialises a new instance of the <see cref="T:GeneCodeCS.Genetics.BranchExpression" /> class to represent the specified parameter-less method.
     /// </summary>
-    /// <param name="mi"> The method used by this <see cref="T:GeneCodeCS.BranchInstance" /> object. </param>
+    /// <param name="mi"> The method used by this <see cref="T:GeneCodeCS.Genetics.BranchExpression" /> object. </param>
     /// <param name="trueBranch"> </param>
     /// <param name="falseBranch"> </param>
-    public BranchInstance(MethodInfo mi, ExpressionTree trueBranch, ExpressionTree falseBranch)
+    public BranchExpression(MethodInfo mi, Chromosome trueBranch, Chromosome falseBranch)
       : this(mi, new object[] {}, trueBranch, falseBranch) {
     }
 
     /// <summary>
-    ///   Initialises a new instance of the <see cref="T:GeneCodeCS.BranchInstance" /> class.
+    ///   Initialises a new instance of the <see cref="T:GeneCodeCS.Genetics.BranchExpression" /> class.
     /// </summary>
-    /// <param name="mi"> The method used by this <see cref="T:GeneCodeCS.BranchInstance" /> object. </param>
+    /// <param name="mi"> The method used by this <see cref="T:GeneCodeCS.Genetics.BranchExpression" /> object. </param>
     /// <param name="parameters"> The parameters to be passed to the method during evaluation. </param>
     /// <param name="trueBranch"> </param>
     /// <param name="falseBranch"> </param>
-    public BranchInstance(MethodInfo mi, object[] parameters, ExpressionTree trueBranch, ExpressionTree falseBranch)
+    public BranchExpression(MethodInfo mi, object[] parameters, Chromosome trueBranch, Chromosome falseBranch)
       : base(mi) {
       if (parameters == null) {
         throw new ArgumentNullException("parameters");
@@ -65,13 +65,13 @@ namespace GeneCodeCS
     ///   Gets the expression tree to evaluate if the method evaluation returns <code>false</code> .
     /// </summary>
     /// <remarks>Not null.</remarks>
-    public ExpressionTree FalseBranch { get; internal set; }
+    public Chromosome FalseBranch { get; internal set; }
 
     /// <summary>
     ///   Gets the expression tree to evaluate if the method evaluation returns <code>true</code> .
     /// </summary>
     /// <remarks>Not null.</remarks>
-    public ExpressionTree TrueBranch { get; internal set; }
+    public Chromosome TrueBranch { get; internal set; }
 
     /// <summary>
     ///   Gets the parameters to be passed to the method during evaluation.
@@ -79,14 +79,14 @@ namespace GeneCodeCS
     /// <remarks>Not null.</remarks>
     public object[] Parameters { get; private set; }
 
-    #region IEquatable<BranchInstance> Members
+    #region IEquatable<BranchExpression> Members
 
     /// <summary>
     ///   The equals.
     /// </summary>
     /// <param name="other"> The other. </param>
     /// <returns> The <see cref="bool" /> . </returns>
-    public bool Equals(BranchInstance other) {
+    public bool Equals(BranchExpression other) {
       if (ReferenceEquals(null, other)) {
         return false;
       }
@@ -101,36 +101,36 @@ namespace GeneCodeCS
 
     #endregion
 
-    #region IExpressionInstance Members
+    #region IGeneExpression Members
 
     /// <summary>
     ///   The clone.
     /// </summary>
-    /// <returns> The <see cref="IExpressionInstance" /> . </returns>
-    public IExpressionInstance Clone() {
-      return new BranchInstance(MethodInfo, (object[])Parameters.Clone(), TrueBranch = TrueBranch.Clone(),
-                                FalseBranch = FalseBranch.Clone());
+    /// <returns> The <see cref="IGeneExpression" /> . </returns>
+    public IGeneExpression Clone() {
+      return new BranchExpression(MethodInfo, (object[])Parameters.Clone(), TrueBranch = TrueBranch.Clone(),
+                                  FalseBranch = FalseBranch.Clone());
     }
 
     #endregion
 
     /// <summary>
-    ///   Determines whether two specified <see cref="T:GeneCodeCS.BranchInstance" /> objects have different values.
+    ///   Determines whether two specified <see cref="T:GeneCodeCS.Genetics.BranchExpression" /> objects have different values.
     /// </summary>
-    /// <param name="a"> The first <see cref="T:GeneCodeCS.BranchInstance" /> object to compare, or null. </param>
-    /// <param name="b"> The second <see cref="T:GeneCodeCS.BranchInstance" /> object to compare, or null. </param>
+    /// <param name="a"> The first <see cref="T:GeneCodeCS.Genetics.BranchExpression" /> object to compare, or null. </param>
+    /// <param name="b"> The second <see cref="T:GeneCodeCS.Genetics.BranchExpression" /> object to compare, or null. </param>
     /// <returns> <c>true</c> if the value of <paramref name="a" /> is different from the value of <paramref name="b" /> ; otherwise, false. </returns>
-    public static bool operator !=(BranchInstance a, BranchInstance b) {
+    public static bool operator !=(BranchExpression a, BranchExpression b) {
       return !Equals(a, b);
     }
 
     /// <summary>
-    ///   Determines whether two specified <see cref="T:GeneCodeCS.BranchInstance" /> objects have the same value.
+    ///   Determines whether two specified <see cref="T:GeneCodeCS.Genetics.BranchExpression" /> objects have the same value.
     /// </summary>
-    /// <param name="a"> The first <see cref="T:GeneCodeCS.BranchInstance" /> object to compare, or null. </param>
-    /// <param name="b"> The second <see cref="T:GeneCodeCS.BranchInstance" /> object to compare, or null. </param>
+    /// <param name="a"> The first <see cref="T:GeneCodeCS.Genetics.BranchExpression" /> object to compare, or null. </param>
+    /// <param name="b"> The second <see cref="T:GeneCodeCS.Genetics.BranchExpression" /> object to compare, or null. </param>
     /// <returns> <c>true</c> if the value of <paramref name="a" /> is the same as the value of <paramref name="b" /> ; otherwise, false. </returns>
-    public static bool operator ==(BranchInstance a, BranchInstance b) {
+    public static bool operator ==(BranchExpression a, BranchExpression b) {
       return Equals(a, b);
     }
 
@@ -144,7 +144,7 @@ namespace GeneCodeCS
         return false;
       }
 
-      return ReferenceEquals(this, obj) || Equals(obj as BranchInstance);
+      return ReferenceEquals(this, obj) || Equals(obj as BranchExpression);
     }
 
     /// <summary>
@@ -173,12 +173,12 @@ namespace GeneCodeCS
     }
 
     /// <summary>
-    ///   The branch to string.
+    ///   The BranchGene to string.
     /// </summary>
     /// <param name="output"> The output. </param>
-    /// <param name="branch"> The branch. </param>
+    /// <param name="branch"> The BranchGene. </param>
     /// <param name="prefix"> The prefix. </param>
-    private static void BranchToString(StringBuilder output, ExpressionTree branch, string prefix) {
+    private static void BranchToString(StringBuilder output, Chromosome branch, string prefix) {
       var branchString = branch.ToString();
       var first = true;
       foreach (var line in branchString.Split(new[] {'\n', '\r'}, StringSplitOptions.RemoveEmptyEntries)) {

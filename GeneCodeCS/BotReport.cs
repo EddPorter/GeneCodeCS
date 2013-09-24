@@ -16,33 +16,19 @@
 // along with this program.  If not, see {http://www.gnu.org/licenses/}.
 //  
 
-using System;
-
 namespace GeneCodeCS
 {
   public sealed class BotReport
   {
-    // TODO: This class is trying to be two things.
-
-    public BotReport(string name, string parent1, string parent2, ExpressionTree tree) {
-      Name = name;
-      Parent1 = parent1;
-      Parent2 = parent2;
-      Tree = tree;
+    public BotReport(BotInformation bot) {
+      Bot = bot;
+      Fitness = int.MinValue;
     }
+
+    public BotInformation Bot { get; private set; }
 
     public int Fitness { get; private set; }
 
-    public object Information { get; private set; }
-
-    public string Name { get; private set; }
-
-    public string Parent1 { get; private set; }
-
-    public string Parent2 { get; private set; }
-
-    public ExpressionTree Tree { get; private set; }
-
-    public Type BotInstance { get; internal set; }
+    public object CustomInformation { get; private set; }
   }
 }

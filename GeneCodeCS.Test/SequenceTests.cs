@@ -19,6 +19,7 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using GeneCodeCS.Genetics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace GeneCodeCS.Test
@@ -33,12 +34,12 @@ namespace GeneCodeCS.Test
       var methods = typeof(TerminalTests).GetMethods(flags);
       var method = methods.First(m => m.Name == name);
       var tree = new[] {
-                         new ExpressionTree { Node = new TerminalInstance(method) },
-                         new ExpressionTree { Node = new TerminalInstance(method) }
+                         new Chromosome { Node = new TerminalExpression(method) },
+                         new Chromosome { Node = new TerminalExpression(method) }
                        };
-      var sequence = new SequenceInstance(tree);
+      var sequence = new SequenceExpression(tree);
       var output = sequence.ToString();
-      var expected = string.Format("SequenceInstance:{1}* {0}(){1}* {0}()", name, Environment.NewLine);
+      var expected = string.Format("SequenceExpression:{1}* {0}(){1}* {0}()", name, Environment.NewLine);
       Assert.AreEqual(expected, output);
     }
   }

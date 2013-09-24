@@ -121,4 +121,13 @@
     <value xml:space="preserve">{0}_Gen{1}_Bot{2}</value>
     <comment>Format for naming new bots: 0 = base type, 1 = generation number, 2 = bot index in generation.</comment>
   </data>
+  <data name="BranchGene_MethodMustReturnBool">
+    <value xml:space="preserve">The branching method must return a bool.</value>
+  </data>
+  <data name="BranchGene_MethodParametersMustDeriveFromIParameter">
+    <value xml:space="preserve">The branching method's parameters must derive from IParameter&lt;&gt;.</value>
+  </data>
+  <data name="NonNullLogClassRequired">
+    <value xml:space="preserve">A non-null log class must be provided.</value>
+  </data>
 </root>

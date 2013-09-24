@@ -18,20 +18,21 @@
 
 using System;
 
-namespace GeneCodeCS
+namespace GeneCodeCS.Genetics
 {
   /// <summary>
-  ///   A tree of expressions representing the bot behaviour.
+  ///   A <see cref="T:GeneCodeCS.Genetics.Chromosome" /> forms the brains of a bot and consists of a tree of <see
+  ///    cref="T:GeneCodeCS.Genetics.IGeneExpression" />s representing the bot's behaviour.
   /// </summary>
-  public sealed class ExpressionTree : IEquatable<ExpressionTree>
+  public sealed class Chromosome : IEquatable<Chromosome>
   {
-    public IExpressionInstance Node { get; internal set; }
+    public IGeneExpression Node { get; internal set; }
 
-    internal ExpressionTree Parent { private get; set; }
+    internal Chromosome Parent { private get; set; }
 
-    #region IEquatable<ExpressionTree> Members
+    #region IEquatable<Chromosome> Members
 
-    public bool Equals(ExpressionTree value) {
+    public bool Equals(Chromosome value) {
       if (ReferenceEquals(null, value)) {
         return false;
       }
@@ -43,11 +44,11 @@ namespace GeneCodeCS
 
     #endregion
 
-    public static bool operator !=(ExpressionTree a, ExpressionTree b) {
+    public static bool operator !=(Chromosome a, Chromosome b) {
       return !(a == b);
     }
 
-    public static bool operator ==(ExpressionTree a, ExpressionTree b) {
+    public static bool operator ==(Chromosome a, Chromosome b) {
       if (ReferenceEquals(a, b)) {
         return true;
       }
@@ -57,16 +58,16 @@ namespace GeneCodeCS
       return a.Equals(b);
     }
 
-    public static ExpressionTree ReplaceNodeWithCopy(ExpressionTree removedNode, ExpressionTree insertedNode) {
-      return new ExpressionTree {Node = insertedNode.Node, Parent = removedNode.Parent};
+    public static Chromosome ReplaceNodeWithCopy(Chromosome removedNode, Chromosome insertedNode) {
+      return new Chromosome {Node = insertedNode.Node, Parent = removedNode.Parent};
     }
 
     /// <summary>
     ///   Creates a new, independent instance of the whole expression tree.
     /// </summary>
     /// <returns> A new, memory-independent copy of this expression tree. </returns>
-    public ExpressionTree Clone() {
-      return new ExpressionTree {Node = Node.Clone(), Parent = Parent};
+    public Chromosome Clone() {
+      return new Chromosome {Node = Node.Clone(), Parent = Parent};
     }
 
     public override bool Equals(object obj) {
@@ -76,7 +77,7 @@ namespace GeneCodeCS
       if (ReferenceEquals(this, obj)) {
         return true;
       }
-      return obj is ExpressionTree && Equals((ExpressionTree)obj);
+      return obj is Chromosome && Equals((Chromosome)obj);
     }
 
     public override int GetHashCode() {

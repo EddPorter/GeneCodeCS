@@ -20,19 +20,19 @@ using System;
 using System.Linq;
 using System.Text;
 
-namespace GeneCodeCS
+namespace GeneCodeCS.Genetics
 {
-  public sealed class SequenceInstance : Sequence, IExpressionInstance, IEquatable<SequenceInstance>
+  public sealed class SequenceExpression : SequenceGene, IGeneExpression, IEquatable<SequenceExpression>
   {
-    public SequenceInstance(ExpressionTree[] expressions) : base(expressions.Length) {
+    public SequenceExpression(Chromosome[] expressions) : base(expressions.Length) {
       Expressions = expressions;
     }
 
-    public ExpressionTree[] Expressions { get; private set; }
+    public Chromosome[] Expressions { get; private set; }
 
-    #region IEquatable<SequenceInstance> Members
+    #region IEquatable<SequenceExpression> Members
 
-    public bool Equals(SequenceInstance other) {
+    public bool Equals(SequenceExpression other) {
       if (ReferenceEquals(null, other)) {
         return false;
       }
@@ -41,19 +41,19 @@ namespace GeneCodeCS
 
     #endregion
 
-    #region IExpressionInstance Members
+    #region IGeneExpression Members
 
-    public IExpressionInstance Clone() {
-      return new SequenceInstance(Expressions.Select(e => e.Clone()).ToArray());
+    public IGeneExpression Clone() {
+      return new SequenceExpression(Expressions.Select(e => e.Clone()).ToArray());
     }
 
     #endregion
 
-    public static bool operator !=(SequenceInstance left, SequenceInstance right) {
+    public static bool operator !=(SequenceExpression left, SequenceExpression right) {
       return !Equals(left, right);
     }
 
-    public static bool operator ==(SequenceInstance left, SequenceInstance right) {
+    public static bool operator ==(SequenceExpression left, SequenceExpression right) {
       return Equals(left, right);
     }
 
@@ -64,7 +64,7 @@ namespace GeneCodeCS
       if (ReferenceEquals(this, obj)) {
         return true;
       }
-      return obj is SequenceInstance && Equals((SequenceInstance)obj);
+      return obj is SequenceExpression && Equals((SequenceExpression)obj);
     }
 
     public override int GetHashCode() {
@@ -73,7 +73,7 @@ namespace GeneCodeCS
 
     public override string ToString() {
       var output = new StringBuilder();
-      output.AppendLine("SequenceInstance:");
+      output.AppendLine("SequenceExpression:");
       foreach (var tree in Expressions) {
         var left = tree.ToString();
         var first = true;

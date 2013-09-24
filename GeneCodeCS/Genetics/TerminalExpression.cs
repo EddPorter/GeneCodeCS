@@ -20,11 +20,11 @@ using System;
 using System.Linq;
 using System.Reflection;
 
-namespace GeneCodeCS
+namespace GeneCodeCS.Genetics
 {
-  public sealed class TerminalInstance : Terminal, IExpressionInstance, IEquatable<TerminalInstance>
+  public sealed class TerminalExpression : TerminalGene, IGeneExpression, IEquatable<TerminalExpression>
   {
-    public TerminalInstance(MethodInfo mi, object[] parameters) : base(mi) {
+    public TerminalExpression(MethodInfo mi, object[] parameters) : base(mi) {
       if (parameters == null) {
         throw new ArgumentNullException("parameters");
       }
@@ -32,15 +32,15 @@ namespace GeneCodeCS
       Parameters = parameters;
     }
 
-    public TerminalInstance(MethodInfo mi) : this(mi, new object[] {}) {
+    public TerminalExpression(MethodInfo mi) : this(mi, new object[] {}) {
     }
 
     /// <remarks>Not null.</remarks>
     public object[] Parameters { get; private set; }
 
-    #region IEquatable<TerminalInstance> Members
+    #region IEquatable<TerminalExpression> Members
 
-    public bool Equals(TerminalInstance value) {
+    public bool Equals(TerminalExpression value) {
       if (ReferenceEquals(null, value)) {
         return false;
       }
@@ -52,19 +52,19 @@ namespace GeneCodeCS
 
     #endregion
 
-    #region IExpressionInstance Members
+    #region IGeneExpression Members
 
-    public IExpressionInstance Clone() {
-      return new TerminalInstance(MethodInfo, (object[])Parameters.Clone());
+    public IGeneExpression Clone() {
+      return new TerminalExpression(MethodInfo, (object[])Parameters.Clone());
     }
 
     #endregion
 
-    public static bool operator !=(TerminalInstance a, TerminalInstance b) {
+    public static bool operator !=(TerminalExpression a, TerminalExpression b) {
       return !(a == b);
     }
 
-    public static bool operator ==(TerminalInstance a, TerminalInstance b) {
+    public static bool operator ==(TerminalExpression a, TerminalExpression b) {
       if (ReferenceEquals(a, b)) {
         return true;
       }
@@ -78,7 +78,7 @@ namespace GeneCodeCS
       if (ReferenceEquals(null, obj)) {
         return false;
       }
-      return ReferenceEquals(this, obj) || Equals(obj as TerminalInstance);
+      return ReferenceEquals(this, obj) || Equals(obj as TerminalExpression);
     }
 
     /// <summary>

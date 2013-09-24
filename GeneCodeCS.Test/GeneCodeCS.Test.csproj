@@ -51,9 +51,12 @@
   <ItemGroup>
     <Compile Include="BotGeneratorTest.cs" />
     <Compile Include="BranchMethodTests.cs" />
+    <Compile Include="Helpers\NullLog.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SequenceTests.cs" />
     <Compile Include="TerminalTests.cs" />
+    <Compile Include="Helpers\TestBot.cs" />
+    <Compile Include="Helpers\TestParameter.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\GeneCodeCS\GeneCodeCS.csproj">

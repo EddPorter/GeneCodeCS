@@ -68,5 +68,32 @@ namespace GeneCodeCS.Properties {
                 return ResourceManager.GetString("BotNameStringFormat", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The branching method must return a bool..
+        /// </summary>
+        internal static string BranchGene_MethodMustReturnBool {
+            get {
+                return ResourceManager.GetString("BranchGene_MethodMustReturnBool", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The branching method&apos;s parameters must derive from IParameter&lt;&gt;..
+        /// </summary>
+        internal static string BranchGene_MethodParametersMustDeriveFromIParameter {
+            get {
+                return ResourceManager.GetString("BranchGene_MethodParametersMustDeriveFromIParameter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A non-null log class must be provided..
+        /// </summary>
+        internal static string NonNullLogClassRequired {
+            get {
+                return ResourceManager.GetString("NonNullLogClassRequired", resourceCulture);
+            }
+        }
     }
 }

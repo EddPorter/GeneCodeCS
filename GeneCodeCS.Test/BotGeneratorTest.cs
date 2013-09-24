@@ -17,6 +17,8 @@
 //  
 
 using System;
+using Common.Logging;
+using GeneCodeCS.Test.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace GeneCodeCS.Test
@@ -28,7 +30,7 @@ namespace GeneCodeCS.Test
       const int generation = 0;
       const int populus = 0;
       const string expected = "BaseBot_Gen0_Bot0";
-      var actual = BotGenerator_Accessor<TBot>.CreateBotName(generation, populus);
+      var actual = Reproduction_Accessor<TBot>.CreateBotName(generation, populus);
       Assert.AreEqual(expected, actual);
     }
 
@@ -36,20 +38,20 @@ namespace GeneCodeCS.Test
       const int generation = 4;
       const int populus = 5;
       const string expected = "BaseBot_Gen4_Bot5";
-      var actual = BotGenerator_Accessor<TBot>.CreateBotName(generation, populus);
+      var actual = Reproduction_Accessor<TBot>.CreateBotName(generation, populus);
       Assert.AreEqual(expected, actual);
     }
 
     private static void BotGeneratorCreateBotNameThrowsExceptionGivenNegativeGenerationHelper<TBot>() {
       const int generation = -5;
       const int populus = 5;
-      BotGenerator_Accessor<TBot>.CreateBotName(generation, populus);
+      Reproduction_Accessor<TBot>.CreateBotName(generation, populus);
     }
 
     private static void BotGeneratorCreateBotNameThrowsExceptionGivenNegativeBotIndexHelper<TBot>() {
       const int generation = 4;
       const int populus = -5;
-      BotGenerator_Accessor<TBot>.CreateBotName(generation, populus);
+      Reproduction_Accessor<TBot>.CreateBotName(generation, populus);
     }
 
     [TestMethod]
@@ -76,6 +78,21 @@ namespace GeneCodeCS.Test
     [ExpectedException((typeof(ArgumentOutOfRangeException)))]
     public void BotGeneratorCreateBotNameThrowsExceptionGivenNegativeGeneration() {
       BotGeneratorCreateBotNameThrowsExceptionGivenNegativeGenerationHelper<BaseBot>();
+    }
+
+    private static void BotGeneratorCreateRandomBotReturnsNonNullBotTreeHelper<TBot>() where TBot : BaseBot {
+      ILog log = new NullLog();
+      var target = new Reproduction<TBot>(log);
+      const int maxTreeDepth = 3;
+
+      var actual = target.CreateBot(maxTreeDepth);
+
+      Assert.IsNotNull(actual.Tree);
+    }
+
+    [TestMethod]
+    public void BotGeneratorCreateRandomBotReturnsNonNullBotTree() {
+      BotGeneratorCreateRandomBotReturnsNonNullBotTreeHelper<TestBot>();
     }
   }
 }

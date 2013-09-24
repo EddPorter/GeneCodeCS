@@ -1,4 +1,4 @@
-// 
+﻿// 
 // GeneCodeCS - Genetic programming library for code bot natural selection.
 // Copyright (C) 2013 Edd Porter <genecodecs@eddporter.com>
 // 
@@ -16,14 +16,19 @@
 // along with this program.  If not, see {http://www.gnu.org/licenses/}.
 //  
 
-namespace GeneCodeCS
+namespace GeneCodeCS.Genetics
 {
-  public class Sequence : IExpression
+  /// <summary>
+  ///   The expression of a gene in a chromosome. This is an actual instance of a gene rather than just the definition ( <seealso
+  ///    cref="T:GeneCodeCS.Genetics.IGene" /> ). It contributes to the life (running) of the bot to which it belongs.
+  /// </summary>
+  public interface IGeneExpression
   {
-    public Sequence(int length) {
-      Length = length;
-    }
-
-    public int Length { get; private set; }
+    /// <summary>
+    ///   Creates a new, independent instance of the <see cref="T:GeneCodeCS.Genetics.IGeneExpression" /> , which may contain other <see
+    ///    cref="T:GeneCodeCS.Genetics.IGeneExpression" /> .
+    /// </summary>
+    /// <returns> A new, memory-independent copy of this <see cref="T:GeneCodeCS.Genetics.IGeneExpression" /> . </returns>
+    IGeneExpression Clone();
   }
 }

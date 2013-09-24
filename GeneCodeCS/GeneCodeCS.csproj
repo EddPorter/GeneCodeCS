@@ -21,8 +21,9 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>
-    </DocumentationFile>
+    <DocumentationFile>bin\Debug\GeneCodeCS.XML</DocumentationFile>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <RegisterForComInterop>false</RegisterForComInterop>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -42,16 +43,18 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BaseBot.cs" />
-    <Compile Include="BotBreeder.cs" />
-    <Compile Include="BotCodeCreator.cs" />
-    <Compile Include="BotRunner.cs" />
-    <Compile Include="BotGenerator.cs" />
+    <Compile Include="Population.cs" />
+    <Compile Include="Compilation.cs" />
+    <Compile Include="BotInformation.cs" />
+    <Compile Include="Execution.cs" />
+    <Compile Include="Reproduction.cs" />
     <Compile Include="BotReport.cs" />
-    <Compile Include="Branch.cs" />
-    <Compile Include="BranchInstance.cs" />
-    <Compile Include="IExpression.cs" />
-    <Compile Include="ExpressionTree.cs" />
-    <Compile Include="IParameter.cs">
+    <Compile Include="Genetics\BranchGene.cs" />
+    <Compile Include="Genetics\BranchExpression.cs" />
+    <Compile Include="Genetics\IGene.cs" />
+    <Compile Include="Genetics\IGeneExpression.cs" />
+    <Compile Include="Genetics\Chromosome.cs" />
+    <Compile Include="Genetics\IParameter.cs">
       <ExcludeFromStyleCop>True</ExcludeFromStyleCop>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -60,10 +63,10 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="Sequence.cs" />
-    <Compile Include="SequenceInstance.cs" />
-    <Compile Include="Terminal.cs" />
-    <Compile Include="TerminalInstance.cs" />
+    <Compile Include="Genetics\SequenceGene.cs" />
+    <Compile Include="Genetics\SequenceExpression.cs" />
+    <Compile Include="Genetics\TerminalGene.cs" />
+    <Compile Include="Genetics\TerminalExpression.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ClassDiagram.cd">
@@ -75,6 +78,7 @@
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

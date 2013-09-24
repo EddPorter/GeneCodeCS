@@ -1,4 +1,4 @@
-﻿// 
+// 
 // GeneCodeCS - Genetic programming library for code bot natural selection.
 // Copyright (C) 2013 Edd Porter <genecodecs@eddporter.com>
 // 
@@ -16,21 +16,22 @@
 // along with this program.  If not, see {http://www.gnu.org/licenses/}.
 //  
 
-namespace GeneCodeCS
-{
-  /// <summary>
-  ///   An interface to represent parts of in an expression tree.
-  /// </summary>
-  public interface IExpression
-  {
-  }
+using System;
+using System.Reflection;
 
-  public interface IExpressionInstance
+namespace GeneCodeCS.Genetics
+{
+  public class TerminalGene : IGene
   {
-    /// <summary>
-    ///   Creates a new, independent instance of the expression, which may contain sub-expressions.
-    /// </summary>
-    /// <returns> A new, memory-independent copy of this expression. </returns>
-    IExpressionInstance Clone();
+    public TerminalGene(MethodInfo mi) {
+      if (mi == null) {
+        throw new ArgumentNullException("mi");
+      }
+
+      MethodInfo = mi;
+    }
+
+    /// <remarks>Not null.</remarks>
+    public MethodInfo MethodInfo { get; private set; }
   }
 }
