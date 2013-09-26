@@ -78,7 +78,7 @@ namespace GeneCodeCS
       _log = log;
       _optimise = optimise;
 
-      _reproducer = new Reproduction<TBot>(_log);
+      _reproducer = new Reproduction<TBot>(log);
       _compiler = new Compilation<TBot>(log);
       _executor = new Execution<TBot>(log);
     }
