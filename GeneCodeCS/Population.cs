@@ -1,20 +1,20 @@
-﻿// 
+﻿//
 // GeneCodeCS - Genetic programming library for code bot natural selection.
 // Copyright (C) 2013 Edd Porter <genecodecs@eddporter.com>
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see {http://www.gnu.org/licenses/}.
-//  
+//
 
 using System;
 using System.Collections.Generic;
@@ -33,8 +33,6 @@ namespace GeneCodeCS
   ///    cref="T:GeneCodeCS.Genetics.IParameter`1" /> . </typeparam>
   public sealed class Population<TBot> where TBot : BaseBot
   {
-    // TODO: implement fitness threshold termination.
-
     /// <summary>
     ///   Used to convert the Chromosomes into C# code and then compile them to an assembly.
     /// </summary>
@@ -124,8 +122,8 @@ namespace GeneCodeCS
         var latestFitnessReports = latestEvaluation != null
                                      ? latestEvaluation.Select(b => b.FitnessReport).ToList()
                                      : null;
-        var generationInformation = _reproducer.BreedGeneration(generationNumber, latestFitnessReports, botsPerGeneration,
-                                                                maxTreeDepth, _optimise);
+        var generationInformation = _reproducer.BreedGeneration(generationNumber, latestFitnessReports,
+                                                                botsPerGeneration, maxTreeDepth, _optimise);
 
         // 2. Convert expression trees to code.
         _log.Trace("GeneCodeCS.Population`1: Compiling bot code.");
@@ -141,8 +139,8 @@ namespace GeneCodeCS
         var worstFitness = orderedEvaluation.Last().FitnessReport.Fitness;
         var meanFitness = orderedEvaluation.Average(fp => fp.FitnessReport.Fitness);
 
-        _log.InfoFormat("Generation {0} report: Best {1:N} / Mean average {2:N2} / Worst {3:N}", generationNumber, bestFitness,
-                        meanFitness, worstFitness);
+        _log.InfoFormat("Generation {0} report: Best {1:N} / Mean average {2:N2} / Worst {3:N}", generationNumber,
+                        bestFitness, meanFitness, worstFitness);
 
         bestBots = orderedEvaluation.TakeWhile(b => b.FitnessReport.Fitness == bestFitness).ToList();
         _log.InfoFormat("Best bots: '{0}'", string.Join("', '", bestBots.Select(b => b.FitnessReport.Bot.Name)));
