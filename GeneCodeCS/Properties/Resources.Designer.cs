@@ -88,6 +88,15 @@ namespace GeneCodeCS.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The mutation rate must be between 0 and 100 inclusive..
+        /// </summary>
+        internal static string MutationRateAllowedRange {
+            get {
+                return ResourceManager.GetString("MutationRateAllowedRange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to A non-null log class must be provided..
         /// </summary>
         internal static string NonNullLogClassRequired {

@@ -73,7 +73,7 @@ namespace GeneCodeCS
         throw new ArgumentNullException("log", Resources.NonNullLogClassRequired);
       }
 
-      log.Trace("GeneCodeCS.Population`1: Constructing class.");
+      log.Trace("GeneCodeCS.Population`1.ctor: Constructing class.");
 
       _log = log;
       _optimise = optimise;
@@ -96,6 +96,7 @@ namespace GeneCodeCS
     /// <param name="fitnessThreshold"> The fitness threshold that, if exceeded, will cause simulation to end at the current generation. </param>
     /// <param name="starterBots"> A list of bots to use in the first generation. Any shortfall in the initial generation will be filled with randomly created bots. </param>
     /// <returns> The best bot(s) from the final generation is/are returned. </returns>
+    // TODO: Expose mutation rate property in Reproduction class.
     public List<TBot> SimulateGenerations<T>(int generationLimit = 20, int botsPerGeneration = 30, int maxTreeDepth = 3,
                                              T parameters = default(T), int fitnessThreshold = int.MaxValue,
                                              List<TBot> starterBots = null) {
@@ -118,7 +119,7 @@ namespace GeneCodeCS
         _log.InfoFormat("Starting generation {0:N}", generationNumber);
 
         // 1. Generate expression trees for generation.
-        _log.Trace("GeneCodeCS.Population`1: Breeding generation");
+        _log.Trace("GeneCodeCS.Population`1.SimulateGenerations`1: Breeding generation.");
         var latestFitnessReports = latestEvaluation != null
                                      ? latestEvaluation.Select(b => b.FitnessReport).ToList()
                                      : null;
@@ -126,11 +127,11 @@ namespace GeneCodeCS
                                                                 botsPerGeneration, maxTreeDepth, _optimise);
 
         // 2. Convert expression trees to code.
-        _log.Trace("GeneCodeCS.Population`1: Compiling bot code.");
+        _log.Trace("GeneCodeCS.Population`1.SimulateGenerations`1: Compiling bot code.");
         var compiledBots = _compiler.CompileBots(generationInformation, generationNumber);
 
         // 3. Run code to generate fitness.
-        _log.Trace("GeneCodeCS.Population`1: Executing bots.");
+        _log.Trace("GeneCodeCS.Population`1.SimulateGenerations`1: Executing bots.");
         var evaluatedBots = _executor.Run(compiledBots, parameters);
         var orderedEvaluation = evaluatedBots.OrderByDescending(report => report.FitnessReport.Fitness).ToList();
 
@@ -156,7 +157,7 @@ namespace GeneCodeCS
 
       _log.Info("Bot creation complete.");
       foreach (var bot in bestBots) {
-        _log.InfoFormat("Bot {0}: Fitness = {1:N}", bot.FitnessReport.Bot.Name, bot.FitnessReport.Fitness);
+        _log.InfoFormat("Bot '{0}': Fitness = {1:N}", bot.FitnessReport.Bot.Name, bot.FitnessReport.Fitness);
       }
       return bestBots;
     }
@@ -170,23 +171,29 @@ namespace GeneCodeCS
     /// <param name="fitnessThreshold"> The fitness threshold that, if exceeded, will cause simulation to end. </param>
     /// <returns> The first bot to exceed the fitness threshold. </returns>
     public TBot SimulateIndividuals<T>(int maxTreeDepth = 3, T parameters = default(T), int fitnessThreshold = 0) {
+      _log.InfoFormat("Simulating indivudual bots with tree depth of {0} and a limiting threshold of {1}.", maxTreeDepth,
+                      fitnessThreshold);
+
       while (true) {
         // 1. Generate single bot.
+        _log.Trace("GeneCodeCS.Population`1.SimulateIndividuals`1: Breeding single bot.");
         var botInformation = _reproducer.CreateBot(maxTreeDepth, _optimise);
         var generationInformation = new List<BotInformation> { botInformation };
 
         // 2. Convert expression tree to code.
+        _log.Trace("GeneCodeCS.Population`1.SimulateIndividuals`1: Compiling bot code.");
         const int generationNumber = 0;
         var compiledBots = _compiler.CompileBots(generationInformation, generationNumber);
 
         // 3. Run code to generate fitness.
+        _log.Trace("GeneCodeCS.Population`1.SimulateIndividuals`1: Executing bot.");
         var evaluatedBot = _executor.Run(compiledBots, parameters).First();
 
         Debug.Assert(evaluatedBot != null, "newBot != null");
 
         // 4. Evaluate bot fitness.
         var fitness = evaluatedBot.FitnessReport.Fitness;
-        _log.InfoFormat("Bot {0}: Fitness = {1:N}", evaluatedBot.FitnessReport.Bot.Name, fitness);
+        _log.InfoFormat("Bot '{0}': Fitness = {1:N}", evaluatedBot.FitnessReport.Bot.Name, fitness);
         if (fitness > fitnessThreshold) {
           _log.InfoFormat("Exceeded threshold limit ({0}) with {1}.", fitnessThreshold, fitness);
           return evaluatedBot;

@@ -130,4 +130,7 @@
   <data name="NonNullLogClassRequired">
     <value xml:space="preserve">A non-null log class must be provided.</value>
   </data>
+  <data name="MutationRateAllowedRange">
+    <value xml:space="preserve">The mutation rate must be between 0 and 100 inclusive.</value>
+  </data>
 </root>
