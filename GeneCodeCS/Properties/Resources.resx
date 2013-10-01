@@ -117,35 +117,50 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="BotNameStringFormat">
-    <value xml:space="preserve">{0}_Gen{1}_Bot{2}</value>
+  <data name="BotNameStringFormat" xml:space="preserve">
+    <value>{0}_Gen{1}_Bot{2}</value>
     <comment>Format for naming new bots: 0 = base type, 1 = generation number, 2 = bot index in generation.</comment>
   </data>
-  <data name="MethodMustReturnBool">
-    <value xml:space="preserve">The branching method must return a bool.</value>
+  <data name="MethodMustReturnBool" xml:space="preserve">
+    <value>The branching method must return a bool.</value>
   </data>
-  <data name="MethodParametersMustDeriveFromIParameter">
-    <value xml:space="preserve">The branching method's parameters must derive from IParameter&lt;&gt;.</value>
+  <data name="MethodParametersMustDeriveFromIParameter" xml:space="preserve">
+    <value>The branching method's parameters must derive from IParameter&lt;&gt;.</value>
   </data>
-  <data name="NonNullLogClassRequired">
-    <value xml:space="preserve">A non-null log class must be provided.</value>
+  <data name="NonNullLogClassRequired" xml:space="preserve">
+    <value>A non-null log class must be provided.</value>
   </data>
-  <data name="MutationRateValidRange">
-    <value xml:space="preserve">The mutation rate must be between 0 and 100 inclusive.</value>
+  <data name="MutationRateValidRange" xml:space="preserve">
+    <value>The mutation rate must be between 0 and 100 inclusive.</value>
   </data>
-  <data name="ElitePercentageValidRange">
-    <value xml:space="preserve">The elite percentage must be between 0 and 100 inclusive.</value>
+  <data name="ElitePercentageValidRange" xml:space="preserve">
+    <value>The elite percentage must be between 0 and 100 inclusive.</value>
   </data>
-  <data name="RandomBotPercentageValidRange">
-    <value xml:space="preserve">The random bot percentage must be between 0 and 100 inclusive.</value>
+  <data name="RandomBotPercentageValidRange" xml:space="preserve">
+    <value>The random bot percentage must be between 0 and 100 inclusive.</value>
   </data>
-  <data name="ChromosomeOptimisationReturnedNull">
-    <value xml:space="preserve">Chromosome optimisation returned null.</value>
+  <data name="ChromosomeOptimisationReturnedNull" xml:space="preserve">
+    <value>Chromosome optimisation returned null.</value>
   </data>
-  <data name="GenerationNumberValidRange">
-    <value xml:space="preserve">The generation number must be non-negative.</value>
+  <data name="GenerationNumberValidRange" xml:space="preserve">
+    <value>The generation number must be non-negative.</value>
   </data>
-  <data name="BotIndexValidRange">
-    <value xml:space="preserve">The index of a bot must be non-negative.</value>
+  <data name="BotIndexValidRange" xml:space="preserve">
+    <value>The index of a bot must be non-negative.</value>
+  </data>
+  <data name="TerminalMethodsValidRange" xml:space="preserve">
+    <value>At least one candidate terminal method must be provided by the TBot class.</value>
+  </data>
+  <data name="StarterBotsFitenessReportMustNotBeNull" xml:space="preserve">
+    <value>Starter bots must contain valid fitness reports.</value>
+  </data>
+  <data name="BotsPerGenerationValidRange" xml:space="preserve">
+    <value>The number of bots per generation must be greater than zero.</value>
+  </data>
+  <data name="MaxTreeDepthValidRange" xml:space="preserve">
+    <value>The maximum tree depth must be non-negative.</value>
+  </data>
+  <data name="PreviousGenerationReportsRequired" xml:space="preserve">
+    <value>The reports for the prevoius generation must be provided when breeding subsequent generations.</value>
   </data>
 </root>

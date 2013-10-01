@@ -79,6 +79,15 @@ namespace GeneCodeCS.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The number of bots per generation must be greater than zero..
+        /// </summary>
+        internal static string BotsPerGenerationValidRange {
+            get {
+                return ResourceManager.GetString("BotsPerGenerationValidRange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Chromosome optimisation returned null..
         /// </summary>
         internal static string ChromosomeOptimisationReturnedNull {
@@ -102,6 +111,15 @@ namespace GeneCodeCS.Properties {
         internal static string GenerationNumberValidRange {
             get {
                 return ResourceManager.GetString("GenerationNumberValidRange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The maximum tree depth must be non-negative..
+        /// </summary>
+        internal static string MaxTreeDepthValidRange {
+            get {
+                return ResourceManager.GetString("MaxTreeDepthValidRange", resourceCulture);
             }
         }
         
@@ -142,11 +160,38 @@ namespace GeneCodeCS.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The reports for the prevoius generation must be provided when breeding subsequent generations..
+        /// </summary>
+        internal static string PreviousGenerationReportsRequired {
+            get {
+                return ResourceManager.GetString("PreviousGenerationReportsRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The random bot percentage must be between 0 and 100 inclusive..
         /// </summary>
         internal static string RandomBotPercentageValidRange {
             get {
                 return ResourceManager.GetString("RandomBotPercentageValidRange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Starter bots must contain valid fitness reports..
+        /// </summary>
+        internal static string StarterBotsFitenessReportMustNotBeNull {
+            get {
+                return ResourceManager.GetString("StarterBotsFitenessReportMustNotBeNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to At least one candidate terminal method must be provided by the TBot class..
+        /// </summary>
+        internal static string TerminalMethodsValidRange {
+            get {
+                return ResourceManager.GetString("TerminalMethodsValidRange", resourceCulture);
             }
         }
     }
