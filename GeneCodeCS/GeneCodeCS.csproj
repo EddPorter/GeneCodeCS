@@ -67,6 +67,7 @@
     <Compile Include="Genetics\SequenceExpression.cs" />
     <Compile Include="Genetics\TerminalGene.cs" />
     <Compile Include="Genetics\TerminalExpression.cs" />
+    <Compile Include="UnknownGenotypeException.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ClassDiagram.cd">

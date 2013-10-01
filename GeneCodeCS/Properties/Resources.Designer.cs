@@ -61,6 +61,15 @@ namespace GeneCodeCS.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The index of a bot must be non-negative..
+        /// </summary>
+        internal static string BotIndexValidRange {
+            get {
+                return ResourceManager.GetString("BotIndexValidRange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0}_Gen{1}_Bot{2}.
         /// </summary>
         internal static string BotNameStringFormat {
@@ -70,29 +79,56 @@ namespace GeneCodeCS.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Chromosome optimisation returned null..
+        /// </summary>
+        internal static string ChromosomeOptimisationReturnedNull {
+            get {
+                return ResourceManager.GetString("ChromosomeOptimisationReturnedNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The elite percentage must be between 0 and 100 inclusive..
+        /// </summary>
+        internal static string ElitePercentageValidRange {
+            get {
+                return ResourceManager.GetString("ElitePercentageValidRange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The generation number must be non-negative..
+        /// </summary>
+        internal static string GenerationNumberValidRange {
+            get {
+                return ResourceManager.GetString("GenerationNumberValidRange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The branching method must return a bool..
         /// </summary>
-        internal static string BranchGene_MethodMustReturnBool {
+        internal static string MethodMustReturnBool {
             get {
-                return ResourceManager.GetString("BranchGene_MethodMustReturnBool", resourceCulture);
+                return ResourceManager.GetString("MethodMustReturnBool", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to The branching method&apos;s parameters must derive from IParameter&lt;&gt;..
         /// </summary>
-        internal static string BranchGene_MethodParametersMustDeriveFromIParameter {
+        internal static string MethodParametersMustDeriveFromIParameter {
             get {
-                return ResourceManager.GetString("BranchGene_MethodParametersMustDeriveFromIParameter", resourceCulture);
+                return ResourceManager.GetString("MethodParametersMustDeriveFromIParameter", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to The mutation rate must be between 0 and 100 inclusive..
         /// </summary>
-        internal static string MutationRateAllowedRange {
+        internal static string MutationRateValidRange {
             get {
-                return ResourceManager.GetString("MutationRateAllowedRange", resourceCulture);
+                return ResourceManager.GetString("MutationRateValidRange", resourceCulture);
             }
         }
         
@@ -102,6 +138,15 @@ namespace GeneCodeCS.Properties {
         internal static string NonNullLogClassRequired {
             get {
                 return ResourceManager.GetString("NonNullLogClassRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The random bot percentage must be between 0 and 100 inclusive..
+        /// </summary>
+        internal static string RandomBotPercentageValidRange {
+            get {
+                return ResourceManager.GetString("RandomBotPercentageValidRange", resourceCulture);
             }
         }
     }

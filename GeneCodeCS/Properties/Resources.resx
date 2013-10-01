@@ -121,16 +121,31 @@
     <value xml:space="preserve">{0}_Gen{1}_Bot{2}</value>
     <comment>Format for naming new bots: 0 = base type, 1 = generation number, 2 = bot index in generation.</comment>
   </data>
-  <data name="BranchGene_MethodMustReturnBool">
+  <data name="MethodMustReturnBool">
     <value xml:space="preserve">The branching method must return a bool.</value>
   </data>
-  <data name="BranchGene_MethodParametersMustDeriveFromIParameter">
+  <data name="MethodParametersMustDeriveFromIParameter">
     <value xml:space="preserve">The branching method's parameters must derive from IParameter&lt;&gt;.</value>
   </data>
   <data name="NonNullLogClassRequired">
     <value xml:space="preserve">A non-null log class must be provided.</value>
   </data>
-  <data name="MutationRateAllowedRange">
+  <data name="MutationRateValidRange">
     <value xml:space="preserve">The mutation rate must be between 0 and 100 inclusive.</value>
+  </data>
+  <data name="ElitePercentageValidRange">
+    <value xml:space="preserve">The elite percentage must be between 0 and 100 inclusive.</value>
+  </data>
+  <data name="RandomBotPercentageValidRange">
+    <value xml:space="preserve">The random bot percentage must be between 0 and 100 inclusive.</value>
+  </data>
+  <data name="ChromosomeOptimisationReturnedNull">
+    <value xml:space="preserve">Chromosome optimisation returned null.</value>
+  </data>
+  <data name="GenerationNumberValidRange">
+    <value xml:space="preserve">The generation number must be non-negative.</value>
+  </data>
+  <data name="BotIndexValidRange">
+    <value xml:space="preserve">The index of a bot must be non-negative.</value>
   </data>
 </root>
