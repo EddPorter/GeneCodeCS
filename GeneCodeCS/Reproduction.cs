@@ -285,6 +285,37 @@ namespace GeneCodeCS
     }
 
     /// <summary>
+    ///   Constructs an array containing a pointer to each gene expression in the original <see
+    ///    cref="T:GeneCodeCS.Genetics.Chromosome" /> tree. The construction is done using depth-first search.
+    /// </summary>
+    /// <param name="tree"> The tree to flatten. </param>
+    /// <returns> The flattened tree. Since each element is a pointer to the original tree, the branching structures and their children can be accessed directly from the relevant entries in the array. </returns>
+    private static List<Chromosome> FlattenExpressionTree(Chromosome tree) {
+      var flat = new List<Chromosome> { tree };
+
+      if (tree.Node is TerminalExpression) {
+        return flat;
+      }
+
+      var branchExpression = tree.Node as BranchExpression;
+      if (branchExpression != null) {
+        flat.AddRange(FlattenExpressionTree(branchExpression.TrueBranch));
+        flat.AddRange(FlattenExpressionTree(branchExpression.FalseBranch));
+        return flat;
+      }
+
+      var sequenceExpression = tree.Node as SequenceExpression;
+      if (sequenceExpression != null) {
+        foreach (var sequence in sequenceExpression.Expressions) {
+          flat.AddRange(FlattenExpressionTree(sequence));
+        }
+        return flat;
+      }
+
+      throw new UnknownGenotypeException("An unknown Genotype was encountered.");
+    }
+
+    /// <summary>
     ///   Constructs a random expression tree of <see cref="T:GeneCodeCS.Genetics.Chromosome" /> classes with the maximum specfied depth..
     /// </summary>
     /// <remarks>
@@ -314,37 +345,37 @@ namespace GeneCodeCS
       throw new UnknownGenotypeException("An unknown Genotype was encountered.");
     }
 
-    private Chromosome[] CrossoverAndMutate(Chromosome parent1, Chromosome parent2) {
-      var parent1Nodes = FlattenExpressionTree(parent1);
-      var parent2Nodes = FlattenExpressionTree(parent2);
-      // select a random subree from each
-      var crossoverPoint1 = _random.Next(0, parent1Nodes.Count);
-      var crossoverPoint2 = _random.Next(0, parent2Nodes.Count);
+    /// <summary>
+    ///   Takes two cloned <see cref="T:GeneCodeCS.Genetics.Chromosome" /> instances, picks two random points on their expression trees, and switches the sub-trees around. Mutations are also introduced at this stage with a configurable percentage chance.
+    /// </summary>
+    /// <param name="chromosome1"> The first chromosome to combine. </param>
+    /// <param name="chromosome2"> The second chromosome to combine. </param>
+    /// <returns> An array of the two combined <see cref="T:GeneCodeCS.Genetics.Chromosome" /> classes. </returns>
+    private Chromosome[] CrossoverAndMutate(Chromosome chromosome1, Chromosome chromosome2) {
+      _log.Trace("GeneCodeCS.Reproduction`1.CrossoverAndMutate: Beginning crossover of chromosomes.");
 
-      var child1 = TreeCombine(parent1, parent1Nodes[crossoverPoint1], parent2Nodes[crossoverPoint2]);
-      var child2 = TreeCombine(parent2, parent2Nodes[crossoverPoint2], parent1Nodes[crossoverPoint1]);
+      var chromosome1Nodes = FlattenExpressionTree(chromosome1);
+      var chromosome2Nodes = FlattenExpressionTree(chromosome2);
 
-      return new[] { child1, child2 };
+      // Select a random subree from each.
+      var crossoverPoint1 = _random.Next(0, chromosome1Nodes.Count);
+      var crossoverPoint2 = _random.Next(0, chromosome2Nodes.Count);
+
+      var combination1 = TreeCombine(chromosome1, chromosome1Nodes[crossoverPoint1], chromosome2Nodes[crossoverPoint2]);
+      var combination2 = TreeCombine(chromosome2, chromosome2Nodes[crossoverPoint2], chromosome1Nodes[crossoverPoint1]);
+
+      return new[] { combination1, combination2 };
     }
 
-    private List<Chromosome> FlattenExpressionTree(Chromosome tree) {
-      var flat = new List<Chromosome> { tree };
-      if (tree.Node is BranchExpression) {
-        var branch = tree.Node as BranchExpression;
-        flat.AddRange(FlattenExpressionTree(branch.TrueBranch));
-        flat.AddRange(FlattenExpressionTree(branch.FalseBranch));
-      } else if (tree.Node is SequenceExpression) {
-        foreach (var sequence in ((SequenceExpression)tree.Node).Expressions) {
-          flat.AddRange(FlattenExpressionTree(sequence));
-        }
-      }
-      return flat;
-    }
-
+    /// <summary>
+    ///   Initialises parameters to a method call. An instance of the parameter type is first created passing a <see
+    ///    cref="T:System.Random" /> object. The generated value is extracted and returned in the parameter array.
+    /// </summary>
+    /// <param name="methodParameters"> The parameters to generate values for. </param>
+    /// <returns> An array of generated parameter values. </returns>
     private object[] GenerateParameters(IEnumerable<ParameterInfo> methodParameters) {
-      if (methodParameters == null) {
-        throw new ArgumentNullException("methodParameters");
-      }
+      _log.Trace("GeneCodeCS.Reproduction`1.GenerateParameters: Generating method parameters.");
+
       return
         methodParameters.Select(parameter => Activator.CreateInstance(parameter.ParameterType, _random)).Select(
           parameterInstance => ((dynamic)parameterInstance).Value).Cast<object>().ToArray();
