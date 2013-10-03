@@ -18,7 +18,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Common.Logging;
 using GeneCodeCS.Properties;
@@ -31,28 +30,61 @@ namespace GeneCodeCS
   /// <typeparam name="TBot"> The bot class type to breed. Must inherit from BaseBot. </typeparam>
   internal sealed class Execution<TBot> where TBot : BaseBot
   {
+    /// <summary>
+    ///   Used to log status information.
+    /// </summary>
+    /// <remarks>
+    ///   Not null.
+    /// </remarks>
     private readonly ILog _log;
 
+    /// <summary>
+    ///   Initialises a new instance of the <see cref="T:GeneCodeCS.Execution`1" /> class.
+    /// </summary>
+    /// <param name="log"> An instance of an <see cref="T:Common.Logging.ILog" /> interface. This is used to log the status of the execution process. </param>
     public Execution(ILog log) {
       if (log == null) {
         throw new ArgumentNullException("log", Resources.NonNullLogClassRequired);
       }
 
-      log.Trace("GeneCodeCS.Execution`1: Constructing class.");
+      log.Trace("GeneCodeCS.Execution`1.ctor: Constructing class.");
 
       _log = log;
     }
 
-    public List<TBot> Run(IList<TBot> bots, object parameters) {
-      // take each type in the assembly, and invoke its Execute() method
-      Parallel.ForEach(bots, a2 => {
-                               a2.Initialise(parameters);
-                               a2.Execute();
-                               _log.Info(string.Format("{0} completed execution.", a2.FitnessReport.Bot.Name));
-                             });
-      return bots.ToList();
+    /// <summary>
+    ///   Executes a collection of bots in parallel and updates them with their calculated fitness values.
+    /// </summary>
+    /// <param name="bots"> The bots to execute. </param>
+    /// <param name="parameters"> A custom value that is passed to each bot's <c>Initialise</c> method. </param>
+    public void Run(IEnumerable<TBot> bots, object parameters) {
+      if (bots == null) {
+        throw new ArgumentNullException("bots", Resources.ValidBotCollectionRequired);
+      }
 
-      // TODO: Ensure we don't return null!
+      Parallel.ForEach(bots, bot => Run(bot, parameters));
+    }
+
+    /// <summary>
+    ///   Executes a bot by first initialising it and then calling its <c>Execute</c> method. This will update the bot's internal fitness report.
+    /// </summary>
+    /// <param name="bot"> The bot to execute. </param>
+    /// <param name="parameters"> A custom value that is passed to the bot's <c>Initialise</c> method. </param>
+    public void Run(TBot bot, object parameters) {
+      if (bot == null) {
+        throw new ArgumentNullException("bot", Resources.ValidBotRequired);
+      }
+
+      try {
+        bot.Initialise(parameters);
+        bot.Execute();
+        _log.InfoFormat("Bot '{0}' completed execution with fitness {1}.", bot.FitnessReport.Bot.Name,
+                        bot.FitnessReport.Fitness);
+      } catch (Exception ex) {
+        bot.FitnessReport.Fitness = int.MinValue;
+        _log.WarnFormat("Bot '{0}' threw an exception: {1}{2}{3}", bot.FitnessReport.Bot.Name, ex, Environment.NewLine,
+                        ex.StackTrace);
+      }
     }
   }
 }
