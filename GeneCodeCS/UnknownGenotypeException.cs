@@ -21,6 +21,9 @@ using System.Runtime.Serialization;
 
 namespace GeneCodeCS
 {
+  /// <summary>
+  ///   Thrown when an unknown genotype ( <see cref="GeneCodeCS.Genetics.IGene" /> implementation) is encountered.
+  /// </summary>
   internal class UnknownGenotypeException : Exception
   {
     /// <summary>
