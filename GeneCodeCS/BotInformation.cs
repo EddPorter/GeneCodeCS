@@ -21,12 +21,22 @@ using GeneCodeCS.Genetics;
 
 namespace GeneCodeCS
 {
+  /// <summary>
+  ///   Provides information about a given bot, including name, definition, and heritage.
+  /// </summary>
   public sealed class BotInformation
   {
     // TODO: Move fitness information back in this class - see what happens.
 
+    /// <summary>
+    ///   Constructs a new <see cref="T:GeneCodeCS.BotInformation" /> class.
+    /// </summary>
+    /// <param name="name"> The bot name. </param>
+    /// <param name="tree"> The expression tree that defines the bot. </param>
+    /// <param name="parent1"> The name of the bot's first parent (source). </param>
+    /// <param name="parent2"> The name of the bot's second parent (donor). </param>
     public BotInformation(string name, Chromosome tree, string parent1 = null, string parent2 = null) {
-      if (string.IsNullOrEmpty(name)) {
+      if (string.IsNullOrWhiteSpace(name)) {
         throw new ArgumentNullException("name");
       }
       if (tree == null) {
@@ -39,21 +49,33 @@ namespace GeneCodeCS
       Parent2 = parent2 ?? string.Empty;
     }
 
+    /// <summary>
+    ///   Gets the bot's name.
+    /// </summary>
     /// <remarks>
     ///   Not null.
     /// </remarks>
     public string Name { get; private set; }
 
+    /// <summary>
+    ///   Gets the name of the bot's first parent (source).
+    /// </summary>
     /// <remarks>
     ///   Not null.
     /// </remarks>
     public string Parent1 { get; private set; }
 
+    /// <summary>
+    ///   Gets the name of the bot's second parent (donor).
+    /// </summary>
     /// <remarks>
     ///   Not null.
     /// </remarks>
     public string Parent2 { get; private set; }
 
+    /// <summary>
+    ///   Gets the genetic tree for the bot.
+    /// </summary>
     /// <remarks>
     ///   Not null.
     /// </remarks>
