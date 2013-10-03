@@ -559,11 +559,11 @@ namespace GeneCodeCS
     ///   Adds a specified number of random bots to a generation.
     /// </summary>
     /// <param name="botsToAdd"> The number of bots to add to the generation. </param>
-    /// <param name="thisGeneration"> The generation to append to. </param>
+    /// <param name="generation"> The generation to append to. </param>
     /// <param name="generationNumber"> The number of the generation to create the bots in. Used for creating the bot class names. </param>
     /// <param name="maxTreeDepth"> The maximum tree depth to allow during randomised bot generation. </param>
     /// <param name="optimise"> A method that can optionally be provided to optimise the created expression tree, removing redundant code and consolidating statements. </param>
-    private void PopulateGenerationWithRandomBots(int botsToAdd, ICollection<BotInformation> thisGeneration,
+    private void PopulateGenerationWithRandomBots(int botsToAdd, ICollection<BotInformation> generation,
                                                   int generationNumber, int maxTreeDepth, ChromosomeOptimiser optimise) {
       _log.TraceFormat(
         "GeneCodeCS.Reproduction`1.PopulateGenerationWithRandomBots: Adding {0} bots to generation {1} with max tree depth {2}.",
@@ -575,12 +575,12 @@ namespace GeneCodeCS
       }
 
       Debug.Assert(botsToAdd > 0, "The number of bots to add must be non-negative.");
-      Debug.Assert(thisGeneration != null, "A valid generation must be specified to append to.");
+      Debug.Assert(generation != null, "A valid generation must be specified to append to.");
       Debug.Assert(generationNumber >= 0, Resources.GenerationNumberValidRange);
       Debug.Assert(maxTreeDepth >= 0, Resources.MaxTreeDepthValidRange);
 
-      var targetBotCount = thisGeneration.Count + botsToAdd;
-      while (thisGeneration.Count < targetBotCount) {
+      var targetBotCount = generation.Count + botsToAdd;
+      while (generation.Count < targetBotCount) {
         var newTree = CreateRandomExpressionTree(maxTreeDepth);
         if (optimise != null) {
           _log.Trace("GeneCodeCS.Reproduction`1.PopulateGenerationWithRandomBots: Optimising bot tree.");
@@ -588,18 +588,18 @@ namespace GeneCodeCS
           Debug.Assert(newTree != null, Resources.ChromosomeOptimisationReturnedNull);
         }
 
-        if (thisGeneration.Any(b => b.Tree == newTree)) {
+        if (generation.Any(b => b.Tree == newTree)) {
           // This is a potential infinite loop if the base bot model is simple, e.g. one terminal with no parameters.
           // TODO: Add a maximum iteration counter before throwing an exception.
           continue;
         }
 
-        var name = CreateBotName(generationNumber, thisGeneration.Count);
+        var name = CreateBotName(generationNumber, generation.Count);
 
         _log.TraceFormat(
           "GeneCodeCS.Reproduction`1.PopulateGenerationWithRandomBots: Adding bot '{0}' to the generation:{2}{1}", name,
           newTree.ToString(), Environment.NewLine);
-        thisGeneration.Add(new BotInformation(name, newTree));
+        generation.Add(new BotInformation(name, newTree));
       }
     }
 
