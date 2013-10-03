@@ -16,22 +16,56 @@
 // along with this program.  If not, see {http://www.gnu.org/licenses/}.
 //
 
+using Common.Logging;
+using GeneCodeCS.Genetics;
+
+// TODO: Make this all better:
+// * Get rid of NotFinished() and expose termination via exception (?).
+// * Post-execution, call a fitness evaluation function (abstract).
+
 namespace GeneCodeCS
 {
+  /// <summary>
+  ///   The base class for all bots. This class must be inherited from and the public abstract <c>NotFinished</c> method implemented. The resulting class should be abstract too and <c>RunBotLogic</c> left unimplemented. Optionally, the public virtual methods can be overridden. The resulting type must then be used as the generic type parameter used to construction the <see
+  ///    cref="Population{TBot}" /> class.
+  /// </summary>
+  /// <remarks>
+  ///   When the bot is executed a call is made to <c>Execute</c> . The default implementation simply calls <c>RunBotLogic</c> , which contains the generated chromosome bot code (and should not be implemented by the user class). This allows custom logic to be wrapped around the main bot code. The implemented sub-class must provide a constructor that takes a single <see
+  ///    cref="ILog" /> argument. Additional public methods returning <c>void</c> become terminal genes. Additional public methods returning <c>bool</c> become branch genes. All parameters passed to these methods must implement <see
+  ///    cref="IParameter{T}" /> .
+  /// </remarks>
   public abstract class BaseBot
   {
-    public abstract BotReport FitnessReport { get; set; }
+    /// <summary>
+    ///   Gets the fitness of the bot after execution.
+    /// </summary>
+    public BotReport FitnessReport { get; internal set; }
 
-    // Must self-update the fitness value.
-    // If an exception is thrown, the fitness is set to minvalue.
+    /// <summary>
+    ///   Called to begin bot evaluation. By the end of the method, the <c>FitnessReport</c> value should have been updated to reflect how the bot did. If any uncaught exceptions are thrown during execution, the <c>FitnessReport</c> is reset to <see
+    ///    cref="int.MinValue" /> .
+    /// </summary>
     public virtual void Execute() {
       RunBotLogic();
     }
 
-    public abstract void Initialise(object parameters);
+    /// <summary>
+    ///   Can be used to pass parameters to the bot prior to execution.
+    /// </summary>
+    /// <param name="parameters"> The parameters to be passed. </param>
+    public virtual void Initialise(object parameters) {
+    }
 
-    protected abstract bool NotFinished();
+    /// <summary>
+    ///   Must be implemented to allow the bot to terminate at the appropriate time.
+    /// </summary>
+    /// <returns> Whether the execution cycle is complete. </returns>
+    public abstract bool NotFinished();
 
+    /// <summary>
+    ///   Contains the bot logic. Implemented by running <see cref="Population{TBot}.SimulateGenerations{T}" /> or <see
+    ///    cref="Population{TBot}.SimulateIndividuals{T}" /> .
+    /// </summary>
     protected abstract void RunBotLogic();
   }
 }

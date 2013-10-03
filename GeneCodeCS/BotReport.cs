@@ -18,17 +18,33 @@
 
 namespace GeneCodeCS
 {
+  /// <summary>
+  /// Contains information about the fitness of a bot.
+  /// </summary>
   public sealed class BotReport
   {
+    /// <summary>
+    /// Initialises a new <see cref="T:GeneCodeCS.BotReport"/> instance.
+    /// </summary>
+    /// <param name="bot">Information about the bot.</param>
     public BotReport(BotInformation bot) {
-      Bot = bot;
+      Information = bot;
       Fitness = int.MinValue;
     }
 
-    public BotInformation Bot { get; private set; }
+    /// <summary>
+    /// Gets custom information that can be set during bot execution.
+    /// </summary>
+    public object CustomInformation { get; internal set; }
 
-    public object CustomInformation { get; private set; }
-
+    /// <summary>
+    /// Gets the calculated fitness value set during bot execution.
+    /// </summary>
     public int Fitness { get; internal set; }
+
+    /// <summary>
+    /// Gets information about the bot this report represents.
+    /// </summary>
+    public BotInformation Information { get; private set; }
   }
 }

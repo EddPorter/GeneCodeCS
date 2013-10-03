@@ -156,7 +156,7 @@ namespace GeneCodeCS
                         bestFitness, meanFitness, worstFitness);
 
         bestBots = latestOrderedEvaluation.TakeWhile(b => b.FitnessReport.Fitness == bestFitness).ToList();
-        _log.InfoFormat("Best bots: '{0}'", string.Join("', '", bestBots.Select(b => b.FitnessReport.Bot.Name)));
+        _log.InfoFormat("Best bots: '{0}'", string.Join("', '", bestBots.Select(b => b.FitnessReport.Information.Name)));
 
         generationHistory.Add(latestOrderedEvaluation);
 
@@ -168,7 +168,7 @@ namespace GeneCodeCS
 
       _log.Info("Bot creation complete.");
       foreach (var bot in bestBots) {
-        _log.InfoFormat("Bot '{0}': Fitness = {1:N}", bot.FitnessReport.Bot.Name, bot.FitnessReport.Fitness);
+        _log.InfoFormat("Bot '{0}': Fitness = {1:N}", bot.FitnessReport.Information.Name, bot.FitnessReport.Fitness);
       }
       return bestBots;
     }
@@ -203,7 +203,7 @@ namespace GeneCodeCS
 
         // 4. Evaluate bot fitness.
         var fitness = compiledBot.FitnessReport.Fitness;
-        _log.InfoFormat("Bot '{0}': Fitness = {1:N}", compiledBot.FitnessReport.Bot.Name, fitness);
+        _log.InfoFormat("Bot '{0}': Fitness = {1:N}", compiledBot.FitnessReport.Information.Name, fitness);
         if (fitness > fitnessThreshold) {
           _log.InfoFormat("Exceeded threshold limit ({0}) with {1}.", fitnessThreshold, fitness);
           return compiledBot;

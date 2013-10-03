@@ -193,7 +193,7 @@ namespace GeneCodeCS
         // First generation, no breeding is required.
         if (previousGenerationReports != null) {
           _log.InfoFormat("Pre-seeding initial generation with {0} bots.", previousGenerationReports.Count);
-          generationInformation.AddRange(previousGenerationReports.Select(report => report.Bot));
+          generationInformation.AddRange(previousGenerationReports.Select(report => report.Information));
         }
         var botsToAdd = botsPerGeneration - generationInformation.Count;
         PopulateGenerationWithRandomBots(botsToAdd, generationInformation, generationNumber, maxTreeDepth, optimise);
@@ -203,7 +203,7 @@ namespace GeneCodeCS
         _log.TraceFormat(
           "GeneCodeCS.Reproduction`1.BreedGeneration: Copying {0} elite bots verbatim from previous generation.",
           eliteBotCount);
-        generationInformation.AddRange(previousGenerationReports.Take(eliteBotCount).Select(report => report.Bot));
+        generationInformation.AddRange(previousGenerationReports.Take(eliteBotCount).Select(report => report.Information));
 
         // Generate a percentage of the new population as random bots.
         var newBotCount = botsPerGeneration * RandomBotPercentage / 100;
@@ -647,7 +647,7 @@ namespace GeneCodeCS
                                     currentSumFitness += g.Fitness + fitnessAdjustment;
                                     return currentSumFitness < targetFitness;
                                   }).First();
-      return parent.Bot;
+      return parent.Information;
     }
 
     /// <summary>

@@ -78,12 +78,12 @@ namespace GeneCodeCS
       try {
         bot.Initialise(parameters);
         bot.Execute();
-        _log.InfoFormat("Bot '{0}' completed execution with fitness {1}.", bot.FitnessReport.Bot.Name,
+        _log.InfoFormat("Bot '{0}' completed execution with fitness {1}.", bot.FitnessReport.Information.Name,
                         bot.FitnessReport.Fitness);
       } catch (Exception ex) {
         bot.FitnessReport.Fitness = int.MinValue;
-        _log.WarnFormat("Bot '{0}' threw an exception: {1}{2}{3}", bot.FitnessReport.Bot.Name, ex, Environment.NewLine,
-                        ex.StackTrace);
+        _log.WarnFormat("Bot '{0}' threw an exception: {1}{2}{3}", bot.FitnessReport.Information.Name, ex,
+                        Environment.NewLine, ex.StackTrace);
       }
     }
   }
