@@ -71,6 +71,10 @@ namespace GeneCodeCS
     /// <param name="generationNumber"> The generation number of the bot. This is used to create the file name and namespace for the compiled bot. </param>
     /// <returns> The in-memory bot code. </returns>
     public TBot CompileBot(BotInformation bot, int generationNumber) {
+      if (bot == null) {
+        throw new ArgumentNullException("bot", Resources.ValidBotRequired);
+      }
+
       return CompileBots(new List<BotInformation> { bot }, generationNumber).First();
     }
 
