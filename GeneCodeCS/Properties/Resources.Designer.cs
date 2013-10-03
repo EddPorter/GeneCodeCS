@@ -194,5 +194,14 @@ namespace GeneCodeCS.Properties {
                 return ResourceManager.GetString("TerminalMethodsValidRange", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A valid collection of bots is required..
+        /// </summary>
+        internal static string ValidBotCollectionRequired {
+            get {
+                return ResourceManager.GetString("ValidBotCollectionRequired", resourceCulture);
+            }
+        }
     }
 }

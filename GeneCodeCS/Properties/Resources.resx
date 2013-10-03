@@ -163,4 +163,7 @@
   <data name="PreviousGenerationReportsRequired" xml:space="preserve">
     <value>The reports for the prevoius generation must be provided when breeding subsequent generations.</value>
   </data>
+  <data name="ValidBotCollectionRequired">
+    <value xml:space="preserve">A valid collection of bots is required.</value>
+  </data>
 </root>
