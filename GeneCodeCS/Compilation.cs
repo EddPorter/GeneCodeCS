@@ -39,6 +39,8 @@ namespace GeneCodeCS
   ///    cref="Common.Logging.ILog" /> parameter. </typeparam>
   internal sealed class Compilation<TBot> where TBot : BaseBot
   {
+    // TODO: Allow specification of source code and DLL output destinations.
+
     /// <summary>
     ///   Used to log status information.
     /// </summary>
@@ -109,6 +111,9 @@ namespace GeneCodeCS
     /// <param name="chromosome"> The <see cref="T:GeneCodeCS.Genetics.Chromosome" /> to encapsulate in the class's <c>RunBotLogic</c> method. </param>
     /// <returns> The class declaration. </returns>
     private static CodeTypeDeclaration BuildClass(string name, Chromosome chromosome) {
+      Debug.Assert(!string.IsNullOrWhiteSpace(name), "A name for the class must be specified.");
+      Debug.Assert(chromosome != null, "A valid Chromosome must be provided to build into a class.");
+
       var codeType = new CodeTypeDeclaration(name);
       codeType.BaseTypes.Add(typeof(TBot).Name);
       codeType.Members.Add(BuildConstructor());
@@ -123,6 +128,9 @@ namespace GeneCodeCS
     /// <param name="namespace"> The namespace in which to place the code. </param>
     /// <returns> The compilation unit for the bots. </returns>
     private static CodeCompileUnit BuildCompileUnit(IEnumerable<BotInformation> bots, string @namespace) {
+      Debug.Assert(bots != null, Resources.ValidBotCollectionRequired);
+      Debug.Assert(!string.IsNullOrWhiteSpace(@namespace), "A valid namespace name must be provided.");
+
       var codeCompileUnit = new CodeCompileUnit();
       codeCompileUnit.ReferencedAssemblies.Add(typeof(TBot).Assembly.FullName);
       codeCompileUnit.ReferencedAssemblies.Add(typeof(ILog).Assembly.FullName);
@@ -162,6 +170,9 @@ namespace GeneCodeCS
     /// <param name="chromosome"> The chromosome to interpret. </param>
     /// <returns> An array of code statements. </returns>
     private static CodeStatement[] BuildGeneStatements(Chromosome chromosome) {
+      Debug.Assert(chromosome != null, "A valid chromosome must be provided.");
+      Debug.Assert(chromosome.Node != null, "The chromosome must contain a valid genotype.");
+
       var codeStatements = new CodeStatementCollection();
       var node = chromosome.Node;
 
@@ -226,6 +237,8 @@ namespace GeneCodeCS
     /// <param name="values"> The values that each parameter will take. </param>
     /// <returns> An array of code expressions. </returns>
     private static CodeExpression[] BuildParametersArray(IList<ParameterInfo> parameterInfo, IList<object> values) {
+      Debug.Assert(parameterInfo != null, "A valid list of parameters must be provided.");
+      Debug.Assert(values != null, "A valid list of parameter values must be provided");
       Debug.Assert(parameterInfo.Count == values.Count, "Array lengths not equal.");
 
       var parameterCollection = new CodeExpressionCollection();
@@ -247,6 +260,8 @@ namespace GeneCodeCS
     /// <param name="chromosome"> The instruction tree to convert to code. </param>
     /// <returns> The code member for the RunBotLogic method. </returns>
     private static CodeTypeMember BuildRunBotLogicMethod(Chromosome chromosome) {
+      Debug.Assert(chromosome != null, "A valid chromosome must be provided.");
+
       // protected override void RunBotLogic() {
       var method = new CodeMemberMethod {
                                           ReturnType = new CodeTypeReference(typeof(void)),
@@ -273,6 +288,9 @@ namespace GeneCodeCS
     /// <param name="filename"> The name of the </param>
     /// <param name="codeUnit"> The code unit to write to C#. </param>
     private static void GenerateCode(string filename, CodeCompileUnit codeUnit) {
+      Debug.Assert(!string.IsNullOrWhiteSpace(filename), "A valid destination filename must be provided.");
+      Debug.Assert(codeUnit != null, "A valid code unit must be provieded.");
+
       const bool noAppend = false;
 
       var sw = new StreamWriter(string.Format("{0}.cs", filename), noAppend);
@@ -289,6 +307,8 @@ namespace GeneCodeCS
     /// <param name="filename"> The C# bot code file name. </param>
     /// <returns> The results of the compilation, including a reference to the compiled assembly. </returns>
     private CompilerResults CompileCode(string filename) {
+      Debug.Assert(!string.IsNullOrWhiteSpace(filename), "A valid source filename must be provided.");
+
       var provider = new CSharpCodeProvider();
       var options = new CompilerParameters
                     { GenerateInMemory = true, GenerateExecutable = false, IncludeDebugInformation = true };
@@ -308,11 +328,11 @@ namespace GeneCodeCS
         }
         botType = botType.BaseType;
       }
-
       options.OutputAssembly = string.Format("{0}.dll", filename);
 
       // Invoke compilation.
       var sourceFile = string.Format("{0}.cs", filename);
+      Debug.Assert(File.Exists(sourceFile), "The code file must exist.");
       var results = provider.CompileAssemblyFromFile(options, sourceFile);
 
       if (results.Errors.Count <= 0) {
