@@ -166,4 +166,7 @@
   <data name="ValidBotCollectionRequired">
     <value xml:space="preserve">A valid collection of bots is required.</value>
   </data>
+  <data name="ValidBotRequired">
+    <value xml:space="preserve">A valid bot must be provided.</value>
+  </data>
 </root>

@@ -18,7 +18,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using Common.Logging;
 using GeneCodeCS.Properties;
@@ -145,8 +144,8 @@ namespace GeneCodeCS
 
         // 3. Run code to generate fitness.
         _log.Trace("GeneCodeCS.Population`1.SimulateGenerations`1: Executing bots.");
-        var evaluatedBots = _executor.Run(compiledBots, parameters);
-        latestOrderedEvaluation = evaluatedBots.OrderByDescending(report => report.FitnessReport.Fitness).ToList();
+        _executor.Run(compiledBots, parameters);
+        latestOrderedEvaluation = compiledBots.OrderByDescending(report => report.FitnessReport.Fitness).ToList();
 
         // 4. Evaluate bot fitness - we use First() and Last() since the list is already sorted.
         var bestFitness = latestOrderedEvaluation.First().FitnessReport.Fitness;
@@ -192,25 +191,22 @@ namespace GeneCodeCS
         // 1. Generate single bot.
         _log.Trace("GeneCodeCS.Population`1.SimulateIndividuals`1: Breeding single bot.");
         var botInformation = _reproducer.CreateBot(maxTreeDepth, _optimise);
-        var generationInformation = new List<BotInformation> { botInformation };
 
         // 2. Convert expression tree to code.
         _log.Trace("GeneCodeCS.Population`1.SimulateIndividuals`1: Compiling bot code.");
         const int generationNumber = 0;
-        var compiledBots = _compiler.CompileBots(generationInformation, generationNumber);
+        var compiledBot = _compiler.CompileBot(botInformation, generationNumber);
 
         // 3. Run code to generate fitness.
         _log.Trace("GeneCodeCS.Population`1.SimulateIndividuals`1: Executing bot.");
-        var evaluatedBot = _executor.Run(compiledBots, parameters).First();
-
-        Debug.Assert(evaluatedBot != null, "newBot != null");
+        _executor.Run(compiledBot, parameters);
 
         // 4. Evaluate bot fitness.
-        var fitness = evaluatedBot.FitnessReport.Fitness;
-        _log.InfoFormat("Bot '{0}': Fitness = {1:N}", evaluatedBot.FitnessReport.Bot.Name, fitness);
+        var fitness = compiledBot.FitnessReport.Fitness;
+        _log.InfoFormat("Bot '{0}': Fitness = {1:N}", compiledBot.FitnessReport.Bot.Name, fitness);
         if (fitness > fitnessThreshold) {
           _log.InfoFormat("Exceeded threshold limit ({0}) with {1}.", fitnessThreshold, fitness);
-          return evaluatedBot;
+          return compiledBot;
         }
       }
     }

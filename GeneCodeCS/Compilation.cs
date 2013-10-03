@@ -64,6 +64,17 @@ namespace GeneCodeCS
     }
 
     /// <summary>
+    ///   Converts a bot into C# code and compiles it into an assembly. The code and assembly file names are constructed from the <typeparamref
+    ///    name="TBot" /> class name and the <paramref name="generationNumber" /> .
+    /// </summary>
+    /// <param name="bot"> The bot to compile. </param>
+    /// <param name="generationNumber"> The generation number of the bot. This is used to create the file name and namespace for the compiled bot. </param>
+    /// <returns> The in-memory bot code. </returns>
+    public TBot CompileBot(BotInformation bot, int generationNumber) {
+      return CompileBots(new List<BotInformation> { bot }, generationNumber).First();
+    }
+
+    /// <summary>
     ///   Takes a list of bots, converts them into C# code, and compiles into an assembly. The code and assembly file names are constructed from the <typeparamref
     ///    name="TBot" /> class name and the <paramref name="generationNumber" /> .
     /// </summary>

@@ -203,5 +203,14 @@ namespace GeneCodeCS.Properties {
                 return ResourceManager.GetString("ValidBotCollectionRequired", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A valid bot must be provided..
+        /// </summary>
+        internal static string ValidBotRequired {
+            get {
+                return ResourceManager.GetString("ValidBotRequired", resourceCulture);
+            }
+        }
     }
 }
