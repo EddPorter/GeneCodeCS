@@ -151,7 +151,7 @@
   <data name="TerminalMethodsValidRange" xml:space="preserve">
     <value>At least one candidate terminal method must be provided by the TBot class.</value>
   </data>
-  <data name="StarterBotsFitenessReportMustNotBeNull" xml:space="preserve">
+  <data name="StarterBotsFitnessReportMustNotBeNull" xml:space="preserve">
     <value>Starter bots must contain valid fitness reports.</value>
   </data>
   <data name="BotsPerGenerationValidRange" xml:space="preserve">

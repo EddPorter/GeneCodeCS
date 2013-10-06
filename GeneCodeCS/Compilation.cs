@@ -70,12 +70,12 @@ namespace GeneCodeCS
     /// <param name="bot"> The bot to compile. </param>
     /// <param name="generationNumber"> The generation number of the bot. This is used to create the file name and namespace for the compiled bot. </param>
     /// <returns> The in-memory bot code. </returns>
-    public TBot CompileBot(BotInformation bot, int generationNumber) {
+    public bool CompileBot(BotInformation<TBot> bot, int generationNumber) {
       if (bot == null) {
         throw new ArgumentNullException("bot", Resources.ValidBotRequired);
       }
 
-      return CompileBots(new List<BotInformation> { bot }, generationNumber).First();
+      return CompileBots(new List<BotInformation<TBot>> { bot }, generationNumber);
     }
 
     /// <summary>
@@ -85,7 +85,7 @@ namespace GeneCodeCS
     /// <param name="bots"> The bots to compile. </param>
     /// <param name="generationNumber"> The generation number of the bots. This is used to create the file names and namespace for the compiled bots. </param>
     /// <returns> A list of the compiled bot code in memory. </returns>
-    public IList<TBot> CompileBots(IList<BotInformation> bots, int generationNumber) {
+    public bool CompileBots(IList<BotInformation<TBot>> bots, int generationNumber) {
       if (bots == null || bots.Count == 0) {
         throw new ArgumentNullException("bots", Resources.ValidBotCollectionRequired);
       }
@@ -106,16 +106,15 @@ namespace GeneCodeCS
       _log.Trace("GeneCodeCS.Compilation`1.CompileBots: Compiling code.");
       var compiledBots = CompileCode(namespaceName);
       if (compiledBots == null) {
-        return new List<TBot>();
+        return false;
       }
 
       _log.Trace("GeneCodeCS.Compilation`1.CompileBots: Creating bots from assembly.");
       var types = compiledBots.CompiledAssembly.GetTypes();
-      return types.Select(t => {
-                            var bot = (TBot)Activator.CreateInstance(t, _log);
-                            bot.FitnessReport = new BotReport(bots.Single(bi => bi.Name == t.Name));
-                            return bot;
-                          }).ToList();
+      foreach (var type in types) {
+        bots.Single(bot => bot.Name == type.Name).Bot = (TBot)Activator.CreateInstance(type, _log);
+      }
+      return true;
     }
 
     /// <summary>
@@ -142,7 +141,7 @@ namespace GeneCodeCS
     /// <param name="bots"> The bots to compile. </param>
     /// <param name="namespace"> The namespace in which to place the code. </param>
     /// <returns> The compilation unit for the bots. </returns>
-    private static CodeCompileUnit BuildCompileUnit(IEnumerable<BotInformation> bots, string @namespace) {
+    private static CodeCompileUnit BuildCompileUnit(IEnumerable<BotInformation<TBot>> bots, string @namespace) {
       Debug.Assert(bots != null, Resources.ValidBotCollectionRequired);
       Debug.Assert(!string.IsNullOrWhiteSpace(@namespace), "A valid namespace name must be provided.");
 

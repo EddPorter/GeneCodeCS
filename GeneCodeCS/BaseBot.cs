@@ -37,11 +37,6 @@ namespace GeneCodeCS
   public abstract class BaseBot
   {
     /// <summary>
-    ///   Gets the fitness of the bot after execution.
-    /// </summary>
-    public BotReport FitnessReport { get; internal set; }
-
-    /// <summary>
     ///   Called to begin bot evaluation. By the end of the method, the <c>FitnessReport</c> value should have been updated to reflect how the bot did. If any uncaught exceptions are thrown during execution, the <c>FitnessReport</c> is reset to <see
     ///    cref="int.MinValue" /> .
     /// </summary>

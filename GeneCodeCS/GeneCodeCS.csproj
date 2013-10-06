@@ -48,7 +48,6 @@
     <Compile Include="BotInformation.cs" />
     <Compile Include="Execution.cs" />
     <Compile Include="Reproduction.cs" />
-    <Compile Include="BotReport.cs" />
     <Compile Include="Genetics\BranchGene.cs" />
     <Compile Include="Genetics\BranchExpression.cs" />
     <Compile Include="Genetics\IGene.cs" />

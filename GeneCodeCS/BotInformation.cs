@@ -24,12 +24,12 @@ namespace GeneCodeCS
   /// <summary>
   ///   Provides information about a given bot, including name, definition, and heritage.
   /// </summary>
-  public sealed class BotInformation
+  public sealed class BotInformation<TBot>
   {
     // TODO: Move fitness information back in this class - see what happens.
 
     /// <summary>
-    ///   Constructs a new <see cref="T:GeneCodeCS.BotInformation" /> class.
+    ///   Constructs a new <see cref="BotInformation{TBot}" /> class.
     /// </summary>
     /// <param name="name"> The bot name. </param>
     /// <param name="tree"> The expression tree that defines the bot. </param>
@@ -48,6 +48,18 @@ namespace GeneCodeCS
       Parent1 = parent1 ?? string.Empty;
       Parent2 = parent2 ?? string.Empty;
     }
+
+    public TBot Bot { get; set; }
+
+    /// <summary>
+    ///   Gets custom information that can be set during bot execution.
+    /// </summary>
+    public object CustomInformation { get; internal set; }
+
+    /// <summary>
+    ///   Gets the calculated fitness value set during bot execution.
+    /// </summary>
+    public int Fitness { get; internal set; }
 
     /// <summary>
     ///   Gets the bot's name.

@@ -180,9 +180,9 @@ namespace GeneCodeCS.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Starter bots must contain valid fitness reports..
         /// </summary>
-        internal static string StarterBotsFitenessReportMustNotBeNull {
+        internal static string StarterBotsFitnessReportMustNotBeNull {
             get {
-                return ResourceManager.GetString("StarterBotsFitenessReportMustNotBeNull", resourceCulture);
+                return ResourceManager.GetString("StarterBotsFitnessReportMustNotBeNull", resourceCulture);
             }
         }
         

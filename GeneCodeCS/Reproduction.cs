@@ -168,9 +168,9 @@ namespace GeneCodeCS
     ///    name="generationNumber" /> is 0. </param>
     /// <param name="optimise"> A method that can optionally be provided to optimise the created expression tree, removing redundant code and consolidating statements. </param>
     /// <returns> A list of information about the new generation of bots. </returns>
-    public List<BotInformation> BreedGeneration(int generationNumber, int botsPerGeneration, int maxTreeDepth,
-                                                List<BotReport> previousGenerationReports,
-                                                ChromosomeOptimiser optimise = null) {
+    public List<BotInformation<TBot>> BreedGeneration(int generationNumber, int botsPerGeneration, int maxTreeDepth,
+                                                      List<BotInformation<TBot>> previousGenerationReports,
+                                                      ChromosomeOptimiser optimise = null) {
       _log.TraceFormat(
         "GeneCodeCS.Reproduction`1.BreedGeneration: Breeding generation {0} with {1} bots per generation and tree depth of {2}.",
         generationNumber, botsPerGeneration, maxTreeDepth);
@@ -188,12 +188,12 @@ namespace GeneCodeCS
         throw new ArgumentOutOfRangeException("previousGenerationReports", Resources.PreviousGenerationReportsRequired);
       }
 
-      var generationInformation = new List<BotInformation>();
+      var generationInformation = new List<BotInformation<TBot>>();
       if (generationNumber == 0) {
         // First generation, no breeding is required.
         if (previousGenerationReports != null) {
           _log.InfoFormat("Pre-seeding initial generation with {0} bots.", previousGenerationReports.Count);
-          generationInformation.AddRange(previousGenerationReports.Select(report => report.Information));
+          generationInformation.AddRange(previousGenerationReports);
         }
         var botsToAdd = botsPerGeneration - generationInformation.Count;
         PopulateGenerationWithRandomBots(botsToAdd, generationInformation, generationNumber, maxTreeDepth, optimise);
@@ -203,7 +203,7 @@ namespace GeneCodeCS
         _log.TraceFormat(
           "GeneCodeCS.Reproduction`1.BreedGeneration: Copying {0} elite bots verbatim from previous generation.",
           eliteBotCount);
-        generationInformation.AddRange(previousGenerationReports.Take(eliteBotCount).Select(report => report.Information));
+        generationInformation.AddRange(previousGenerationReports.Take(eliteBotCount));
 
         // Generate a percentage of the new population as random bots.
         var newBotCount = botsPerGeneration * RandomBotPercentage / 100;
@@ -234,16 +234,16 @@ namespace GeneCodeCS
           }
 
           if (generationInformation.All(b => b.Tree != child1)) {
-            var childResult1 = new BotInformation(CreateBotName(generationNumber, ++n), child1, parents[0].Name,
-                                                  parents[1].Name);
+            var childResult1 = new BotInformation<TBot>(CreateBotName(generationNumber, ++n), child1, parents[0].Name,
+                                                        parents[1].Name);
             _log.TraceFormat("GeneCodeCS.Reproduction`1.BreedGeneration: Adding bot '{0}' to the generation:{2}{1}",
                              childResult1.Name, childResult1.Tree.ToString(), Environment.NewLine);
             generationInformation.Add(childResult1);
           }
 
           if (generationInformation.All(b => b.Tree != child2)) {
-            var childResult2 = new BotInformation(CreateBotName(generationNumber, ++n), child2, parents[1].Name,
-                                                  parents[0].Name);
+            var childResult2 = new BotInformation<TBot>(CreateBotName(generationNumber, ++n), child2, parents[1].Name,
+                                                        parents[0].Name);
             _log.TraceFormat("GeneCodeCS.Reproduction`1.BreedGeneration: Adding bot {0} to the generation:{2}{1}",
                              childResult2.Name, childResult2.Tree.ToString(), Environment.NewLine);
             generationInformation.Add(childResult2);
@@ -261,7 +261,7 @@ namespace GeneCodeCS
     /// <param name="maxTreeDepth"> The maximum tree depth to allow in the generated bot. </param>
     /// <param name="optimise"> A method that can optionally be provided to optimise the created expression tree, removing redundant code and consolidating statements. </param>
     /// <returns> Information describing the generated bot. </returns>
-    public BotInformation CreateBot(int maxTreeDepth, ChromosomeOptimiser optimise = null) {
+    public BotInformation<TBot> CreateBot(int maxTreeDepth, ChromosomeOptimiser optimise = null) {
       _log.TraceFormat("GeneCodeCS.Reproduction`1.CreateBot: Creating single bot with maximum tree depth {0}.",
                        maxTreeDepth);
 
@@ -282,7 +282,7 @@ namespace GeneCodeCS
       _log.TraceFormat("GeneCodeCS.Reproduction`1.CreateBot: Generated bot '{0}':{2}{1}", botName, tree.ToString(),
                        Environment.NewLine);
 
-      return new BotInformation(botName, tree);
+      return new BotInformation<TBot>(botName, tree);
     }
 
     /// <summary>
@@ -563,7 +563,7 @@ namespace GeneCodeCS
     /// <param name="generationNumber"> The number of the generation to create the bots in. Used for creating the bot class names. </param>
     /// <param name="maxTreeDepth"> The maximum tree depth to allow during randomised bot generation. </param>
     /// <param name="optimise"> A method that can optionally be provided to optimise the created expression tree, removing redundant code and consolidating statements. </param>
-    private void PopulateGenerationWithRandomBots(int botsToAdd, ICollection<BotInformation> generation,
+    private void PopulateGenerationWithRandomBots(int botsToAdd, ICollection<BotInformation<TBot>> generation,
                                                   int generationNumber, int maxTreeDepth, ChromosomeOptimiser optimise) {
       _log.TraceFormat(
         "GeneCodeCS.Reproduction`1.PopulateGenerationWithRandomBots: Adding {0} bots to generation {1} with max tree depth {2}.",
@@ -599,7 +599,7 @@ namespace GeneCodeCS
         _log.TraceFormat(
           "GeneCodeCS.Reproduction`1.PopulateGenerationWithRandomBots: Adding bot '{0}' to the generation:{2}{1}", name,
           newTree.ToString(), Environment.NewLine);
-        generation.Add(new BotInformation(name, newTree));
+        generation.Add(new BotInformation<TBot>(name, newTree));
       }
     }
 
@@ -618,9 +618,9 @@ namespace GeneCodeCS
     /// </summary>
     /// <param name="bots"> The list of bots to pick from. </param>
     /// <returns> An array of information about the two selected bots. </returns>
-    private BotInformation[] SelectParents(ICollection<BotReport> bots) {
+    private BotInformation<TBot>[] SelectParents(ICollection<BotInformation<TBot>> bots) {
       Debug.Assert(bots != null && bots.Count > 0, "A collection of at least one bot must be specified.");
-      var parents = new BotInformation[2];
+      var parents = new BotInformation<TBot>[2];
 
       parents[0] = SelectRandomBotWeightedByFitness(bots);
       parents[1] = SelectRandomBotWeightedByFitness(bots);
@@ -633,7 +633,7 @@ namespace GeneCodeCS
     /// </summary>
     /// <param name="bots"> The list of bots to pick from. </param>
     /// <returns> Information about the chosen bot. </returns>
-    private BotInformation SelectRandomBotWeightedByFitness(ICollection<BotReport> bots) {
+    private BotInformation<TBot> SelectRandomBotWeightedByFitness(ICollection<BotInformation<TBot>> bots) {
       Debug.Assert(bots != null && bots.Count > 0, "A collection of at least one bot must be specified.");
 
       // Make all fitnesses positive.
@@ -647,7 +647,7 @@ namespace GeneCodeCS
                                     currentSumFitness += g.Fitness + fitnessAdjustment;
                                     return currentSumFitness < targetFitness;
                                   }).First();
-      return parent.Information;
+      return parent;
     }
 
     /// <summary>

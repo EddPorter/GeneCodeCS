@@ -57,7 +57,7 @@ namespace GeneCodeCS
     /// </summary>
     /// <param name="bots"> The bots to execute. </param>
     /// <param name="parameters"> A custom value that is passed to each bot's <c>Initialise</c> method. </param>
-    public void Run(IEnumerable<TBot> bots, object parameters) {
+    public void Run(IEnumerable<BotInformation<TBot>> bots, object parameters) {
       if (bots == null) {
         throw new ArgumentNullException("bots", Resources.ValidBotCollectionRequired);
       }
@@ -70,20 +70,18 @@ namespace GeneCodeCS
     /// </summary>
     /// <param name="bot"> The bot to execute. </param>
     /// <param name="parameters"> A custom value that is passed to the bot's <c>Initialise</c> method. </param>
-    public void Run(TBot bot, object parameters) {
+    public void Run(BotInformation<TBot> bot, object parameters) {
       if (bot == null) {
         throw new ArgumentNullException("bot", Resources.ValidBotRequired);
       }
 
       try {
-        bot.Initialise(parameters);
-        bot.Execute();
-        _log.InfoFormat("Bot '{0}' completed execution with fitness {1}.", bot.FitnessReport.Information.Name,
-                        bot.FitnessReport.Fitness);
+        bot.Bot.Initialise(parameters);
+        bot.Bot.Execute();
+        _log.InfoFormat("Bot '{0}' completed execution with fitness {1}.", bot.Name, bot.Fitness);
       } catch (Exception ex) {
-        bot.FitnessReport.Fitness = int.MinValue;
-        _log.WarnFormat("Bot '{0}' threw an exception: {1}{2}{3}", bot.FitnessReport.Information.Name, ex,
-                        Environment.NewLine, ex.StackTrace);
+        bot.Fitness = int.MinValue;
+        _log.WarnFormat("Bot '{0}' threw an exception: {1}{2}{3}", bot.Name, ex, Environment.NewLine, ex.StackTrace);
       }
     }
   }

@@ -106,57 +106,55 @@ namespace GeneCodeCS
     /// <param name="starterBots"> A list of bots to use in the first generation. Any shortfall in the initial generation will be filled with randomly created bots. </param>
     /// <returns> The best bot(s) from the final generation is/are returned. </returns>
     // TODO: Expose mutation rate property in Reproduction class.
-    public List<TBot> SimulateGenerations<T>(int generationLimit = 20, int botsPerGeneration = 30, int maxTreeDepth = 3,
-                                             T parameters = default(T), int fitnessThreshold = int.MaxValue,
-                                             List<TBot> starterBots = null) {
+    public List<BotInformation<TBot>> SimulateGenerations<T>(int generationLimit = 20, int botsPerGeneration = 30,
+                                                             int maxTreeDepth = 3, T parameters = default(T),
+                                                             int fitnessThreshold = int.MaxValue,
+                                                             List<BotInformation<TBot>> starterBots = null) {
       _log.InfoFormat("Simulating population with {0} generations, {1} bots per generation, and tree depth of {2}.",
                       generationLimit, botsPerGeneration, maxTreeDepth);
       if (fitnessThreshold != int.MaxValue) {
         _log.InfoFormat("A limiting threshold of {0} has been set.", fitnessThreshold);
       }
 
-      var generationHistory = new List<List<TBot>>();
-      List<TBot> latestOrderedEvaluation = null;
+      var generationHistory = new List<List<BotInformation<TBot>>>();
+      List<BotInformation<TBot>> latestOrderedEvaluation = null;
 
       if (starterBots != null) {
         _log.InfoFormat("Pre-seeding initial generation with {0} bots.", starterBots.Count);
-        if (starterBots.Any(b => b.FitnessReport == null)) {
-          throw new ArgumentException(Resources.StarterBotsFitenessReportMustNotBeNull, "starterBots");
-        }
-        latestOrderedEvaluation = starterBots.OrderByDescending(b => b.FitnessReport.Fitness).ToList();
+        latestOrderedEvaluation = starterBots.OrderByDescending(b => b.Fitness).ToList();
       }
 
-      var bestBots = new List<TBot>();
+      var bestBots = new List<BotInformation<TBot>>();
       for (var generationNumber = 0; generationNumber < generationLimit; ++generationNumber) {
         _log.InfoFormat("Starting generation {0:N}", generationNumber);
 
         // 1. Generate expression trees for generation.
         _log.Trace("GeneCodeCS.Population`1.SimulateGenerations`1: Breeding generation.");
-        var latestOrderedFitnessReports = latestOrderedEvaluation != null
-                                            ? latestOrderedEvaluation.Select(b => b.FitnessReport).ToList()
-                                            : null;
         var generationInformation = _reproducer.BreedGeneration(generationNumber, botsPerGeneration, maxTreeDepth,
-                                                                latestOrderedFitnessReports, _optimise);
+                                                                latestOrderedEvaluation, _optimise);
 
         // 2. Convert expression trees to code.
         _log.Trace("GeneCodeCS.Population`1.SimulateGenerations`1: Compiling bot code.");
-        var compiledBots = _compiler.CompileBots(generationInformation, generationNumber);
+        if (_compiler.CompileBots(generationInformation, generationNumber)) {
+          // TODO: Insert correct exception type.
+          throw new Exception("TBD");
+        }
 
         // 3. Run code to generate fitness.
         _log.Trace("GeneCodeCS.Population`1.SimulateGenerations`1: Executing bots.");
-        _executor.Run(compiledBots, parameters);
-        latestOrderedEvaluation = compiledBots.OrderByDescending(report => report.FitnessReport.Fitness).ToList();
+        _executor.Run(generationInformation, parameters);
+        latestOrderedEvaluation = generationInformation.OrderByDescending(report => report.Fitness).ToList();
 
         // 4. Evaluate bot fitness - we use First() and Last() since the list is already sorted.
-        var bestFitness = latestOrderedEvaluation.First().FitnessReport.Fitness;
-        var worstFitness = latestOrderedEvaluation.Last().FitnessReport.Fitness;
-        var meanFitness = latestOrderedEvaluation.Average(fp => fp.FitnessReport.Fitness);
+        var bestFitness = latestOrderedEvaluation.First().Fitness;
+        var worstFitness = latestOrderedEvaluation.Last().Fitness;
+        var meanFitness = latestOrderedEvaluation.Average(fp => fp.Fitness);
 
         _log.InfoFormat("Generation {0} report: Best {1:N} / Mean average {2:N2} / Worst {3:N}", generationNumber,
                         bestFitness, meanFitness, worstFitness);
 
-        bestBots = latestOrderedEvaluation.TakeWhile(b => b.FitnessReport.Fitness == bestFitness).ToList();
-        _log.InfoFormat("Best bots: '{0}'", string.Join("', '", bestBots.Select(b => b.FitnessReport.Information.Name)));
+        bestBots = latestOrderedEvaluation.TakeWhile(b => b.Fitness == bestFitness).ToList();
+        _log.InfoFormat("Best bots: '{0}'", string.Join("', '", bestBots.Select(b => b.Name)));
 
         generationHistory.Add(latestOrderedEvaluation);
 
@@ -168,7 +166,7 @@ namespace GeneCodeCS
 
       _log.Info("Bot creation complete.");
       foreach (var bot in bestBots) {
-        _log.InfoFormat("Bot '{0}': Fitness = {1:N}", bot.FitnessReport.Information.Name, bot.FitnessReport.Fitness);
+        _log.InfoFormat("Bot '{0}': Fitness = {1:N}", bot.Name, bot.Fitness);
       }
       return bestBots;
     }
@@ -183,7 +181,8 @@ namespace GeneCodeCS
     /// <param name="parameters"> Any parameters to pass to the Initialise method of a bot during the execution phase. </param>
     /// <param name="fitnessThreshold"> The fitness threshold that, if exceeded, will cause simulation to end. </param>
     /// <returns> The first bot to exceed the fitness threshold. </returns>
-    public TBot SimulateIndividuals<T>(int maxTreeDepth = 3, T parameters = default(T), int fitnessThreshold = 0) {
+    public BotInformation<TBot> SimulateIndividuals<T>(int maxTreeDepth = 3, T parameters = default(T),
+                                                       int fitnessThreshold = 0) {
       _log.InfoFormat("Simulating indivudual bots with tree depth of {0} and a limiting threshold of {1}.", maxTreeDepth,
                       fitnessThreshold);
 
@@ -195,18 +194,21 @@ namespace GeneCodeCS
         // 2. Convert expression tree to code.
         _log.Trace("GeneCodeCS.Population`1.SimulateIndividuals`1: Compiling bot code.");
         const int generationNumber = 0;
-        var compiledBot = _compiler.CompileBot(botInformation, generationNumber);
+        if (!_compiler.CompileBot(botInformation, generationNumber)) {
+          // TODO: Insert correct exception type.
+          throw new Exception("TBD");
+        }
 
         // 3. Run code to generate fitness.
         _log.Trace("GeneCodeCS.Population`1.SimulateIndividuals`1: Executing bot.");
-        _executor.Run(compiledBot, parameters);
+        _executor.Run(botInformation, parameters);
 
         // 4. Evaluate bot fitness.
-        var fitness = compiledBot.FitnessReport.Fitness;
-        _log.InfoFormat("Bot '{0}': Fitness = {1:N}", compiledBot.FitnessReport.Information.Name, fitness);
+        var fitness = botInformation.Fitness;
+        _log.InfoFormat("Bot '{0}': Fitness = {1:N}", botInformation.Name, fitness);
         if (fitness > fitnessThreshold) {
           _log.InfoFormat("Exceeded threshold limit ({0}) with {1}.", fitnessThreshold, fitness);
-          return compiledBot;
+          return botInformation;
         }
       }
     }
