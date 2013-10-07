@@ -20,16 +20,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Common.Logging;
+using GeneCodeCS.Genetics;
 using GeneCodeCS.Properties;
 
 namespace GeneCodeCS
 {
   /// <summary>
   ///   This class represents a population of bots, initially created using randomised tree-generation using the public methods of the underlying <typeparamref
-  ///    name="TBot" /> type. The randomised bots are compiled, executed, ranked for fitness, and then bred to create new generations.
+  ///    name="TBot" /> type. The randomised bots are compiled, executed, ranked for fitness (with a user-provided function), and then bred to create new generations.
   /// </summary>
-  /// <typeparam name="TBot"> The bot class type to breed. It must inherit from <see type="T:GeneCodeCS.BaseBot" /> . Its public void-type (actions) and bool-type (decision points) methods will be used to construct the genes for the bot; their parameters must derive from <see
-  ///    cref="T:GeneCodeCS.Genetics.IParameter`1" /> . </typeparam>
+  /// <typeparam name="TBot"> The bot class type to breed. It must inherit from <see cref="BaseBot" /> . Its public void-type (actions) and bool-type (decision points) methods will be used to construct the genes for the bot; their parameters must derive from <see
+  ///    cref="IParameter{T}" /> . See the <see cref="BaseBot" /> documentation for restrictions and requirements of implementing this class type. </typeparam>
   public sealed class Population<TBot> where TBot : BaseBot
   {
     /// <summary>
@@ -40,6 +41,12 @@ namespace GeneCodeCS
     /// </remarks>
     private readonly Compilation<TBot> _compiler;
 
+    /// <summary>
+    ///   User-provided function used to evaluate a bot's fitness post-execution.
+    /// </summary>
+    /// <remarks>
+    ///   Not null.
+    /// </remarks>
     private readonly Func<TBot, int> _evaluate;
 
     /// <summary>
@@ -59,12 +66,13 @@ namespace GeneCodeCS
     private readonly ILog _log;
 
     /// <summary>
-    ///   An optional method used to optimise a chromosome's tree.
+    ///   An optional method that optimises a given <see cref="Chromosome" /> (gene expression tree). It removes redundant code and consolidates statements. The purpose is to reduce the time taken to evaluate a bot's fitness and to reduce the likelihood that identical bots are created. The resulting <see
+    ///    cref="Chromosome" /> can reuse objects from the original tree, but no circular references must have been introduced.
     /// </summary>
     /// <remarks>
     ///   Can be null.
     /// </remarks>
-    private readonly Reproduction<TBot>.ChromosomeOptimiser _optimise;
+    private readonly Func<Chromosome, Chromosome> _optimise;
 
     /// <summary>
     ///   Used to create new bot generations by randomly generating bots of by breeding bots from a previous generation together.
@@ -75,11 +83,12 @@ namespace GeneCodeCS
     private readonly Reproduction<TBot> _reproducer;
 
     /// <summary>
-    ///   Initialises a new instance of the <see cref="T:GeneCodeCS.Population`1" /> class.
+    ///   Initialises a new instance of the <see cref="Population{TBot}" /> class.
     /// </summary>
-    /// <param name="log"> An instance of a <see cref="T:Common.Logging.ILog" /> interface. This is used to log the status of the population during simulation. </param>
+    /// <param name="log"> An instance of a <see cref="ILog" /> interface. This is used to log the status of the population during simulation. </param>
+    /// <param name="evaluate"> A function that will be used to evaluate the fitness of a bot. This is passed the bot object once it has been executed. </param>
     /// <param name="optimise"> A method that can optionally be provided to optimise the created expression tree, removing redundant code and consolidating statements. </param>
-    public Population(ILog log, Func<TBot, int> evaluate, Reproduction<TBot>.ChromosomeOptimiser optimise = null) {
+    public Population(ILog log, Func<TBot, int> evaluate, Func<Chromosome, Chromosome> optimise = null) {
       if (log == null) {
         throw new ArgumentNullException("log", Resources.NonNullLogClassRequired);
       }
@@ -102,14 +111,14 @@ namespace GeneCodeCS
     ///   Simluates a number of generations of bots. At each generation the bots from the previous generation are bred with each other (with occasional mutations). The chance of a bot becoming a parent is directly based on their calculated fitness. The process continues until a given number of generations are produced or a given fitness level is reached.
     /// </summary>
     /// <remarks>
-    ///   Public API. The initial generation is made of randomly generated bots. A list of starter bots may be provided to seed this generation. Any shortcomings in the population is made up with additional randomly created bots.
+    ///   The initial generation is made of randomly generated bots. A list of starter bots may be provided to seed this generation. Any shortcomings in the population is made up with additional randomly created bots.
     /// </remarks>
     /// <param name="generationLimit"> The maximum number of generations to simulate. </param>
     /// <param name="botsPerGeneration"> The number of bots to create or breed in each generation. </param>
     /// <param name="maxTreeDepth"> The maximum tree depth to allow during randomised bot generation in the initial generation. </param>
     /// <param name="parameters"> Any parameters to pass to the Initialise method of each bot during the execution phase. </param>
     /// <param name="fitnessThreshold"> The fitness threshold that, if exceeded, will cause simulation to end at the current generation. </param>
-    /// <param name="starterBots"> A list of bots to use in the first generation. Any shortfall in the initial generation will be filled with randomly created bots. </param>
+    /// <param name="starterBots"> A list of bot information to use in the first generation. Any shortfall in the initial generation after incorporating these bots will be filled with randomly created bots. </param>
     /// <returns> The best bot(s) from the final generation is/are returned. </returns>
     // TODO: Expose mutation rate property in Reproduction class.
     public List<BotInformation<TBot>> SimulateGenerations<T>(int generationLimit = 20, int botsPerGeneration = 30,
@@ -142,17 +151,19 @@ namespace GeneCodeCS
         // 2. Convert expression trees to code.
         _log.Trace("GeneCodeCS.Population`1.SimulateGenerations`1: Compiling bot code.");
         if (_compiler.CompileBots(generationInformation, generationNumber)) {
-          // TODO: Insert correct exception type.
-          throw new Exception("TBD");
+          throw new BotCompileException();
         }
 
         // 3. Run code to generate fitness.
         _log.Trace("GeneCodeCS.Population`1.SimulateGenerations`1: Executing bots.");
         _executor.Run(generationInformation, parameters);
+
+        // 4. Evaluate bot fitness.
+        _log.Trace("GeneCodeCS.Population`1.SimulateGenerations`1: Evaluating bot fitness.");
         generationInformation.ForEach(bot => bot.Fitness = _evaluate(bot.Bot));
         latestOrderedEvaluation = generationInformation.OrderByDescending(report => report.Fitness).ToList();
 
-        // 4. Evaluate bot fitness - we use First() and Last() since the list is already sorted.
+        // We use First() and Last() since the list is sorted.
         var bestFitness = latestOrderedEvaluation.First().Fitness;
         var worstFitness = latestOrderedEvaluation.Last().Fitness;
         var meanFitness = latestOrderedEvaluation.Average(fp => fp.Fitness);
@@ -181,9 +192,6 @@ namespace GeneCodeCS
     /// <summary>
     ///   Simulates the creation of individual random bots until a given fitness level is reached. No breeding is performed.
     /// </summary>
-    /// <remarks>
-    ///   Public API.
-    /// </remarks>
     /// <param name="maxTreeDepth"> The maximum tree depth to allow during randomised bot generation. </param>
     /// <param name="parameters"> Any parameters to pass to the Initialise method of a bot during the execution phase. </param>
     /// <param name="fitnessThreshold"> The fitness threshold that, if exceeded, will cause simulation to end. </param>
@@ -202,20 +210,18 @@ namespace GeneCodeCS
         _log.Trace("GeneCodeCS.Population`1.SimulateIndividuals`1: Compiling bot code.");
         const int generationNumber = 0;
         if (!_compiler.CompileBot(botInformation, generationNumber)) {
-          // TODO: Insert correct exception type.
-          throw new Exception("TBD");
+          throw new BotCompileException();
         }
 
         // 3. Run code to generate fitness.
         _log.Trace("GeneCodeCS.Population`1.SimulateIndividuals`1: Executing bot.");
         _executor.Run(botInformation, parameters);
-        botInformation.Fitness = _evaluate(botInformation.Bot);
 
         // 4. Evaluate bot fitness.
-        var fitness = botInformation.Fitness;
-        _log.InfoFormat("Bot '{0}': Fitness = {1:N}", botInformation.Name, fitness);
-        if (fitness > fitnessThreshold) {
-          _log.InfoFormat("Exceeded threshold limit ({0}) with {1}.", fitnessThreshold, fitness);
+        botInformation.Fitness = _evaluate(botInformation.Bot);
+        _log.InfoFormat("Bot '{0}': Fitness = {1:N}", botInformation.Name, botInformation.Fitness);
+        if (botInformation.Fitness > fitnessThreshold) {
+          _log.InfoFormat("Exceeded threshold limit ({0}) with {1}.", fitnessThreshold, botInformation.Fitness);
           return botInformation;
         }
       }

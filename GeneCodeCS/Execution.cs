@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Common.Logging;
+using GeneCodeCS.Genetics;
 using GeneCodeCS.Properties;
 
 namespace GeneCodeCS
@@ -27,7 +28,8 @@ namespace GeneCodeCS
   /// <summary>
   ///   This class runs generated bot code and evaluates its performance against a given criteria.
   /// </summary>
-  /// <typeparam name="TBot"> The bot class type to breed. Must inherit from BaseBot. </typeparam>
+  /// <typeparam name="TBot"> The bot class type to breed. It must inherit from <see cref="BaseBot" /> . Its public void-type (actions) and bool-type (decision points) methods will be used to construct the genes for the bot; their parameters must derive from <see
+  ///    cref="IParameter{T}" /> . See the <see cref="BaseBot" /> documentation for restrictions and requirements of implementing this class type. </typeparam>
   internal sealed class Execution<TBot> where TBot : BaseBot
   {
     /// <summary>
@@ -39,9 +41,9 @@ namespace GeneCodeCS
     private readonly ILog _log;
 
     /// <summary>
-    ///   Initialises a new instance of the <see cref="T:GeneCodeCS.Execution`1" /> class.
+    ///   Initialises a new instance of the <see cref="Execution{TBot}" /> class.
     /// </summary>
-    /// <param name="log"> An instance of an <see cref="T:Common.Logging.ILog" /> interface. This is used to log the status of the execution process. </param>
+    /// <param name="log"> An instance of an <see cref="ILog" /> interface. This is used to log the status of the execution process. </param>
     public Execution(ILog log) {
       if (log == null) {
         throw new ArgumentNullException("log", Resources.NonNullLogClassRequired);
@@ -53,7 +55,7 @@ namespace GeneCodeCS
     }
 
     /// <summary>
-    ///   Executes a collection of bots in parallel and updates them with their calculated fitness values.
+    ///   Executes a collection of bots in parallel.
     /// </summary>
     /// <param name="bots"> The bots to execute. </param>
     /// <param name="parameters"> A custom value that is passed to each bot's <c>Initialise</c> method. </param>
@@ -66,9 +68,9 @@ namespace GeneCodeCS
     }
 
     /// <summary>
-    ///   Executes a bot by first initialising it and then calling its <c>Execute</c> method. This will update the bot's internal fitness report.
+    ///   Executes a bot by first initialising it and then calling its <c>Execute</c> method.
     /// </summary>
-    /// <param name="bot"> The bot to execute. </param>
+    /// <param name="bot"> The bot to execute. If an uncaught exception is thrown during execution, it is stored in the bot information class. </param>
     /// <param name="parameters"> A custom value that is passed to the bot's <c>Initialise</c> method. </param>
     public void Run(BotInformation<TBot> bot, object parameters) {
       if (bot == null) {
@@ -78,9 +80,10 @@ namespace GeneCodeCS
       try {
         bot.Bot.Initialise(parameters);
         bot.Bot.Execute();
+        bot.ExecutionException = null;
         _log.InfoFormat("Bot '{0}' completed execution with fitness {1}.", bot.Name, bot.Fitness);
       } catch (Exception ex) {
-        bot.Fitness = int.MinValue;
+        bot.ExecutionException = ex;
         _log.WarnFormat("Bot '{0}' threw an exception: {1}{2}{3}", bot.Name, ex, Environment.NewLine, ex.StackTrace);
       }
     }

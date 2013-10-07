@@ -35,8 +35,8 @@ namespace GeneCodeCS
   /// <summary>
   ///   This class converts Chromosomes into C# code and then compiles them into an assembly.
   /// </summary>
-  /// <typeparam name="TBot"> The bot class type to breed. Must inherit from BaseBot and have a constructor taking a single <see
-  ///    cref="Common.Logging.ILog" /> parameter. </typeparam>
+  /// <typeparam name="TBot"> The bot class type to breed. It must inherit from <see cref="BaseBot" /> . Its public void-type (actions) and bool-type (decision points) methods will be used to construct the genes for the bot; their parameters must derive from <see
+  ///    cref="IParameter{T}" /> . See the <see cref="BaseBot" /> documentation for restrictions and requirements of implementing this class type. </typeparam>
   internal sealed class Compilation<TBot> where TBot : BaseBot
   {
     // TODO: Allow specification of source code and DLL output destinations.
@@ -50,9 +50,9 @@ namespace GeneCodeCS
     private readonly ILog _log;
 
     /// <summary>
-    ///   Initialises a new instance of the <see cref="T:GeneCodeCS.Compilation`1" /> class.
+    ///   Initialises a new instance of the <see cref="Compilation{TBot}" /> class.
     /// </summary>
-    /// <param name="log"> An instance of an <see cref="T:Common.Logging.ILog" /> interface. This is used to log the status of the compilation process. </param>
+    /// <param name="log"> An instance of an <see cref="ILog" /> interface. This is used to log the status of the compilation process. </param>
     public Compilation(ILog log) {
       if (log == null) {
         throw new ArgumentNullException("log", Resources.NonNullLogClassRequired);
@@ -67,11 +67,11 @@ namespace GeneCodeCS
     ///   Converts a bot into C# code and compiles it into an assembly. The code and assembly file names are constructed from the <typeparamref
     ///    name="TBot" /> class name and the <paramref name="generationNumber" /> .
     /// </summary>
-    /// <param name="bot"> The bot to compile. </param>
+    /// <param name="bot"> The bot to compile. The compiled bot type is added in-place to this object. </param>
     /// <param name="generationNumber"> The generation number of the bot. This is used to create the file name and namespace for the compiled bot. </param>
-    /// <returns> The in-memory bot code. </returns>
+    /// <returns> If the compilation was successful, returns <c>true</c> ; otherwise returns <c>false</c> . </returns>
     public bool CompileBot(BotInformation<TBot> bot, int generationNumber) {
-      if (bot == null) {
+      if (bot == null || string.IsNullOrWhiteSpace(bot.Name) || bot.Bot == null) {
         throw new ArgumentNullException("bot", Resources.ValidBotRequired);
       }
 
@@ -82,11 +82,11 @@ namespace GeneCodeCS
     ///   Takes a list of bots, converts them into C# code, and compiles into an assembly. The code and assembly file names are constructed from the <typeparamref
     ///    name="TBot" /> class name and the <paramref name="generationNumber" /> .
     /// </summary>
-    /// <param name="bots"> The bots to compile. </param>
+    /// <param name="bots"> The bots to compile. The compiled bot types are added in-place to the bot objects in this list. </param>
     /// <param name="generationNumber"> The generation number of the bots. This is used to create the file names and namespace for the compiled bots. </param>
-    /// <returns> A list of the compiled bot code in memory. </returns>
+    /// <returns> If the compilation was successful, returns <c>true</c> ; otherwise returns <c>false</c> . </returns>
     public bool CompileBots(IList<BotInformation<TBot>> bots, int generationNumber) {
-      if (bots == null || bots.Count == 0) {
+      if (bots == null || bots.Count == 0 || bots.Any(b => string.IsNullOrWhiteSpace(b.Name) || b.Tree == null)) {
         throw new ArgumentNullException("bots", Resources.ValidBotCollectionRequired);
       }
       if (generationNumber < 0) {
@@ -122,7 +122,7 @@ namespace GeneCodeCS
     ///    name="chromosome" /> . The <typeparamref name="TBot" /> type is used as the base class.
     /// </summary>
     /// <param name="name"> The name of the class to create. </param>
-    /// <param name="chromosome"> The <see cref="T:GeneCodeCS.Genetics.Chromosome" /> to encapsulate in the class's <c>RunBotLogic</c> method. </param>
+    /// <param name="chromosome"> The <see cref="Chromosome" /> to encapsulate in the class's <c>RunBotLogic</c> method. </param>
     /// <returns> The class declaration. </returns>
     private static CodeTypeDeclaration BuildClass(string name, Chromosome chromosome) {
       Debug.Assert(!string.IsNullOrWhiteSpace(name), "A name for the class must be specified.");
@@ -168,7 +168,7 @@ namespace GeneCodeCS
     }
 
     /// <summary>
-    ///   Builds the constructor for the bot. It will take a single argument of type <see name="T:Common.Logging.ILog" /> and pass it to the base class.
+    ///   Builds the constructor for the bot. It will take a single argument of type <see name="ILog" /> and pass it to the base class.
     /// </summary>
     /// <returns> The code member for the constructor method. </returns>
     private static CodeMemberMethod BuildConstructor() {
@@ -240,9 +240,9 @@ namespace GeneCodeCS
     }
 
     /// <summary>
-    ///   Converts an array of parameter <see name="T:System.Reflection.ParameterInfo" /> and corresponding entries in an array of <paramref
-    ///    name="values" /> into an array of <see cref="T:System.CodeDom.CodeExpression" /> s that can be passed to a <see
-    ///    cref="T:System.CodeDom.CodeMethodInvokeExpression" /> .
+    ///   Converts an array of parameter <see name="ParameterInfo" /> and corresponding entries in an array of <paramref
+    ///    name="values" /> into an array of <see cref="CodeExpression" /> s that can be passed to a <see
+    ///    cref="CodeMethodInvokeExpression" /> .
     /// </summary>
     /// <remarks>
     ///   The arrays <paramref name="parameterInfo" /> and <paramref name="values" /> must contain the same number of entries.
@@ -297,7 +297,7 @@ namespace GeneCodeCS
     }
 
     /// <summary>
-    ///   Writes the built namespace to C# code. The file is output in the working directory with the name <c>&lt;filename>.cs</c> .
+    ///   Writes the built namespace to C# code. The file is output in the working directory with the name <c>&lt;filename&gt;.cs</c> .
     /// </summary>
     /// <param name="filename"> The name of the </param>
     /// <param name="codeUnit"> The code unit to write to C#. </param>

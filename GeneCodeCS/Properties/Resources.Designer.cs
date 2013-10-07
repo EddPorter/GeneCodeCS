@@ -88,6 +88,15 @@ namespace GeneCodeCS.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to A bot&apos;s name cannot be blank..
+        /// </summary>
+        internal static string BotNameValidRange {
+            get {
+                return ResourceManager.GetString("BotNameValidRange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The number of bots per generation must be greater than zero..
         /// </summary>
         internal static string BotsPerGenerationValidRange {
@@ -102,6 +111,15 @@ namespace GeneCodeCS.Properties {
         internal static string ChromosomeOptimisationReturnedNull {
             get {
                 return ResourceManager.GetString("ChromosomeOptimisationReturnedNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A valid chromose tree must be provided..
+        /// </summary>
+        internal static string ChromosomeRequired {
+            get {
+                return ResourceManager.GetString("ChromosomeRequired", resourceCulture);
             }
         }
         

@@ -172,4 +172,10 @@
   <data name="BotFitnessFunctionRequired">
     <value xml:space="preserve">A bot fitness evaluation function must be provided.</value>
   </data>
+  <data name="BotNameValidRange">
+    <value xml:space="preserve">A bot's name cannot be blank.</value>
+  </data>
+  <data name="ChromosomeRequired">
+    <value xml:space="preserve">A valid chromose tree must be provided.</value>
+  </data>
 </root>

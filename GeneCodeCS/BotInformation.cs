@@ -18,6 +18,7 @@
 
 using System;
 using GeneCodeCS.Genetics;
+using GeneCodeCS.Properties;
 
 namespace GeneCodeCS
 {
@@ -35,10 +36,10 @@ namespace GeneCodeCS
     /// <param name="parent2"> The name of the bot's second parent (donor). </param>
     public BotInformation(string name, Chromosome tree, string parent1 = null, string parent2 = null) {
       if (string.IsNullOrWhiteSpace(name)) {
-        throw new ArgumentNullException("name");
+        throw new ArgumentNullException("name", Resources.BotNameValidRange);
       }
       if (tree == null) {
-        throw new ArgumentNullException("tree");
+        throw new ArgumentNullException("tree", Resources.ChromosomeRequired);
       }
 
       Name = name;
@@ -47,15 +48,29 @@ namespace GeneCodeCS
       Parent2 = parent2 ?? string.Empty;
     }
 
-    public TBot Bot { get; set; }
-
     /// <summary>
-    ///   Gets custom information that can be set during bot execution.
+    ///   The compiled bot type, loaded into memory.
     /// </summary>
-    public object CustomInformation { get; internal set; }
+    /// <remarks>
+    ///   Can be null.
+    /// </remarks>
+    public TBot Bot { get; internal set; }
 
     /// <summary>
-    ///   Gets the calculated fitness value set during bot execution.
+    ///   Gets custom information that can be set during bot evaluation.
+    /// </summary>
+    public object CustomInformation { get; set; }
+
+    /// <summary>
+    ///   If an exception is thrown during the execution of <see cref="Bot" /> , it is stored here.
+    /// </summary>
+    /// <remarks>
+    ///   Can be null.
+    /// </remarks>
+    public Exception ExecutionException { get; internal set; }
+
+    /// <summary>
+    ///   Gets the calculated fitness value set during bot evaluation.
     /// </summary>
     public int Fitness { get; internal set; }
 
