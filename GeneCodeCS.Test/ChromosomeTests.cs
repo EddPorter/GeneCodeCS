@@ -27,7 +27,7 @@ namespace GeneCodeCS.Test
     [TestMethod]
     public void EqualsChromosome_xEqualsNull_returnsFalse() {
       var x = new Chromosome();
-      Assert.IsFalse(x.Equals((Chromosome)null));
+      Assert.IsFalse(x.Equals(null));
     }
 
     [TestMethod]

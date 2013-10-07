@@ -131,7 +131,7 @@ namespace GeneCodeCS.Genetics
     /// <param name="obj"> The gene expression to compare to this instance. </param>
     /// <returns> true if <paramref name="obj" /> is a <see cref="BranchExpression" /> and its value is the same as this instance; otherwise, false. </returns>
     public bool Equals(IGeneExpression obj) {
-      return Equals(obj as TerminalExpression);
+      return Equals(obj as BranchExpression);
     }
 
     #endregion

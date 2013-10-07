@@ -359,7 +359,7 @@ namespace GeneCodeCS
       var errors = new StringBuilder();
       errors.AppendLine("Build encountered the following erros:");
       foreach (CompilerError ce in results.Errors) {
-        errors.AppendLine("  {0}, ce");
+        errors.AppendLine(string.Format("  {0}", ce));
       }
       _log.TraceFormat("GeneCodeCS.Compilation`1.CompileCode: {0}", errors);
       return null;
