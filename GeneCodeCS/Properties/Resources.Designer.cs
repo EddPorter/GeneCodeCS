@@ -151,11 +151,29 @@ namespace GeneCodeCS.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to A valid information about the method must be provided..
+        /// </summary>
+        internal static string MethodInfoRequired {
+            get {
+                return ResourceManager.GetString("MethodInfoRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The branching method must return a bool..
         /// </summary>
         internal static string MethodMustReturnBool {
             get {
                 return ResourceManager.GetString("MethodMustReturnBool", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A terminal method must return void..
+        /// </summary>
+        internal static string MethodMustReturnVoid {
+            get {
+                return ResourceManager.GetString("MethodMustReturnVoid", resourceCulture);
             }
         }
         
@@ -210,6 +228,15 @@ namespace GeneCodeCS.Properties {
         internal static string RandomBotPercentageValidRange {
             get {
                 return ResourceManager.GetString("RandomBotPercentageValidRange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The sequence length must be positive..
+        /// </summary>
+        internal static string SequenceLengthValidRange {
+            get {
+                return ResourceManager.GetString("SequenceLengthValidRange", resourceCulture);
             }
         }
         

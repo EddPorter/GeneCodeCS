@@ -22,12 +22,29 @@ using System.Text;
 
 namespace GeneCodeCS.Genetics
 {
-  public sealed class SequenceExpression : SequenceGene, IGeneExpression, IEquatable<SequenceExpression>
+  /// <summary>
+  ///   Represents a concrete implementation of a <see cref="SequenceGene" /> . This provides a mechanism for executing a sequence of instructions serially.
+  /// </summary>
+  internal sealed class SequenceExpression : SequenceGene, IGeneExpression, IEquatable<SequenceExpression>
   {
+    /// <summary>
+    ///   Initialises a new instance of the <see cref="SequenceExpression" /> class to represent calling the specified expressions in order.
+    /// </summary>
+    /// <param name="expressions"> The expressions to sequence. </param>
     public SequenceExpression(Chromosome[] expressions) : base(expressions.Length) {
+      if (expressions == null) {
+        throw new ArgumentNullException("expressions");
+      }
+
       Expressions = expressions;
     }
 
+    /// <summary>
+    ///   Gets the chromosome expressions in the sequence.
+    /// </summary>
+    /// <remarks>
+    ///   Not null.
+    /// </remarks>
     public Chromosome[] Expressions { get; private set; }
 
     #region IEquatable<SequenceExpression> Members
@@ -38,10 +55,13 @@ namespace GeneCodeCS.Genetics
     /// <returns> <c>true</c> if the value of the <paramref name="value" /> parameter is the same as this instance; otherwise, false. </returns>
     /// <param name="value"> The sequence to compare to this instance. </param>
     public bool Equals(SequenceExpression value) {
-      if (ReferenceEquals(null, value)) {
+      if (this == null) {
+        throw new NullReferenceException();
+      }
+      if (value == null) {
         return false;
       }
-      return ReferenceEquals(this, value) || Equals(value.Expressions, Expressions);
+      return ReferenceEquals(this, value) || Expressions.Zip(value.Expressions, Equals).All(p => p);
     }
 
     #endregion
@@ -59,13 +79,29 @@ namespace GeneCodeCS.Genetics
     #endregion
 
     /// <summary>
+    ///   Determines whether two specified <see cref="SequenceExpression" /> objects have the same value.
+    /// </summary>
+    /// <param name="a"> The first sequence expression to compare, or null. </param>
+    /// <param name="b"> The second sequence expression to compare, or null. </param>
+    /// <returns> true if the value of <paramref name="a" /> is the same as the value of <paramref name="b" /> ; otherwise, false. </returns>
+    public static bool Equals(SequenceExpression a, SequenceExpression b) {
+      if (a == b) {
+        return true;
+      }
+      if (a == null || b == null) {
+        return false;
+      }
+      return a.Expressions.Zip(b.Expressions, Equals).All(p => p);
+    }
+
+    /// <summary>
     ///   Determines whether two specified <see cref="SequenceExpression" /> objects have different values.
     /// </summary>
     /// <param name="a"> The first <see cref="SequenceExpression" /> object to compare, or null. </param>
     /// <param name="b"> The second <see cref="SequenceExpression" /> object to compare, or null. </param>
     /// <returns> <c>true</c> if the value of <paramref name="a" /> is different from the value of <paramref name="b" /> ; otherwise, false. </returns>
     public static bool operator !=(SequenceExpression a, SequenceExpression b) {
-      return !Equals(a, b);
+      return !(a == b);
     }
 
     /// <summary>
@@ -75,26 +111,48 @@ namespace GeneCodeCS.Genetics
     /// <param name="b"> The second <see cref="SequenceExpression" /> object to compare, or null. </param>
     /// <returns> <c>true</c> if the value of <paramref name="a" /> is the same as the value of <paramref name="b" /> ; otherwise, false. </returns>
     public static bool operator ==(SequenceExpression a, SequenceExpression b) {
-      return Equals(a, b);
-    }
-
-    public override bool Equals(object obj) {
-      if (ReferenceEquals(null, obj)) {
-        return false;
-      }
-      if (ReferenceEquals(this, obj)) {
+      if (ReferenceEquals(a, b)) {
         return true;
       }
-      return obj is SequenceExpression && Equals((SequenceExpression)obj);
+      if ((object)a == null || (object)b == null) {
+        return false;
+      }
+      return a.Expressions.Zip(b.Expressions, (l, r) => l == r).All(p => p);
     }
 
+    /// <summary>
+    ///   Determines whether this instance and a specified object, which must also be a <see cref="BranchExpression" /> object, have the same value.
+    /// </summary>
+    /// <param name="obj"> The branch expression to compare to this instance. </param>
+    /// <returns> true if <paramref name="obj" /> is a <see cref="BranchExpression" /> and its value is the same as this instance; otherwise, false. </returns>
+    public override bool Equals(object obj) {
+      if (this == null) {
+        throw new NullReferenceException();
+      }
+      var seB = obj as SequenceExpression;
+      if (seB == null) {
+        return false;
+      }
+      return ReferenceEquals(this, obj) || Expressions.Zip(seB.Expressions, Equals).All(p => p);
+    }
+
+    /// <summary>
+    ///   Returns the hash code for this branch expression.
+    /// </summary>
+    /// <returns> A 32-bit signed integer hash code. </returns>
     public override int GetHashCode() {
-      return (Expressions != null ? Expressions.GetHashCode() : 0);
+      unchecked {
+        return Length * 397 ^ Expressions.Aggregate(0, (acc, exp) => acc * 397 ^ exp.GetHashCode());
+      }
     }
 
+    /// <summary>
+    ///   Creates a string representation of this sequence expression and its descendant tree structures.
+    /// </summary>
+    /// <returns> A string representation of this object. </returns>
     public override string ToString() {
       var output = new StringBuilder();
-      output.AppendLine("SequenceExpression:");
+      output.AppendLine("[");
       foreach (var tree in Expressions) {
         var left = tree.ToString();
         var first = true;
@@ -108,6 +166,7 @@ namespace GeneCodeCS.Genetics
           output.AppendLine(line);
         }
       }
+      output.AppendLine("]");
       return output.ToString().TrimEnd();
     }
   }

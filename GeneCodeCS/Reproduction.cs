@@ -641,7 +641,7 @@ namespace GeneCodeCS
     /// <returns> The updated <paramref name="source" /> tree. </returns>
     private Chromosome TreeCombine(Chromosome source, Chromosome cutPoint, Chromosome insertionMaterial) {
       if (ReferenceEquals(source, cutPoint)) {
-        return Chromosome.ReplaceNodeWithCopy(source, insertionMaterial);
+        return new Chromosome { Node = insertionMaterial.Node, Parent = source.Parent };
       }
 
       var terminal = source.Node as TerminalExpression;

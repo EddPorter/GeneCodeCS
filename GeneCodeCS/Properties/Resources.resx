@@ -181,4 +181,13 @@
   <data name="MethodParametersRequired" xml:space="preserve">
     <value>The correct number of parameters must be provided to methods that require them.</value>
   </data>
+  <data name="SequenceLengthValidRange">
+    <value xml:space="preserve">The sequence length must be positive.</value>
+  </data>
+  <data name="MethodInfoRequired">
+    <value xml:space="preserve">A valid information about the method must be provided.</value>
+  </data>
+  <data name="MethodMustReturnVoid">
+    <value xml:space="preserve">A terminal method must return void.</value>
+  </data>
 </root>

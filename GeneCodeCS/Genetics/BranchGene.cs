@@ -28,6 +28,10 @@ namespace GeneCodeCS.Genetics
   /// </summary>
   internal class BranchGene : IGene
   {
+    /// <summary>
+    ///   Creates a new <see cref="BranchGene" /> instance to represent decision-tree branching in the chromosomnal tree.
+    /// </summary>
+    /// <param name="mi"> The action method this gene represents. </param>
     public BranchGene(MethodInfo mi) {
       if (mi == null) {
         throw new ArgumentNullException("mi");
@@ -35,13 +39,13 @@ namespace GeneCodeCS.Genetics
       if (mi.ReturnType != typeof(bool)) {
         throw new ArgumentException(Resources.MethodMustReturnBool, "mi");
       }
-      // TODO: Test that each parameter inherits from some form of IParameter.
-      // Or get rid of the generic parameters in IParameter. Are they even needed for correct working?
+      // Check that all parameters derive from IParameter<> or at least have a default value.
       if (
         mi.GetParameters().Any(
           p =>
           !p.ParameterType.GetInterfaces().Any(
-            x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IParameter<>)))) {
+            x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IParameter<>)) &&
+          p.DefaultValue == DBNull.Value)) {
         throw new ArgumentException(Resources.MethodParametersMustDeriveFromIParameter, "mi");
       }
 
@@ -49,8 +53,7 @@ namespace GeneCodeCS.Genetics
     }
 
     /// <summary>
-    ///   Gets the method used by this <see cref="T:GeneCodeCS.Genetics.BranchGene" /> object. It must return a boolean value and have parameters derived from <see
-    ///    cref="T:GeneCodeCS.Genetics.IParameter`1" /> .
+    ///   Gets the method used by this <see cref="BranchGene" /> object.
     /// </summary>
     /// <remarks>
     ///   Not null.

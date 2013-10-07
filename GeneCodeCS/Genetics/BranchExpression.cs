@@ -98,14 +98,15 @@ namespace GeneCodeCS.Genetics
     /// <returns> <c>true</c> if the value of the <paramref name="value" /> parameter is the same as this instance; otherwise, false. </returns>
     /// <param name="value"> The branch to compare to this instance. </param>
     public bool Equals(BranchExpression value) {
-      if (ReferenceEquals(null, value)) {
+      if (this == null) {
+        throw new NullReferenceException();
+      }
+      if (value == null) {
         return false;
       }
-
       if (ReferenceEquals(this, value)) {
         return true;
       }
-
       return Equals(value.TrueBranch, TrueBranch) && Equals(value.MethodInfo, MethodInfo) &&
              Equals(value.Parameters, Parameters) && Equals(value.FalseBranch, FalseBranch);
     }
@@ -126,13 +127,30 @@ namespace GeneCodeCS.Genetics
     #endregion
 
     /// <summary>
+    ///   Determines whether two specified <see cref="BranchExpression" /> objects have the same value.
+    /// </summary>
+    /// <param name="a"> The first branch expression to compare, or null. </param>
+    /// <param name="b"> The second branch expression to compare, or null. </param>
+    /// <returns> true if the value of <paramref name="a" /> is the same as the value of <paramref name="b" /> ; otherwise, false. </returns>
+    public static bool Equals(BranchExpression a, BranchExpression b) {
+      if (a == b) {
+        return true;
+      }
+      if (a == null || b == null) {
+        return false;
+      }
+      return Equals(a.TrueBranch, b.TrueBranch) && Equals(a.MethodInfo, b.MethodInfo) &&
+             Equals(a.Parameters, b.Parameters) && Equals(a.FalseBranch, b.FalseBranch);
+    }
+
+    /// <summary>
     ///   Determines whether two specified <see cref="BranchExpression" /> objects have different values.
     /// </summary>
     /// <param name="a"> The first <see cref="BranchExpression" /> object to compare, or null. </param>
     /// <param name="b"> The second <see cref="BranchExpression" /> object to compare, or null. </param>
     /// <returns> <c>true</c> if the value of <paramref name="a" /> is different from the value of <paramref name="b" /> ; otherwise, false. </returns>
     public static bool operator !=(BranchExpression a, BranchExpression b) {
-      return !Equals(a, b);
+      return !(a == b);
     }
 
     /// <summary>
@@ -142,17 +160,40 @@ namespace GeneCodeCS.Genetics
     /// <param name="b"> The second <see cref="BranchExpression" /> object to compare, or null. </param>
     /// <returns> <c>true</c> if the value of <paramref name="a" /> is the same as the value of <paramref name="b" /> ; otherwise, false. </returns>
     public static bool operator ==(BranchExpression a, BranchExpression b) {
-      return Equals(a, b);
-    }
-
-    public override bool Equals(object obj) {
-      if (ReferenceEquals(null, obj)) {
+      if (ReferenceEquals(a, b)) {
+        return true;
+      }
+      if ((object)a == null || (object)b == null) {
         return false;
       }
-
-      return ReferenceEquals(this, obj) || Equals(obj as BranchExpression);
+      return a.TrueBranch == b.TrueBranch && a.MethodInfo == b.MethodInfo && a.Parameters == b.Parameters &&
+             a.FalseBranch == b.FalseBranch;
     }
 
+    /// <summary>
+    ///   Determines whether this instance and a specified object, which must also be a <see cref="BranchExpression" /> object, have the same value.
+    /// </summary>
+    /// <param name="obj"> The branch expression to compare to this instance. </param>
+    /// <returns> true if <paramref name="obj" /> is a <see cref="BranchExpression" /> and its value is the same as this instance; otherwise, false. </returns>
+    public override bool Equals(object obj) {
+      if (this == null) {
+        throw new NullReferenceException();
+      }
+      var beB = obj as BranchExpression;
+      if (beB == null) {
+        return false;
+      }
+      if (ReferenceEquals(this, obj)) {
+        return true;
+      }
+      return Equals(TrueBranch, beB.TrueBranch) && Equals(MethodInfo, beB.MethodInfo) &&
+             Equals(Parameters, beB.Parameters) && Equals(FalseBranch, beB.FalseBranch);
+    }
+
+    /// <summary>
+    ///   Returns the hash code for this branch expression.
+    /// </summary>
+    /// <returns> A 32-bit signed integer hash code. </returns>
     public override int GetHashCode() {
       unchecked {
         var result = TrueBranch.GetHashCode();
@@ -162,6 +203,10 @@ namespace GeneCodeCS.Genetics
       }
     }
 
+    /// <summary>
+    ///   Creates a string representation of this branch expression and its descendant tree structures.
+    /// </summary>
+    /// <returns> A string representation of this object. </returns>
     public override string ToString() {
       var output = new StringBuilder();
       output.AppendFormat("{0}({1}){2}", MethodInfo.Name, string.Join(", ", Parameters), Environment.NewLine);
@@ -170,6 +215,12 @@ namespace GeneCodeCS.Genetics
       return output.ToString().TrimEnd();
     }
 
+    /// <summary>
+    ///   Helper method for converting a chromosome branch to a string representation.
+    /// </summary>
+    /// <param name="output"> The string builder object to fill. </param>
+    /// <param name="branch"> The chromosome branch to convert to a string. </param>
+    /// <param name="prefix"> The branch prefix: usually either 'T' or 'F'. </param>
     private static void BranchToString(StringBuilder output, Chromosome branch, string prefix) {
       var branchString = branch.ToString();
       var first = true;
