@@ -169,4 +169,7 @@
   <data name="ValidBotRequired">
     <value xml:space="preserve">A valid bot must be provided.</value>
   </data>
+  <data name="BotFitnessFunctionRequired">
+    <value xml:space="preserve">A bot fitness evaluation function must be provided.</value>
+  </data>
 </root>

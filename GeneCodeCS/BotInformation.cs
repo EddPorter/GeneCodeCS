@@ -22,12 +22,10 @@ using GeneCodeCS.Genetics;
 namespace GeneCodeCS
 {
   /// <summary>
-  ///   Provides information about a given bot, including name, definition, and heritage.
+  ///   Provides information about a given bot, including name, definition, and heritage, as well as its genetic definition and evaluated fitness.
   /// </summary>
   public sealed class BotInformation<TBot>
   {
-    // TODO: Move fitness information back in this class - see what happens.
-
     /// <summary>
     ///   Constructs a new <see cref="BotInformation{TBot}" /> class.
     /// </summary>

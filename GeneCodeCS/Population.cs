@@ -40,6 +40,8 @@ namespace GeneCodeCS
     /// </remarks>
     private readonly Compilation<TBot> _compiler;
 
+    private readonly Func<TBot, int> _evaluate;
+
     /// <summary>
     ///   Used to execute a compiled bot to generate its fitness score.
     /// </summary>
@@ -77,14 +79,18 @@ namespace GeneCodeCS
     /// </summary>
     /// <param name="log"> An instance of a <see cref="T:Common.Logging.ILog" /> interface. This is used to log the status of the population during simulation. </param>
     /// <param name="optimise"> A method that can optionally be provided to optimise the created expression tree, removing redundant code and consolidating statements. </param>
-    public Population(ILog log, Reproduction<TBot>.ChromosomeOptimiser optimise = null) {
+    public Population(ILog log, Func<TBot, int> evaluate, Reproduction<TBot>.ChromosomeOptimiser optimise = null) {
       if (log == null) {
         throw new ArgumentNullException("log", Resources.NonNullLogClassRequired);
+      }
+      if (evaluate == null) {
+        throw new ArgumentNullException("evaluate", Resources.BotFitnessFunctionRequired);
       }
 
       log.Trace("GeneCodeCS.Population`1.ctor: Constructing class.");
 
       _log = log;
+      _evaluate = evaluate;
       _optimise = optimise;
 
       _reproducer = new Reproduction<TBot>(log);
@@ -143,6 +149,7 @@ namespace GeneCodeCS
         // 3. Run code to generate fitness.
         _log.Trace("GeneCodeCS.Population`1.SimulateGenerations`1: Executing bots.");
         _executor.Run(generationInformation, parameters);
+        generationInformation.ForEach(bot => bot.Fitness = _evaluate(bot.Bot));
         latestOrderedEvaluation = generationInformation.OrderByDescending(report => report.Fitness).ToList();
 
         // 4. Evaluate bot fitness - we use First() and Last() since the list is already sorted.
@@ -202,6 +209,7 @@ namespace GeneCodeCS
         // 3. Run code to generate fitness.
         _log.Trace("GeneCodeCS.Population`1.SimulateIndividuals`1: Executing bot.");
         _executor.Run(botInformation, parameters);
+        botInformation.Fitness = _evaluate(botInformation.Bot);
 
         // 4. Evaluate bot fitness.
         var fitness = botInformation.Fitness;

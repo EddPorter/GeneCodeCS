@@ -61,6 +61,15 @@ namespace GeneCodeCS.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to A bot fitness evaluation function must be provided..
+        /// </summary>
+        internal static string BotFitnessFunctionRequired {
+            get {
+                return ResourceManager.GetString("BotFitnessFunctionRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The index of a bot must be non-negative..
         /// </summary>
         internal static string BotIndexValidRange {
