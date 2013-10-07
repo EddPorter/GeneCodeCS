@@ -113,16 +113,16 @@ namespace GeneCodeCS
     /// <remarks>
     ///   The initial generation is made of randomly generated bots. A list of starter bots may be provided to seed this generation. Any shortcomings in the population is made up with additional randomly created bots.
     /// </remarks>
+    /// <param name="parameters"> Any parameters to pass to the Initialise method of each bot during the execution phase. </param>
     /// <param name="generationLimit"> The maximum number of generations to simulate. </param>
     /// <param name="botsPerGeneration"> The number of bots to create or breed in each generation. </param>
     /// <param name="maxTreeDepth"> The maximum tree depth to allow during randomised bot generation in the initial generation. </param>
-    /// <param name="parameters"> Any parameters to pass to the Initialise method of each bot during the execution phase. </param>
     /// <param name="fitnessThreshold"> The fitness threshold that, if exceeded, will cause simulation to end at the current generation. </param>
     /// <param name="starterBots"> A list of bot information to use in the first generation. Any shortfall in the initial generation after incorporating these bots will be filled with randomly created bots. </param>
     /// <returns> The best bot(s) from the final generation is/are returned. </returns>
     // TODO: Expose mutation rate property in Reproduction class.
-    public List<BotInformation<TBot>> SimulateGenerations<T>(int generationLimit = 20, int botsPerGeneration = 30,
-                                                             int maxTreeDepth = 3, T parameters = default(T),
+    public List<BotInformation<TBot>> SimulateGenerations<T>(T parameters = default(T), int generationLimit = 20,
+                                                             int botsPerGeneration = 30, int maxTreeDepth = 3,
                                                              int fitnessThreshold = int.MaxValue,
                                                              List<BotInformation<TBot>> starterBots = null) {
       _log.InfoFormat("Simulating population with {0} generations, {1} bots per generation, and tree depth of {2}.",
@@ -192,11 +192,11 @@ namespace GeneCodeCS
     /// <summary>
     ///   Simulates the creation of individual random bots until a given fitness level is reached. No breeding is performed.
     /// </summary>
-    /// <param name="maxTreeDepth"> The maximum tree depth to allow during randomised bot generation. </param>
     /// <param name="parameters"> Any parameters to pass to the Initialise method of a bot during the execution phase. </param>
+    /// <param name="maxTreeDepth"> The maximum tree depth to allow during randomised bot generation. </param>
     /// <param name="fitnessThreshold"> The fitness threshold that, if exceeded, will cause simulation to end. </param>
     /// <returns> The first bot to exceed the fitness threshold. </returns>
-    public BotInformation<TBot> SimulateIndividuals<T>(int maxTreeDepth = 3, T parameters = default(T),
+    public BotInformation<TBot> SimulateIndividuals<T>(T parameters = default(T), int maxTreeDepth = 3,
                                                        int fitnessThreshold = 0) {
       _log.InfoFormat("Simulating indivudual bots with tree depth of {0} and a limiting threshold of {1}.", maxTreeDepth,
                       fitnessThreshold);
