@@ -16,13 +16,15 @@
 // along with this program.  If not, see {http://www.gnu.org/licenses/}.
 //
 
+using System;
+
 namespace GeneCodeCS.Genetics
 {
   /// <summary>
   ///   The expression of a gene in a chromosome. This is an actual instance of a gene rather than just the definition (see <see
   ///    cref="IGene" /> ). It contributes to the life (running) of the bot to which it belongs.
   /// </summary>
-  public interface IGeneExpression
+  public interface IGeneExpression : IEquatable<IGeneExpression>
   {
     /// <summary>
     ///   Creates a new, independent instance of the <see cref="IGeneExpression" /> , which may contain other <see

@@ -50,7 +50,11 @@ namespace GeneCodeCS.Genetics
       if (value == null) {
         return false;
       }
-      return ReferenceEquals(this, value) || Equals(value.Node, Node);
+      if (ReferenceEquals(this, value)) {
+        return true;
+      }
+
+      return (Node == null && value.Node == null) || (Node != null && Node.Equals(value.Node));
     }
 
     #endregion
@@ -68,7 +72,7 @@ namespace GeneCodeCS.Genetics
       if (a == null || b == null) {
         return false;
       }
-      return Equals(a.Node, b.Node);
+      return (a.Node == null && b.Node == null) || (a.Node != null && a.Node.Equals(b.Node));
     }
 
     /// <summary>
@@ -94,7 +98,7 @@ namespace GeneCodeCS.Genetics
       if ((object)a == null || (object)b == null) {
         return false;
       }
-      return a.Node == b.Node;
+      return (a.Node == null && b.Node == null) || (a.Node != null && a.Node.Equals(b.Node));
     }
 
     /// <summary>
@@ -118,7 +122,7 @@ namespace GeneCodeCS.Genetics
       if (cB == null) {
         return false;
       }
-      return ReferenceEquals(this, obj) || Equals(Node, cB.Node);
+      return ReferenceEquals(this, obj) || (Node == null && cB.Node == null) || (Node != null && Node.Equals(cB.Node));
     }
 
     /// <summary>

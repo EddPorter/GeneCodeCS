@@ -76,6 +76,16 @@ namespace GeneCodeCS.Genetics
       return new SequenceExpression(Expressions.Select(e => e.Clone()).ToArray());
     }
 
+    /// <summary>
+    ///   Determines whether this instance and a specified <see cref="IGeneExpression" /> , which must also be a <see
+    ///    cref="SequenceExpression" /> object, have the same value.
+    /// </summary>
+    /// <param name="obj"> The gene expression to compare to this instance. </param>
+    /// <returns> true if <paramref name="obj" /> is a <see cref="SequenceExpression" /> and its value is the same as this instance; otherwise, false. </returns>
+    public bool Equals(IGeneExpression obj) {
+      return Equals(obj as SequenceExpression);
+    }
+
     #endregion
 
     /// <summary>
@@ -121,10 +131,10 @@ namespace GeneCodeCS.Genetics
     }
 
     /// <summary>
-    ///   Determines whether this instance and a specified object, which must also be a <see cref="BranchExpression" /> object, have the same value.
+    ///   Determines whether this instance and a specified object, which must also be a <see cref="SequenceExpression" /> object, have the same value.
     /// </summary>
-    /// <param name="obj"> The branch expression to compare to this instance. </param>
-    /// <returns> true if <paramref name="obj" /> is a <see cref="BranchExpression" /> and its value is the same as this instance; otherwise, false. </returns>
+    /// <param name="obj"> The sequence expression to compare to this instance. </param>
+    /// <returns> true if <paramref name="obj" /> is a <see cref="SequenceExpression" /> and its value is the same as this instance; otherwise, false. </returns>
     public override bool Equals(object obj) {
       if (this == null) {
         throw new NullReferenceException();

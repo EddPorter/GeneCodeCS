@@ -124,6 +124,16 @@ namespace GeneCodeCS.Genetics
                                   FalseBranch = FalseBranch.Clone());
     }
 
+    /// <summary>
+    ///   Determines whether this instance and a specified <see cref="IGeneExpression" /> , which must also be a <see
+    ///    cref="BranchExpression" /> object, have the same value.
+    /// </summary>
+    /// <param name="obj"> The gene expression to compare to this instance. </param>
+    /// <returns> true if <paramref name="obj" /> is a <see cref="BranchExpression" /> and its value is the same as this instance; otherwise, false. </returns>
+    public bool Equals(IGeneExpression obj) {
+      return Equals(obj as TerminalExpression);
+    }
+
     #endregion
 
     /// <summary>

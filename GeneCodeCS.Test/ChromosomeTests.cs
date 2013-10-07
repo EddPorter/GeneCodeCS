@@ -25,6 +25,33 @@ namespace GeneCodeCS.Test
   public class ChromosomeTests
   {
     [TestMethod]
+    public void EqualsChromosome_xEqualsNull_returnsFalse() {
+      var x = new Chromosome();
+      Assert.IsFalse(x.Equals((Chromosome)null));
+    }
+
+    [TestMethod]
+    public void EqualsChromosome_xEqualsx_returnsTrue() {
+      var x = new Chromosome();
+      Assert.IsTrue(x.Equals(x));
+    }
+
+    [TestMethod]
+    public void EqualsChromosome_xEqualsy_and_yEqualsx_returns_xEqualsz() {
+      var x = new Chromosome();
+      var y = new Chromosome();
+      var z = new Chromosome();
+      Assert.IsTrue(!(x.Equals(y) && y.Equals(z)) || x.Equals(z));
+    }
+
+    [TestMethod]
+    public void EqualsChromosome_xEqualsy_returns_yEqualsx() {
+      var x = new Chromosome();
+      var y = new Chromosome();
+      Assert.IsTrue(x.Equals(y) == y.Equals(x));
+    }
+
+    [TestMethod]
     public void EqualsObj_xEqualsNull_returnsFalse() {
       var x = new Chromosome();
       Assert.IsFalse(x.Equals((object)null));
