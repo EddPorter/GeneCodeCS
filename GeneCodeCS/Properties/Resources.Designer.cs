@@ -169,6 +169,15 @@ namespace GeneCodeCS.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The correct number of parameters must be provided to methods that require them..
+        /// </summary>
+        internal static string MethodParametersRequired {
+            get {
+                return ResourceManager.GetString("MethodParametersRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The mutation rate must be between 0 and 100 inclusive..
         /// </summary>
         internal static string MutationRateValidRange {

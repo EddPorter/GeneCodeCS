@@ -163,19 +163,22 @@
   <data name="PreviousGenerationReportsRequired" xml:space="preserve">
     <value>The reports for the prevoius generation must be provided when breeding subsequent generations.</value>
   </data>
-  <data name="ValidBotCollectionRequired">
-    <value xml:space="preserve">A valid collection of bots is required.</value>
+  <data name="ValidBotCollectionRequired" xml:space="preserve">
+    <value>A valid collection of bots is required.</value>
   </data>
-  <data name="ValidBotRequired">
-    <value xml:space="preserve">A valid bot must be provided.</value>
+  <data name="ValidBotRequired" xml:space="preserve">
+    <value>A valid bot must be provided.</value>
   </data>
-  <data name="BotFitnessFunctionRequired">
-    <value xml:space="preserve">A bot fitness evaluation function must be provided.</value>
+  <data name="BotFitnessFunctionRequired" xml:space="preserve">
+    <value>A bot fitness evaluation function must be provided.</value>
   </data>
-  <data name="BotNameValidRange">
-    <value xml:space="preserve">A bot's name cannot be blank.</value>
+  <data name="BotNameValidRange" xml:space="preserve">
+    <value>A bot's name cannot be blank.</value>
   </data>
-  <data name="ChromosomeRequired">
-    <value xml:space="preserve">A valid chromose tree must be provided.</value>
+  <data name="ChromosomeRequired" xml:space="preserve">
+    <value>A valid chromose tree must be provided.</value>
+  </data>
+  <data name="MethodParametersRequired" xml:space="preserve">
+    <value>The correct number of parameters must be provided to methods that require them.</value>
   </data>
 </root>

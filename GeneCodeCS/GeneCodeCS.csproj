@@ -43,6 +43,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BaseBot.cs" />
+    <Compile Include="BotCompileException.cs" />
     <Compile Include="Population.cs" />
     <Compile Include="Compilation.cs" />
     <Compile Include="BotInformation.cs" />
