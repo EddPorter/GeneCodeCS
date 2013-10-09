@@ -51,13 +51,16 @@
   <ItemGroup>
     <Compile Include="BotGeneratorTest.cs" />
     <Compile Include="BranchExpressionTests.cs" />
+    <Compile Include="BranchGeneTests.cs" />
     <Compile Include="ChromosomeTests.cs" />
     <Compile Include="Helpers\NullLog.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SequenceExpressionTests.cs" />
+    <Compile Include="SequenceGeneTests.cs" />
     <Compile Include="TerminalExpressionTests.cs" />
     <Compile Include="Helpers\TestBot.cs" />
     <Compile Include="Helpers\TestParameter.cs" />
+    <Compile Include="TerminalGeneTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\GeneCodeCS\GeneCodeCS.csproj">

@@ -44,8 +44,7 @@ namespace GeneCodeCS.Genetics
         mi.GetParameters().Any(
           p =>
           !p.ParameterType.GetInterfaces().Any(
-            x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IParameter<>)) &&
-          p.DefaultValue == DBNull.Value)) {
+            x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IParameter<>)) && p.DefaultValue == null)) {
         throw new ArgumentException(Resources.MethodParametersMustDeriveFromIParameter, "mi");
       }
 

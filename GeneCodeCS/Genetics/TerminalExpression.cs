@@ -37,7 +37,7 @@ namespace GeneCodeCS.Genetics
       if (parameters == null) {
         throw new ArgumentNullException("parameters");
       }
-      if (parameters.Length < mi.GetParameters().Count(p => p.DefaultValue != DBNull.Value)) {
+      if (parameters.Length < mi.GetParameters().Count(p => p.DefaultValue != null)) {
         throw new ArgumentException(Resources.MethodParametersRequired, "mi");
       }
 
