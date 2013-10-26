@@ -24,7 +24,7 @@ namespace GeneCodeCS.Genetics
   /// <summary>
   ///   The gene definition for a sequence of n-chromosomes.
   /// </summary>
-  internal class SequenceGene : IGene
+  public class SequenceGene : IGene
   {
     /// <summary>
     ///   Creates a new <see cref="SequenceGene" /> instance to represent chromosome sequences of the specified length.

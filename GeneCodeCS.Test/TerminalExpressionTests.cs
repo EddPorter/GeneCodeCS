@@ -16,8 +16,7 @@
 // along with this program.  If not, see {http://www.gnu.org/licenses/}.
 //
 
-using System.Linq;
-using System.Reflection;
+using System;
 using System.Reflection.Emit;
 using GeneCodeCS.Genetics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -28,19 +27,40 @@ namespace GeneCodeCS.Test
   public class TerminalExpressionTests
   {
     [TestMethod]
-    public void EqualsObj_xEqualsNull_returnsFalse() {
+    public void TerminalExpression_Constructor_with_default_parameters_Creates_object() {
+      var methodInfo = GetType().GetMethod("TestMethod");
+      var terminalExpression = new TerminalExpression(methodInfo, new object[] { 5 });
+      Assert.IsNotNull(terminalExpression);
+    }
+
+    [TestMethod]
+    public void TerminalExpression_Constructor_with_excess_parameters_Creates_object() {
+      var methodInfo = new DynamicMethod("TestMethod", typeof(void), null);
+      var terminalExpression = new TerminalExpression(methodInfo, new object[] { 5 });
+      Assert.IsNotNull(terminalExpression);
+    }
+
+    [TestMethod]
+    [ExpectedException(typeof(ArgumentException))]
+    public void TerminalExpression_Constructor_with_unmatched_parameters_Throws_exception() {
+      var methodInfo = new DynamicMethod("TestMethod", typeof(void), new[] { typeof(TestParameter) });
+      new TerminalExpression(methodInfo);
+    }
+
+    [TestMethod]
+    public void TerminalExpression_EqualsObj_xEqualsNull_returnsFalse() {
       var x = new TerminalExpression(new DynamicMethod("Test", typeof(void), null));
       Assert.IsFalse(x.Equals((object)null));
     }
 
     [TestMethod]
-    public void EqualsObj_xEqualsx_returnsTrue() {
+    public void TerminalExpression_EqualsObj_xEqualsx_returnsTrue() {
       var x = new TerminalExpression(new DynamicMethod("Test", typeof(void), null));
       Assert.IsTrue(x.Equals((object)x));
     }
 
     [TestMethod]
-    public void EqualsObj_xEqualsy_and_yEqualsx_returns_xEqualsz() {
+    public void TerminalExpression_EqualsObj_xEqualsy_and_yEqualsx_returns_xEqualsz() {
       var x = new TerminalExpression(new DynamicMethod("Test", typeof(void), null));
       var y = new TerminalExpression(new DynamicMethod("Test2", typeof(void), null));
       var z = new TerminalExpression(new DynamicMethod("Test3", typeof(void), null));
@@ -48,20 +68,60 @@ namespace GeneCodeCS.Test
     }
 
     [TestMethod]
-    public void EqualsObj_xEqualsy_returns_yEqualsx() {
+    public void TerminalExpression_EqualsObj_xEqualsy_returns_yEqualsx() {
       var x = new TerminalExpression(new DynamicMethod("Test", typeof(void), null));
       var y = new TerminalExpression(new DynamicMethod("Test2", typeof(void), null));
       Assert.IsTrue(x.Equals((object)y) == y.Equals((object)x));
     }
 
     [TestMethod]
-    public void Terminal_ToString_Returns_method_name() {
-      const string name = "Terminal_ToString_Returns_method_name";
-      const BindingFlags flags = BindingFlags.Public | BindingFlags.Instance;
-      var methods = typeof(TerminalExpressionTests).GetMethods(flags);
-      var terminal = new TerminalExpression(methods.First(m => m.Name == name));
+    public void TerminalExpression_ToString_Returns_method_name() {
+      var methodInfo = new DynamicMethod("TestMethod", typeof(void), null);
+      var terminal = new TerminalExpression(methodInfo);
       var output = terminal.ToString();
-      Assert.AreEqual(name + "()", output);
+      Assert.AreEqual(string.Format("{0}()", methodInfo.Name), output);
     }
+
+    [TestMethod]
+    public void TerminalExpression_ToString_Returns_method_name_with_parameters() {
+      var methodInfo = new DynamicMethod("TestMethod", typeof(void), new[] { typeof(TestParameter) });
+      var terminal = new TerminalExpression(methodInfo, new object[] { 5 });
+      var output = terminal.ToString();
+      Assert.AreEqual(string.Format("{0}(5)", methodInfo.Name), output);
+    }
+
+    [TestMethod]
+    public void TerminalExpression_ToString_Returns_method_name_without_default_parameters() {
+      var methodInfo = GetType().GetMethod("TestMethod");
+      var terminal = new TerminalExpression(methodInfo, new object[] { 5 });
+      var output = terminal.ToString();
+      Assert.AreEqual(string.Format("{0}(5)", methodInfo.Name), output);
+    }
+
+    [TestMethod]
+    public void TerminalExpression_ToString_Returns_method_name_without_excess_parameters() {
+      var methodInfo = new DynamicMethod("TestMethod", typeof(void), null);
+      var terminal = new TerminalExpression(methodInfo, new object[] { 5 });
+      var output = terminal.ToString();
+      Assert.AreEqual(string.Format("{0}()", methodInfo.Name), output);
+    }
+
+    public void TestMethod(TestParameter value, int number = 6) {
+    }
+
+    #region Nested type: TestParameter
+
+    public class TestParameter : IParameter<int>
+    {
+      #region IParameter<int> Members
+
+      public int Value {
+        get { return 5; }
+      }
+
+      #endregion
+    }
+
+    #endregion
   }
 }

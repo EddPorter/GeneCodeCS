@@ -17,6 +17,7 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using GeneCodeCS.Properties;
@@ -26,22 +27,22 @@ namespace GeneCodeCS.Genetics
   /// <summary>
   ///   Represents a concrete implementation of a <see cref="TerminalGene" /> . This provides an action-taking mechanism at the leaf of the expression tree.
   /// </summary>
-  internal sealed class TerminalExpression : TerminalGene, IGeneExpression, IEquatable<TerminalExpression>
+  public sealed class TerminalExpression : TerminalGene, IGeneExpression, IEquatable<TerminalExpression>
   {
     /// <summary>
     ///   Initialises a new instance of the <see cref="TerminalExpression" /> class to represent the specified method.
     /// </summary>
     /// <param name="mi"> The method used by this <see cref="TerminalExpression" /> object. </param>
     /// <param name="parameters"> The parameters to be passed to the method during evaluation. The correct number of parameters must be provided for the method. </param>
-    public TerminalExpression(MethodInfo mi, object[] parameters) : base(mi) {
+    public TerminalExpression(MethodInfo mi, ICollection<object> parameters) : base(mi) {
       if (parameters == null) {
         throw new ArgumentNullException("parameters");
       }
-      if (parameters.Length < mi.GetParameters().Count(p => p.DefaultValue != null)) {
+      if (parameters.Count < mi.GetParameters().Count(p => (p.Attributes & ParameterAttributes.HasDefault) == 0)) {
         throw new ArgumentException(Resources.MethodParametersRequired, "mi");
       }
 
-      Parameters = parameters;
+      Parameters = parameters.Take(mi.GetParameters().Length).ToArray();
     }
 
     /// <summary>

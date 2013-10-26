@@ -26,7 +26,7 @@ namespace GeneCodeCS.Genetics
   /// <summary>
   ///   The definition of the Branch gene, which allows a boolean split in code execution depending on the result of evaluating the gene's method.
   /// </summary>
-  internal class BranchGene : IGene
+  public class BranchGene : IGene
   {
     /// <summary>
     ///   Creates a new <see cref="BranchGene" /> instance to represent decision-tree branching in the chromosomnal tree.
@@ -44,7 +44,8 @@ namespace GeneCodeCS.Genetics
         mi.GetParameters().Any(
           p =>
           !p.ParameterType.GetInterfaces().Any(
-            x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IParameter<>)) && p.DefaultValue == null)) {
+            x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IParameter<>)) &&
+          (p.Attributes & ParameterAttributes.HasDefault) == 0)) {
         throw new ArgumentException(Resources.MethodParametersMustDeriveFromIParameter, "mi");
       }
 

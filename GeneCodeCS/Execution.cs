@@ -81,7 +81,7 @@ namespace GeneCodeCS
         bot.Bot.Initialise(parameters);
         bot.Bot.Execute();
         bot.ExecutionException = null;
-        _log.InfoFormat("Bot '{0}' completed execution with fitness {1}.", bot.Name, bot.Fitness);
+        _log.InfoFormat("Bot '{0}' completed execution with fitness {1}.", bot.Name, bot.Bot.Fitness);
       } catch (Exception ex) {
         bot.ExecutionException = ex;
         _log.WarnFormat("Bot '{0}' threw an exception: {1}{2}{3}", bot.Name, ex, Environment.NewLine, ex.StackTrace);

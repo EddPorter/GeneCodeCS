@@ -26,7 +26,7 @@ namespace GeneCodeCS.Genetics
   /// <summary>
   ///   The gene definition for a termianl gene, i.e. action taker.
   /// </summary>
-  internal class TerminalGene : IGene
+  public class TerminalGene : IGene
   {
     /// <summary>
     ///   Creates a new <see cref="TerminalGene" /> instance to represent terminal node methods in the chromosomnal tree.
@@ -44,7 +44,8 @@ namespace GeneCodeCS.Genetics
         mi.GetParameters().Any(
           p =>
           !p.ParameterType.GetInterfaces().Any(
-            x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IParameter<>)) && p.DefaultValue == null)) {
+            x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IParameter<>)) &&
+          (p.Attributes & ParameterAttributes.HasDefault) == 0)) {
         throw new ArgumentException(Resources.MethodParametersMustDeriveFromIParameter, "mi");
       }
 

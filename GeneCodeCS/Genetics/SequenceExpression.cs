@@ -25,7 +25,7 @@ namespace GeneCodeCS.Genetics
   /// <summary>
   ///   Represents a concrete implementation of a <see cref="SequenceGene" /> . This provides a mechanism for executing a sequence of instructions serially.
   /// </summary>
-  internal sealed class SequenceExpression : SequenceGene, IGeneExpression, IEquatable<SequenceExpression>
+  public sealed class SequenceExpression : SequenceGene, IGeneExpression, IEquatable<SequenceExpression>
   {
     /// <summary>
     ///   Initialises a new instance of the <see cref="SequenceExpression" /> class to represent calling the specified expressions in order.
@@ -45,7 +45,7 @@ namespace GeneCodeCS.Genetics
     /// <remarks>
     ///   Not null.
     /// </remarks>
-    public Chromosome[] Expressions { get; private set; }
+    public Chromosome[] Expressions { get; set; }
 
     #region IEquatable<SequenceExpression> Members
 

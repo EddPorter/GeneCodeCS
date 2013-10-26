@@ -423,6 +423,7 @@ namespace GeneCodeCS
       // Locate all the terminals and branching methods in the base class.
       const BindingFlags flags = BindingFlags.Public | BindingFlags.Instance;
       var botClassMethods = typeof(TBot).GetMethods(flags);
+      // Can be parallelised. Need to change List data structures to thread-safe ones.
       foreach (var mi in botClassMethods.Where(mi => mi.DeclaringType != typeof(object))) {
         if (mi.ReturnType == typeof(void)) {
           // Terminals are void methods.
@@ -619,16 +620,16 @@ namespace GeneCodeCS
       Debug.Assert(bots != null && bots.Count > 0, "A collection of at least one bot must be specified.");
 
       // Make all fitnesses positive.
-      var fitnessAdjustment = 1 - bots.Min(g => g.Fitness);
+      var fitnessAdjustment = 1 - bots.Min(g => g.Bot.Fitness);
 
-      var totalSumFitness = bots.Sum(g => g.Fitness + fitnessAdjustment);
+      var totalSumFitness = bots.Sum(g => g.Bot.Fitness + fitnessAdjustment);
       var targetFitness = _random.NextDouble() * totalSumFitness;
 
       var currentSumFitness = 0.0d;
       var parent = bots.SkipWhile(g => {
-                                    currentSumFitness += g.Fitness + fitnessAdjustment;
-                                    return currentSumFitness < targetFitness;
-                                  }).First();
+        currentSumFitness += g.Bot.Fitness + fitnessAdjustment;
+        return currentSumFitness < targetFitness;
+      }).First();
       return parent;
     }
 

@@ -19,10 +19,6 @@
 using Common.Logging;
 using GeneCodeCS.Genetics;
 
-// TODO: Make this all better:
-// * Get rid of NotFinished() and expose termination via exception (?).
-// * Post-execution, call a fitness evaluation function (abstract).
-
 namespace GeneCodeCS
 {
   /// <summary>
@@ -36,12 +32,21 @@ namespace GeneCodeCS
   /// </remarks>
   public abstract class BaseBot
   {
+    public object CustomInformation { get; protected set; }
+
+    public int Fitness { get; protected set; }
+
     /// <summary>
-    ///   Called to begin bot evaluation. By the end of the method, the <c>FitnessReport</c> value should have been updated to reflect how the bot did. If any uncaught exceptions are thrown during execution, the <c>FitnessReport</c> is reset to <see
-    ///    cref="int.MinValue" /> .
+    ///   Called to begin bot evaluation. By the end of the method, the <see cref="Fitness" /> property should have been updated to reflect how the bot did. If any uncaught exceptions are thrown during execution, <see
+    ///    cref="Fitness" /> is reset to <see cref="int.MinValue" /> .
     /// </summary>
     public virtual void Execute() {
-      RunBotLogic();
+      try {
+        RunBotLogic();
+        Evaluate();
+      } catch {
+        Fitness = int.MinValue;
+      }
     }
 
     /// <summary>
@@ -51,11 +56,13 @@ namespace GeneCodeCS
     public virtual void Initialise(object parameters) {
     }
 
+    protected abstract void Evaluate();
+
     /// <summary>
     ///   Must be implemented to allow the bot to terminate at the appropriate time.
     /// </summary>
     /// <returns> Whether the execution cycle is complete. </returns>
-    public abstract bool NotFinished();
+    protected abstract bool NotFinished();
 
     /// <summary>
     ///   Contains the bot logic. Implemented by running <see cref="Population{TBot}.SimulateGenerations{T}" /> or <see

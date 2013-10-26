@@ -71,7 +71,7 @@ namespace GeneCodeCS
     /// <param name="generationNumber"> The generation number of the bot. This is used to create the file name and namespace for the compiled bot. </param>
     /// <returns> If the compilation was successful, returns <c>true</c> ; otherwise returns <c>false</c> . </returns>
     public bool CompileBot(BotInformation<TBot> bot, int generationNumber) {
-      if (bot == null || string.IsNullOrWhiteSpace(bot.Name) || bot.Bot == null) {
+      if (bot == null || string.IsNullOrWhiteSpace(bot.Name) || bot.Tree == null) {
         throw new ArgumentNullException("bot", Resources.ValidBotRequired);
       }
 
@@ -96,7 +96,7 @@ namespace GeneCodeCS
       _log.TraceFormat("GeneCodeCS.Compilation`1.CompileBots: Compiling {0} bots in generation {1}.", bots.Count,
                        generationNumber);
 
-      var namespaceName = string.Format("{0}{1:N}", typeof(TBot).Namespace, generationNumber);
+      var namespaceName = string.Format("{0}{1}", typeof(TBot).Namespace, generationNumber);
       _log.InfoFormat("Compiling into namespace {0}.", namespaceName);
 
       _log.Trace("GeneCodeCS.Compilation`1.CompileBots: Generating code.");
@@ -307,10 +307,11 @@ namespace GeneCodeCS
 
       const bool noAppend = false;
 
-      var sw = new StreamWriter(string.Format("{0}.cs", filename), noAppend);
-      using (var itw = new IndentedTextWriter(sw, "  ")) {
-        using (var codeProvider = new CSharpCodeProvider()) {
-          codeProvider.GenerateCodeFromCompileUnit(codeUnit, itw, new CodeGeneratorOptions());
+      using (var sw = new StreamWriter(string.Format("{0}.cs", filename), noAppend)) {
+        using (var itw = new IndentedTextWriter(sw, "  ")) {
+          using (var codeProvider = new CSharpCodeProvider()) {
+            codeProvider.GenerateCodeFromCompileUnit(codeUnit, itw, new CodeGeneratorOptions());
+          }
         }
       }
     }
@@ -327,7 +328,7 @@ namespace GeneCodeCS
       var options = new CompilerParameters
                     { GenerateInMemory = true, GenerateExecutable = false, IncludeDebugInformation = true };
       options.ReferencedAssemblies.Add("System.dll");
-      options.ReferencedAssemblies.Add("Common.dll");
+      options.ReferencedAssemblies.Add("Common.Logging.dll");
       options.ReferencedAssemblies.Add(Assembly.GetExecutingAssembly().ManifestModule.ScopeName);
 
       // Ensure that the assembly in which the provided TBot type is declared is included, along with any classes from
@@ -357,7 +358,7 @@ namespace GeneCodeCS
       // Display compilation errors.
       _log.ErrorFormat("Errors building {0} into {1}", sourceFile, results.PathToAssembly);
       var errors = new StringBuilder();
-      errors.AppendLine("Build encountered the following erros:");
+      errors.AppendLine("Build encountered the following errors:");
       foreach (CompilerError ce in results.Errors) {
         errors.AppendLine(string.Format("  {0}", ce));
       }

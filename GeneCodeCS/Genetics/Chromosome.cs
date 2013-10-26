@@ -34,7 +34,7 @@ namespace GeneCodeCS.Genetics
     ///   Gets the parent of this chromosome in the genetic tree.
     /// </summary>
     // TODO: Do we care?
-    public Chromosome Parent { get; internal set; }
+    public Chromosome Parent { get; set; }
 
     #region IEquatable<Chromosome> Members
 

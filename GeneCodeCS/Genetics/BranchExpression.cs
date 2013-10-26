@@ -27,7 +27,7 @@ namespace GeneCodeCS.Genetics
   /// <summary>
   ///   Represents a concrete implementation of a <see cref="BranchGene" /> . This provides a branching mechanism (if-then-else) in the execution tree.
   /// </summary>
-  internal sealed class BranchExpression : BranchGene, IGeneExpression, IEquatable<BranchExpression>
+  public sealed class BranchExpression : BranchGene, IGeneExpression, IEquatable<BranchExpression>
   {
     /// <summary>
     ///   Initialises a new instance of the <see cref="BranchExpression" /> class to represent the specified parameter-less method.
@@ -72,7 +72,7 @@ namespace GeneCodeCS.Genetics
     /// <remarks>
     ///   Not null.
     /// </remarks>
-    public Chromosome FalseBranch { get; internal set; }
+    public Chromosome FalseBranch { get; set; }
 
     /// <summary>
     ///   Gets the parameters to be passed to the method during evaluation.
@@ -88,7 +88,7 @@ namespace GeneCodeCS.Genetics
     /// <remarks>
     ///   Not null.
     /// </remarks>
-    public Chromosome TrueBranch { get; internal set; }
+    public Chromosome TrueBranch { get; set; }
 
     #region IEquatable<BranchExpression> Members
 

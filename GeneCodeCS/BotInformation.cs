@@ -57,22 +57,12 @@ namespace GeneCodeCS
     public TBot Bot { get; internal set; }
 
     /// <summary>
-    ///   Gets custom information that can be set during bot evaluation.
-    /// </summary>
-    public object CustomInformation { get; set; }
-
-    /// <summary>
     ///   If an exception is thrown during the execution of <see cref="Bot" /> , it is stored here.
     /// </summary>
     /// <remarks>
     ///   Can be null.
     /// </remarks>
     public Exception ExecutionException { get; internal set; }
-
-    /// <summary>
-    ///   Gets the calculated fitness value set during bot evaluation.
-    /// </summary>
-    public int Fitness { get; internal set; }
 
     /// <summary>
     ///   Gets the bot's name.

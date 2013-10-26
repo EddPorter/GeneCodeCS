@@ -42,14 +42,6 @@ namespace GeneCodeCS
     private readonly Compilation<TBot> _compiler;
 
     /// <summary>
-    ///   User-provided function used to evaluate a bot's fitness post-execution.
-    /// </summary>
-    /// <remarks>
-    ///   Not null.
-    /// </remarks>
-    private readonly Func<TBot, int> _evaluate;
-
-    /// <summary>
     ///   Used to execute a compiled bot to generate its fitness score.
     /// </summary>
     /// <remarks>
@@ -86,20 +78,15 @@ namespace GeneCodeCS
     ///   Initialises a new instance of the <see cref="Population{TBot}" /> class.
     /// </summary>
     /// <param name="log"> An instance of a <see cref="ILog" /> interface. This is used to log the status of the population during simulation. </param>
-    /// <param name="evaluate"> A function that will be used to evaluate the fitness of a bot. This is passed the bot object once it has been executed. </param>
     /// <param name="optimise"> A method that can optionally be provided to optimise the created expression tree, removing redundant code and consolidating statements. </param>
-    public Population(ILog log, Func<TBot, int> evaluate, Func<Chromosome, Chromosome> optimise = null) {
+    public Population(ILog log, Func<Chromosome, Chromosome> optimise = null) {
       if (log == null) {
         throw new ArgumentNullException("log", Resources.NonNullLogClassRequired);
-      }
-      if (evaluate == null) {
-        throw new ArgumentNullException("evaluate", Resources.BotFitnessFunctionRequired);
       }
 
       log.Trace("GeneCodeCS.Population`1.ctor: Constructing class.");
 
       _log = log;
-      _evaluate = evaluate;
       _optimise = optimise;
 
       _reproducer = new Reproduction<TBot>(log);
@@ -136,7 +123,7 @@ namespace GeneCodeCS
 
       if (starterBots != null) {
         _log.InfoFormat("Pre-seeding initial generation with {0} bots.", starterBots.Count);
-        latestOrderedEvaluation = starterBots.OrderByDescending(b => b.Fitness).ToList();
+        latestOrderedEvaluation = starterBots.OrderByDescending(b => b.Bot.Fitness).ToList();
       }
 
       var bestBots = new List<BotInformation<TBot>>();
@@ -160,18 +147,17 @@ namespace GeneCodeCS
 
         // 4. Evaluate bot fitness.
         _log.Trace("GeneCodeCS.Population`1.SimulateGenerations`1: Evaluating bot fitness.");
-        generationInformation.ForEach(bot => bot.Fitness = _evaluate(bot.Bot));
-        latestOrderedEvaluation = generationInformation.OrderByDescending(report => report.Fitness).ToList();
+        latestOrderedEvaluation = generationInformation.OrderByDescending(report => report.Bot.Fitness).ToList();
 
         // We use First() and Last() since the list is sorted.
-        var bestFitness = latestOrderedEvaluation.First().Fitness;
-        var worstFitness = latestOrderedEvaluation.Last().Fitness;
-        var meanFitness = latestOrderedEvaluation.Average(fp => fp.Fitness);
+        var bestFitness = latestOrderedEvaluation.First().Bot.Fitness;
+        var worstFitness = latestOrderedEvaluation.Last().Bot.Fitness;
+        var meanFitness = latestOrderedEvaluation.Average(fp => fp.Bot.Fitness);
 
         _log.InfoFormat("Generation {0} report: Best {1:N} / Mean average {2:N2} / Worst {3:N}", generationNumber,
                         bestFitness, meanFitness, worstFitness);
 
-        bestBots = latestOrderedEvaluation.TakeWhile(b => b.Fitness == bestFitness).ToList();
+        bestBots = latestOrderedEvaluation.TakeWhile(b => b.Bot.Fitness == bestFitness).ToList();
         _log.InfoFormat("Best bots: '{0}'", string.Join("', '", bestBots.Select(b => b.Name)));
 
         generationHistory.Add(latestOrderedEvaluation);
@@ -184,7 +170,7 @@ namespace GeneCodeCS
 
       _log.Info("Bot creation complete.");
       foreach (var bot in bestBots) {
-        _log.InfoFormat("Bot '{0}': Fitness = {1:N}", bot.Name, bot.Fitness);
+        _log.InfoFormat("Bot '{0}': Fitness = {1:N}", bot.Name, bot.Bot.Fitness);
       }
       return bestBots;
     }
@@ -218,10 +204,9 @@ namespace GeneCodeCS
         _executor.Run(botInformation, parameters);
 
         // 4. Evaluate bot fitness.
-        botInformation.Fitness = _evaluate(botInformation.Bot);
-        _log.InfoFormat("Bot '{0}': Fitness = {1:N}", botInformation.Name, botInformation.Fitness);
-        if (botInformation.Fitness > fitnessThreshold) {
-          _log.InfoFormat("Exceeded threshold limit ({0}) with {1}.", fitnessThreshold, botInformation.Fitness);
+        _log.InfoFormat("Bot '{0}': Fitness = {1:N}", botInformation.Name, botInformation.Bot.Fitness);
+        if (botInformation.Bot.Fitness > fitnessThreshold) {
+          _log.InfoFormat("Exceeded threshold limit ({0}) with {1}.", fitnessThreshold, botInformation.Bot.Fitness);
           return botInformation;
         }
       }
