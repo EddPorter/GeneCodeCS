@@ -326,7 +326,7 @@ namespace GeneCodeCS
 
       var provider = new CSharpCodeProvider();
       var options = new CompilerParameters
-                    { GenerateInMemory = true, GenerateExecutable = false, IncludeDebugInformation = true };
+                    { GenerateInMemory = true, GenerateExecutable = false, IncludeDebugInformation = false };
       options.ReferencedAssemblies.Add("System.dll");
       options.ReferencedAssemblies.Add("Common.Logging.dll");
       options.ReferencedAssemblies.Add(Assembly.GetExecutingAssembly().ManifestModule.ScopeName);

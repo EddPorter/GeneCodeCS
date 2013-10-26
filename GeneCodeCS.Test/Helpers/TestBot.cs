@@ -55,12 +55,16 @@ namespace GeneCodeCS.Test.Helpers
       return true;
     }
 
-    public override bool NotFinished() {
+    protected override bool NotFinished() {
       throw new NotImplementedException();
     }
 
     protected override void RunBotLogic() {
       throw new NotImplementedException();
+    }
+
+    protected override void Evaluate() {
+      Fitness = 5;
     }
   }
 }
