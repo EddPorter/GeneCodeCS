@@ -184,7 +184,7 @@ namespace GeneCodeCS
     /// <returns> The first bot to exceed the fitness threshold. </returns>
     public BotInformation<TBot> SimulateIndividuals<T>(T parameters = default(T), int maxTreeDepth = 3,
                                                        int fitnessThreshold = 0) {
-      _log.InfoFormat("Simulating indivudual bots with tree depth of {0} and a limiting threshold of {1}.", maxTreeDepth,
+      _log.InfoFormat("Simulating individual bots with tree depth of {0} and a limiting threshold of {1}.", maxTreeDepth,
                       fitnessThreshold);
 
       while (true) {
