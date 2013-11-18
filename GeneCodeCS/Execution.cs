@@ -85,6 +85,7 @@ namespace GeneCodeCS
       } catch (Exception ex) {
         bot.ExecutionException = ex;
         _log.WarnFormat("Bot '{0}' threw an exception: {1}{2}{3}", bot.Name, ex, Environment.NewLine, ex.StackTrace);
+        throw;
       }
     }
   }

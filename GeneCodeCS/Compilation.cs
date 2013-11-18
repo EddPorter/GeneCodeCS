@@ -112,7 +112,7 @@ namespace GeneCodeCS
       _log.Trace("GeneCodeCS.Compilation`1.CompileBots: Creating bots from assembly.");
       var types = compiledBots.CompiledAssembly.GetTypes();
       foreach (var type in types) {
-        bots.Single(bot => bot.Name == type.Name).Bot = (TBot)Activator.CreateInstance(type, _log);
+        bots.Single(bot => bot.Name == type.Name).Bot = (TBot)Activator.CreateInstance(type);
       }
       return true;
     }
@@ -130,7 +130,7 @@ namespace GeneCodeCS
 
       var codeType = new CodeTypeDeclaration(name);
       codeType.BaseTypes.Add(typeof(TBot).Name);
-      codeType.Members.Add(BuildConstructor());
+      //codeType.Members.Add(BuildConstructor());
       codeType.Members.Add(BuildRunBotLogicMethod(chromosome));
       return codeType;
     }
@@ -153,8 +153,6 @@ namespace GeneCodeCS
       var namespaces = new CodeNamespace(@namespace);
       //   using TBot.Namespace;
       namespaces.Imports.Add(new CodeNamespaceImport(typeof(TBot).Namespace));
-      //   using Common.Logging;
-      namespaces.Imports.Add(new CodeNamespaceImport("Common.Logging"));
 
       foreach (var botType in bots.Select(b => BuildClass(b.Name, b.Tree))) {
         // public class Bot {
