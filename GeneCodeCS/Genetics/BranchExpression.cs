@@ -36,8 +36,7 @@ namespace GeneCodeCS.Genetics
     /// <param name="trueBranch"> The <see cref="Chromosome" /> tree to execute if the <paramref name="mi" /> method returns <c>true</c> . </param>
     /// <param name="falseBranch"> The <see cref="Chromosome" /> tree to execute if the <paramref name="mi" /> method returns <c>false</c> . </param>
     public BranchExpression(MethodInfo mi, Chromosome trueBranch, Chromosome falseBranch)
-      : this(mi, new object[] { }, trueBranch, falseBranch) {
-    }
+      : this(mi, new object[] { }, trueBranch, falseBranch) { }
 
     /// <summary>
     ///   Initialises a new instance of the <see cref="BranchExpression" /> class to represent the specified method.
@@ -130,9 +129,7 @@ namespace GeneCodeCS.Genetics
     /// </summary>
     /// <param name="obj"> The gene expression to compare to this instance. </param>
     /// <returns> true if <paramref name="obj" /> is a <see cref="BranchExpression" /> and its value is the same as this instance; otherwise, false. </returns>
-    public bool Equals(IGeneExpression obj) {
-      return Equals(obj as BranchExpression);
-    }
+    public bool Equals(IGeneExpression obj) { return Equals(obj as BranchExpression); }
 
     #endregion
 
@@ -159,9 +156,7 @@ namespace GeneCodeCS.Genetics
     /// <param name="a"> The first <see cref="BranchExpression" /> object to compare, or null. </param>
     /// <param name="b"> The second <see cref="BranchExpression" /> object to compare, or null. </param>
     /// <returns> <c>true</c> if the value of <paramref name="a" /> is different from the value of <paramref name="b" /> ; otherwise, false. </returns>
-    public static bool operator !=(BranchExpression a, BranchExpression b) {
-      return !(a == b);
-    }
+    public static bool operator !=(BranchExpression a, BranchExpression b) { return !(a == b); }
 
     /// <summary>
     ///   Determines whether two specified <see cref="BranchExpression" /> objects have the same value.

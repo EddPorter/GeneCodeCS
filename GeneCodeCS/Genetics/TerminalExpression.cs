@@ -49,8 +49,7 @@ namespace GeneCodeCS.Genetics
     ///   Initialises a new instance of the <see cref="TerminalExpression" /> class to represent the specified parameter-less method.
     /// </summary>
     /// <param name="mi"> The method used by this <see cref="TerminalExpression" /> object. </param>
-    public TerminalExpression(MethodInfo mi) : this(mi, new object[] { }) {
-    }
+    public TerminalExpression(MethodInfo mi) : this(mi, new object[] { }) { }
 
     /// <summary>
     ///   Gets the parameters to be passed to the method during evaluation.
@@ -88,9 +87,7 @@ namespace GeneCodeCS.Genetics
     ///   Performs a deep copy of this <see cref="TerminalExpression" /> and returns the result.
     /// </summary>
     /// <returns> The copied object. </returns>
-    public IGeneExpression Clone() {
-      return new TerminalExpression(MethodInfo, (object[])Parameters.Clone());
-    }
+    public IGeneExpression Clone() { return new TerminalExpression(MethodInfo, (object[])Parameters.Clone()); }
 
     /// <summary>
     ///   Determines whether this instance and a specified <see cref="IGeneExpression" /> , which must also be a <see
@@ -98,9 +95,7 @@ namespace GeneCodeCS.Genetics
     /// </summary>
     /// <param name="obj"> The gene expression to compare to this instance. </param>
     /// <returns> true if <paramref name="obj" /> is a <see cref="TerminalExpression" /> and its value is the same as this instance; otherwise, false. </returns>
-    public bool Equals(IGeneExpression obj) {
-      return Equals(obj as TerminalExpression);
-    }
+    public bool Equals(IGeneExpression obj) { return Equals(obj as TerminalExpression); }
 
     #endregion
 
@@ -126,9 +121,7 @@ namespace GeneCodeCS.Genetics
     /// <param name="a"> The first <see cref="TerminalExpression" /> object to compare, or null. </param>
     /// <param name="b"> The second <see cref="TerminalExpression" /> object to compare, or null. </param>
     /// <returns> <c>true</c> if the value of <paramref name="a" /> is different from the value of <paramref name="b" /> ; otherwise, false. </returns>
-    public static bool operator !=(TerminalExpression a, TerminalExpression b) {
-      return !(a == b);
-    }
+    public static bool operator !=(TerminalExpression a, TerminalExpression b) { return !(a == b); }
 
     /// <summary>
     ///   Determines whether two specified <see cref="TerminalExpression" /> objects have the same value.
@@ -179,8 +172,6 @@ namespace GeneCodeCS.Genetics
     ///   Creates a string representation of this terminal expression.
     /// </summary>
     /// <returns> A string representation of this object. </returns>
-    public override string ToString() {
-      return string.Format("{0}({1})", MethodInfo.Name, string.Join(", ", Parameters));
-    }
+    public override string ToString() { return string.Format("{0}({1})", MethodInfo.Name, string.Join(", ", Parameters)); }
   }
 }
