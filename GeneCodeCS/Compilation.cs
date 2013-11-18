@@ -47,21 +47,12 @@ namespace GeneCodeCS
     /// <remarks>
     ///   Not null.
     /// </remarks>
-    private readonly ILog _log;
+    private readonly ILog _log = LogManager.GetCurrentClassLogger();
 
     /// <summary>
     ///   Initialises a new instance of the <see cref="Compilation{TBot}" /> class.
     /// </summary>
-    /// <param name="log"> An instance of an <see cref="ILog" /> interface. This is used to log the status of the compilation process. </param>
-    public Compilation(ILog log) {
-      if (log == null) {
-        throw new ArgumentNullException("log", Resources.NonNullLogClassRequired);
-      }
-
-      log.Trace("GeneCodeCS.Compilation`1.ctor: Constructing class.");
-
-      _log = log;
-    }
+    public Compilation() { _log.Trace("ctor: Constructing class."); }
 
     /// <summary>
     ///   Converts a bot into C# code and compiles it into an assembly. The code and assembly file names are constructed from the <typeparamref
@@ -93,26 +84,25 @@ namespace GeneCodeCS
         throw new ArgumentNullException("generationNumber", Resources.GenerationNumberValidRange);
       }
 
-      _log.TraceFormat("GeneCodeCS.Compilation`1.CompileBots: Compiling {0} bots in generation {1}.", bots.Count,
-                       generationNumber);
+      _log.TraceFormat("CompileBots: Compiling {0} bots in generation {1}.", bots.Count, generationNumber);
 
       var namespaceName = string.Format("{0}{1}", typeof(TBot).Namespace, generationNumber);
       _log.InfoFormat("Compiling into namespace {0}.", namespaceName);
 
-      _log.Trace("GeneCodeCS.Compilation`1.CompileBots: Generating code.");
+      _log.Trace("CompileBots: Generating code.");
       var codeCompileUnit = BuildCompileUnit(bots, namespaceName);
       GenerateCode(namespaceName, codeCompileUnit);
 
-      _log.Trace("GeneCodeCS.Compilation`1.CompileBots: Compiling code.");
+      _log.Trace("CompileBots: Compiling code.");
       var compiledBots = CompileCode(namespaceName);
       if (compiledBots == null) {
         return false;
       }
 
-      _log.Trace("GeneCodeCS.Compilation`1.CompileBots: Creating bots from assembly.");
+      _log.Trace("CompileBots: Creating bots from assembly.");
       var types = compiledBots.CompiledAssembly.GetTypes();
       foreach (var type in types) {
-        bots.Single(bot => bot.Name == type.Name).Bot = (TBot)Activator.CreateInstance(type, _log);
+        bots.Single(bot => bot.Name == type.Name).Bot = (TBot)Activator.CreateInstance(type);
       }
       return true;
     }
@@ -130,7 +120,7 @@ namespace GeneCodeCS
 
       var codeType = new CodeTypeDeclaration(name);
       codeType.BaseTypes.Add(typeof(TBot).Name);
-      codeType.Members.Add(BuildConstructor());
+      //codeType.Members.Add(BuildConstructor());
       codeType.Members.Add(BuildRunBotLogicMethod(chromosome));
       return codeType;
     }
@@ -362,7 +352,7 @@ namespace GeneCodeCS
       foreach (CompilerError ce in results.Errors) {
         errors.AppendLine(string.Format("  {0}", ce));
       }
-      _log.TraceFormat("GeneCodeCS.Compilation`1.CompileCode: {0}", errors);
+      _log.TraceFormat("CompileCode: {0}", errors);
       return null;
     }
   }

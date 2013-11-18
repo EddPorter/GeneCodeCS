@@ -38,21 +38,12 @@ namespace GeneCodeCS
     /// <remarks>
     ///   Not null.
     /// </remarks>
-    private readonly ILog _log;
+    private readonly ILog _log = LogManager.GetCurrentClassLogger();
 
     /// <summary>
     ///   Initialises a new instance of the <see cref="Execution{TBot}" /> class.
     /// </summary>
-    /// <param name="log"> An instance of an <see cref="ILog" /> interface. This is used to log the status of the execution process. </param>
-    public Execution(ILog log) {
-      if (log == null) {
-        throw new ArgumentNullException("log", Resources.NonNullLogClassRequired);
-      }
-
-      log.Trace("GeneCodeCS.Execution`1.ctor: Constructing class.");
-
-      _log = log;
-    }
+    public Execution() { _log.Trace("ctor: Constructing class."); }
 
     /// <summary>
     ///   Executes a collection of bots in parallel.
