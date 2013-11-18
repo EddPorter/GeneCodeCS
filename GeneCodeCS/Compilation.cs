@@ -120,7 +120,6 @@ namespace GeneCodeCS
 
       var codeType = new CodeTypeDeclaration(name);
       codeType.BaseTypes.Add(typeof(TBot).Name);
-      //codeType.Members.Add(BuildConstructor());
       codeType.Members.Add(BuildRunBotLogicMethod(chromosome));
       return codeType;
     }
@@ -155,17 +154,6 @@ namespace GeneCodeCS
 
       codeCompileUnit.Namespaces.Add(namespaces);
       return codeCompileUnit;
-    }
-
-    /// <summary>
-    ///   Builds the constructor for the bot. It will take a single argument of type <see name="ILog" /> and pass it to the base class.
-    /// </summary>
-    /// <returns> The code member for the constructor method. </returns>
-    private static CodeMemberMethod BuildConstructor() {
-      var constructor = new CodeConstructor { Attributes = MemberAttributes.Public };
-      constructor.Parameters.Add(new CodeParameterDeclarationExpression(typeof(ILog), "log"));
-      constructor.BaseConstructorArgs.Add(new CodeVariableReferenceExpression("log"));
-      return constructor;
     }
 
     /// <summary>
