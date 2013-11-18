@@ -23,6 +23,5 @@ namespace GeneCodeCS.Genetics
   ///    cref="IGene" /> in the chromosomal tree.
   /// </summary>
   internal interface IGene
-  {
-  }
+  {}
 }

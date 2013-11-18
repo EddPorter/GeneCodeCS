@@ -72,9 +72,7 @@ namespace GeneCodeCS.Genetics
     ///   Performs a deep copy of this <see cref="SequenceExpression" /> and returns the result.
     /// </summary>
     /// <returns> The copied object. </returns>
-    public IGeneExpression Clone() {
-      return new SequenceExpression(Expressions.Select(e => e.Clone()).ToArray());
-    }
+    public IGeneExpression Clone() { return new SequenceExpression(Expressions.Select(e => e.Clone()).ToArray()); }
 
     /// <summary>
     ///   Determines whether this instance and a specified <see cref="IGeneExpression" /> , which must also be a <see
@@ -82,9 +80,7 @@ namespace GeneCodeCS.Genetics
     /// </summary>
     /// <param name="obj"> The gene expression to compare to this instance. </param>
     /// <returns> true if <paramref name="obj" /> is a <see cref="SequenceExpression" /> and its value is the same as this instance; otherwise, false. </returns>
-    public bool Equals(IGeneExpression obj) {
-      return Equals(obj as SequenceExpression);
-    }
+    public bool Equals(IGeneExpression obj) { return Equals(obj as SequenceExpression); }
 
     #endregion
 
@@ -110,9 +106,7 @@ namespace GeneCodeCS.Genetics
     /// <param name="a"> The first <see cref="SequenceExpression" /> object to compare, or null. </param>
     /// <param name="b"> The second <see cref="SequenceExpression" /> object to compare, or null. </param>
     /// <returns> <c>true</c> if the value of <paramref name="a" /> is different from the value of <paramref name="b" /> ; otherwise, false. </returns>
-    public static bool operator !=(SequenceExpression a, SequenceExpression b) {
-      return !(a == b);
-    }
+    public static bool operator !=(SequenceExpression a, SequenceExpression b) { return !(a == b); }
 
     /// <summary>
     ///   Determines whether two specified <see cref="SequenceExpression" /> objects have the same value.

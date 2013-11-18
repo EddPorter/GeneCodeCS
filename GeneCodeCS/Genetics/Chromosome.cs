@@ -81,9 +81,7 @@ namespace GeneCodeCS.Genetics
     /// <param name="a"> The first <see cref="Chromosome" /> object to compare, or null. </param>
     /// <param name="b"> The second <see cref="Chromosome" /> object to compare, or null. </param>
     /// <returns> <c>true</c> if the value of <paramref name="a" /> is different from the value of <paramref name="b" /> ; otherwise, false. </returns>
-    public static bool operator !=(Chromosome a, Chromosome b) {
-      return !(a == b);
-    }
+    public static bool operator !=(Chromosome a, Chromosome b) { return !(a == b); }
 
     /// <summary>
     ///   Determines whether two specified <see cref="Chromosome" /> objects have the same value.
@@ -105,9 +103,7 @@ namespace GeneCodeCS.Genetics
     ///   Creates a new, independent instance of the whole expression tree.
     /// </summary>
     /// <returns> A new, memory-independent copy of this expression tree. </returns>
-    public Chromosome Clone() {
-      return new Chromosome { Node = Node.Clone(), Parent = Parent };
-    }
+    public Chromosome Clone() { return new Chromosome { Node = Node.Clone(), Parent = Parent }; }
 
     /// <summary>
     ///   Determines whether this instance and a specified object, which must also be a <see cref="BranchExpression" /> object, have the same value.
@@ -139,8 +135,6 @@ namespace GeneCodeCS.Genetics
     ///   Creates a string representation of this chromosome and its descendant tree structures.
     /// </summary>
     /// <returns> A string representation of this object. </returns>
-    public override string ToString() {
-      return Node.ToString();
-    }
+    public override string ToString() { return Node.ToString(); }
   }
 }

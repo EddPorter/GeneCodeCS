@@ -21,7 +21,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Common.Logging;
 using GeneCodeCS.Genetics;
-using GeneCodeCS.Properties;
 
 namespace GeneCodeCS
 {
@@ -55,7 +54,7 @@ namespace GeneCodeCS
     /// <remarks>
     ///   Not null.
     /// </remarks>
-    private readonly ILog _log;
+    private readonly ILog _log = LogManager.GetCurrentClassLogger();
 
     /// <summary>
     ///   An optional method that optimises a given <see cref="Chromosome" /> (gene expression tree). It removes redundant code and consolidates statements. The purpose is to reduce the time taken to evaluate a bot's fitness and to reduce the likelihood that identical bots are created. The resulting <see
@@ -77,21 +76,15 @@ namespace GeneCodeCS
     /// <summary>
     ///   Initialises a new instance of the <see cref="Population{TBot}" /> class.
     /// </summary>
-    /// <param name="log"> An instance of a <see cref="ILog" /> interface. This is used to log the status of the population during simulation. </param>
     /// <param name="optimise"> A method that can optionally be provided to optimise the created expression tree, removing redundant code and consolidating statements. </param>
-    public Population(ILog log, Func<Chromosome, Chromosome> optimise = null) {
-      if (log == null) {
-        throw new ArgumentNullException("log", Resources.NonNullLogClassRequired);
-      }
+    public Population(Func<Chromosome, Chromosome> optimise = null) {
+      _log.Trace("ctor: Constructing class.");
 
-      log.Trace("GeneCodeCS.Population`1.ctor: Constructing class.");
-
-      _log = log;
       _optimise = optimise;
 
-      _reproducer = new Reproduction<TBot>(log);
-      _compiler = new Compilation<TBot>(log);
-      _executor = new Execution<TBot>(log);
+      _reproducer = new Reproduction<TBot>();
+      _compiler = new Compilation<TBot>();
+      _executor = new Execution<TBot>();
     }
 
     /// <summary>
@@ -131,22 +124,22 @@ namespace GeneCodeCS
         _log.InfoFormat("Starting generation {0:N}", generationNumber);
 
         // 1. Generate expression trees for generation.
-        _log.Trace("GeneCodeCS.Population`1.SimulateGenerations`1: Breeding generation.");
+        _log.Trace("SimulateGenerations`1: Breeding generation.");
         var generationInformation = _reproducer.BreedGeneration(generationNumber, botsPerGeneration, maxTreeDepth,
                                                                 latestOrderedEvaluation, _optimise);
 
         // 2. Convert expression trees to code.
-        _log.Trace("GeneCodeCS.Population`1.SimulateGenerations`1: Compiling bot code.");
+        _log.Trace("SimulateGenerations`1: Compiling bot code.");
         if (_compiler.CompileBots(generationInformation, generationNumber)) {
           throw new BotCompileException();
         }
 
         // 3. Run code to generate fitness.
-        _log.Trace("GeneCodeCS.Population`1.SimulateGenerations`1: Executing bots.");
+        _log.Trace("SimulateGenerations`1: Executing bots.");
         _executor.Run(generationInformation, parameters);
 
         // 4. Evaluate bot fitness.
-        _log.Trace("GeneCodeCS.Population`1.SimulateGenerations`1: Evaluating bot fitness.");
+        _log.Trace("SimulateGenerations`1: Evaluating bot fitness.");
         latestOrderedEvaluation = generationInformation.OrderByDescending(report => report.Bot.Fitness).ToList();
 
         // We use First() and Last() since the list is sorted.
@@ -189,18 +182,18 @@ namespace GeneCodeCS
 
       while (true) {
         // 1. Generate single bot.
-        _log.Trace("GeneCodeCS.Population`1.SimulateIndividuals`1: Breeding single bot.");
+        _log.Trace("SimulateIndividuals`1: Breeding single bot.");
         var botInformation = _reproducer.CreateBot(maxTreeDepth, _optimise);
 
         // 2. Convert expression tree to code.
-        _log.Trace("GeneCodeCS.Population`1.SimulateIndividuals`1: Compiling bot code.");
+        _log.Trace("SimulateIndividuals`1: Compiling bot code.");
         const int generationNumber = 0;
         if (!_compiler.CompileBot(botInformation, generationNumber)) {
           throw new BotCompileException();
         }
 
         // 3. Run code to generate fitness.
-        _log.Trace("GeneCodeCS.Population`1.SimulateIndividuals`1: Executing bot.");
+        _log.Trace("SimulateIndividuals`1: Executing bot.");
         _executor.Run(botInformation, parameters);
 
         // 4. Evaluate bot fitness.

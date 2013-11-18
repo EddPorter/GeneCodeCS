@@ -32,8 +32,15 @@ namespace GeneCodeCS
   /// </remarks>
   public abstract class BaseBot
   {
+    /// <summary>
+    ///   Gets custom information about the bot as configured by the bot's implementation of the <see cref="Execute" /> method.
+    /// </summary>
     public object CustomInformation { get; protected set; }
 
+    /// <summary>
+    ///   Gets the evaluated fitness of the bot after execution against a dataset. Equals <c>Int.MinValue</c> prior to evaluation. The Bot must set this as part of its implementation of <see
+    ///    cref="Execute" /> .
+    /// </summary>
     public int Fitness { get; protected set; }
 
     /// <summary>
@@ -53,8 +60,7 @@ namespace GeneCodeCS
     ///   Can be used to pass parameters to the bot prior to execution.
     /// </summary>
     /// <param name="parameters"> The parameters to be passed. </param>
-    public virtual void Initialise(object parameters) {
-    }
+    public virtual void Initialise(object parameters) { }
 
     protected abstract void Evaluate();
 
