@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -90,7 +91,10 @@ namespace GeneCodeCS
     /// </summary>
     /// <param name="randomSeed"> A value to use to seed the randomiser used within the class. This allows for reproducibility if required. If 0, then the current time is used to seed the randomiser. </param>
     public Reproduction(int randomSeed = 0) {
+      InitialisationMethod = Initialisation.Full;
       _log.Trace("ctor: Constructing class.");
+
+      InitialisationMethod = Initialisation.Grow;
 
       Initialise(randomSeed);
     }
@@ -108,6 +112,11 @@ namespace GeneCodeCS
         _elitePercentage = value;
       }
     }
+
+    /// <summary>
+    ///   Gets and sets the tree creation method to use when generating new bots.
+    /// </summary>
+    public Initialisation InitialisationMethod { get; set; }
 
     /// <summary>
     ///   Gets or sets the mutation rate (chance) to use during breeding (0-100). Defaults to 5.
@@ -136,6 +145,11 @@ namespace GeneCodeCS
         _randomBotPercentage = value;
       }
     }
+
+    /// <summary>
+    ///   Gets or sets the method to use for selecting bots to breed from a population.
+    /// </summary>
+    public Selection SelectionMethod { get; set; }
 
     /// <summary>
     ///   Breeds a generation of <paramref name="botsPerGeneration" /> bots. If the <paramref name="generationNumber" /> is 0 then copies any bots provided in <paramref
@@ -321,7 +335,24 @@ namespace GeneCodeCS
 
       Debug.Assert(maxTreeDepth >= 0, Resources.MaxTreeDepthValidRange);
 
-      var node = maxTreeDepth > 0 ? GetRandomFunctionOrTerminal() : GetRandomTerminal();
+      IGene node;
+      if (maxTreeDepth <= 0) {
+        node = GetRandomTerminal();
+      } else {
+        switch (InitialisationMethod) {
+          case Initialisation.Full:
+            node = GetRandomFunction();
+            break;
+
+          case Initialisation.Grow:
+            node = GetRandomFunctionOrTerminal();
+            break;
+
+          default:
+            throw new InvalidEnumArgumentException("_initialisationMethod", (int)InitialisationMethod,
+                                                   typeof(Initialisation));
+        }
+      }
 
       if (node is BranchGene) {
         return InstantiateBranch(node as BranchGene, maxTreeDepth, parent);
@@ -376,6 +407,12 @@ namespace GeneCodeCS
         methodParameters.Select(parameter => Activator.CreateInstance(parameter.ParameterType, _random)).Select(
           parameterInstance => ((dynamic)parameterInstance).Value).Cast<object>().ToArray();
     }
+
+    /// <summary>
+    ///   Returns a random <see cref="IGene" /> from the list (based on <typeparamref name="TBot" /> ) of functions calculated when the class was first instantiated.
+    /// </summary>
+    /// <returns> A randomly selected <see cref="IGene" /> instance. </returns>
+    private IGene GetRandomFunction() { return _nonTerminals.OrderBy(x => _random.Next()).First(); }
 
     /// <summary>
     ///   Returns a random <see cref="IGene" /> from the list (based on <typeparamref name="TBot" /> ) calculated when the class was first instantiated.
@@ -578,13 +615,27 @@ namespace GeneCodeCS
     /// <param name="bots"> The list of bots to pick from. </param>
     /// <returns> An array of information about the two selected bots. </returns>
     private BotInformation<TBot>[] SelectParents(ICollection<BotInformation<TBot>> bots) {
-      Debug.Assert(bots != null && bots.Count > 0, "A collection of at least one bot must be specified.");
-      var parents = new BotInformation<TBot>[2];
+      Debug.Assert(bots != null, "A collection of bots must be specified.");
 
-      parents[0] = SelectRandomBotWeightedByFitness(bots);
-      parents[1] = SelectRandomBotWeightedByFitness(bots);
+      switch (SelectionMethod) {
+        case Selection.FitnessProportionate:
+          var parents = new BotInformation<TBot>[2];
+          parents[0] = SelectRandomBotWeightedByFitness(bots);
+          parents[1] = SelectRandomBotWeightedByFitness(bots);
+          return parents;
+        case Selection.Tournament:
+          return SelectRandomBotsByTournament(bots);
+        default:
+          throw new InvalidEnumArgumentException("SelectionMethod", (int)SelectionMethod, typeof(Selection));
+      }
+    }
 
-      return parents;
+    private BotInformation<TBot>[] SelectRandomBotsByTournament(ICollection<BotInformation<TBot>> bots) {
+      Debug.Assert(bots != null && bots.Count > 1, "A collection of at least two bots must be specified.");
+
+      var tournamentSize = Math.Min(Math.Max(bots.Count / 2, 3), bots.Count);
+      return
+        bots.OrderBy(b => _random.Next()).Take(tournamentSize).OrderByDescending(b => b.Bot.Fitness).Take(2).ToArray();
     }
 
     /// <summary>

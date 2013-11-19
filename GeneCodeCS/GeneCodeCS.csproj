@@ -47,6 +47,7 @@
   <ItemGroup>
     <Compile Include="BaseBot.cs" />
     <Compile Include="BotCompileException.cs" />
+    <Compile Include="Initialisation.cs" />
     <Compile Include="Population.cs" />
     <Compile Include="Compilation.cs" />
     <Compile Include="BotInformation.cs" />
@@ -70,6 +71,7 @@
     <Compile Include="Genetics\SequenceExpression.cs" />
     <Compile Include="Genetics\TerminalGene.cs" />
     <Compile Include="Genetics\TerminalExpression.cs" />
+    <Compile Include="Selection.cs" />
     <Compile Include="UnknownGenotypeException.cs" />
   </ItemGroup>
   <ItemGroup>
