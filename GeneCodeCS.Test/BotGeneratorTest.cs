@@ -59,8 +59,7 @@ namespace GeneCodeCS.Test
     }
 
     private static void BotGeneratorCreateRandomBotReturnsNonNullBotTreeHelper<TBot>() where TBot : BaseBot {
-      ILog log = new NullLog();
-      var target = new Reproduction<TBot>(log);
+      var target = new Reproduction<TBot>();
       const int maxTreeDepth = 3;
 
       var actual = target.CreateBot(maxTreeDepth);
