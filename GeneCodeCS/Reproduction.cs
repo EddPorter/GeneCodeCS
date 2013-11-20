@@ -64,6 +64,11 @@ namespace GeneCodeCS
     private readonly List<TerminalGene> _terminals = new List<TerminalGene>();
 
     /// <summary>
+    ///   The crossover rate (chance) to use during breeding (0-100). Defaults to 90.
+    /// </summary>
+    private int _crossoverRate = 90;
+
+    /// <summary>
     ///   The percentage of the best bots to copy from one generation to the next without modification (0-100). Defaults to 10.
     /// </summary>
     private int _elitePercentage = 10;
@@ -95,8 +100,23 @@ namespace GeneCodeCS
       _log.Trace("ctor: Constructing class.");
 
       InitialisationMethod = Initialisation.Grow;
+      SelectionMethod = Selection.Tournament;
 
       Initialise(randomSeed);
+    }
+
+    /// <summary>
+    ///   Gets or sets the crossover rate (chance) to use during breeding (0-100). Defaults to 90.
+    /// </summary>
+    public int CrossoverRate {
+      get { return _crossoverRate; }
+      set {
+        if (_crossoverRate < 0 || _crossoverRate > 100) {
+          throw new ArgumentOutOfRangeException("value", value, Resources.CrossoverRateValidRange);
+        }
+        _log.TraceFormat("get_CrossoverRate: Crossover rate set to {0}.", value);
+        _crossoverRate = value;
+      }
     }
 
     /// <summary>
@@ -182,6 +202,8 @@ namespace GeneCodeCS
         throw new ArgumentNullException("previousGenerationReports", Resources.PreviousGenerationReportsRequired);
       }
 
+      var start = DateTime.Now;
+
       var generationInformation = new List<BotInformation<TBot>>();
       if (generationNumber == 0) {
         // First generation, no breeding is required.
@@ -189,58 +211,57 @@ namespace GeneCodeCS
           _log.InfoFormat("Pre-seeding initial generation with {0} bots.", previousGenerationReports.Count);
           generationInformation.AddRange(previousGenerationReports);
         }
-        var botsToAdd = botsPerGeneration - generationInformation.Count;
+        var botsToAdd = Math.Max(botsPerGeneration - generationInformation.Count, 0);
         PopulateGenerationWithRandomBots(botsToAdd, generationInformation, generationNumber, maxTreeDepth, optimise);
       } else {
-        // Copy the elite bots verbatim.
-        var eliteBotCount = botsPerGeneration * ElitePercentage / 100;
-        _log.TraceFormat("BreedGeneration: Copying {0} elite bots verbatim from previous generation.", eliteBotCount);
-        generationInformation.AddRange(previousGenerationReports.Take(eliteBotCount));
-
-        // Generate a percentage of the new population as random bots.
-        var newBotCount = botsPerGeneration * RandomBotPercentage / 100;
-        _log.TraceFormat("BreedGeneration: Generating {0} random bots for this generation.", newBotCount);
-        PopulateGenerationWithRandomBots(newBotCount, generationInformation, generationNumber, maxTreeDepth, optimise);
-
-        // Select two parents and breed two children until this generation is full.
+        // Select two parents and breed a child until this generation is full.
         var n = generationInformation.Count - 1;
         while (generationInformation.Count < botsPerGeneration) {
           var parents = SelectParents(previousGenerationReports);
           _log.TraceFormat("BreedGeneration: Breeding bots {0} and {1}", parents[0].Name, parents[1].Name);
 
+          var operation = _random.Next(100);
           var parent1Tree = parents[0].Tree.Clone();
-          var parent2Tree = parents[1].Tree.Clone();
+          Chromosome parent2Tree;
+          string parent2Name;
 
-          var children = CrossoverAndMutate(parent1Tree, parent2Tree);
-          var child1 = children[0];
-          var child2 = children[1];
+          if (operation < MutationRate) {
+            _log.Trace("BreedGeneration: Generating new random bot for headless chicken breeding.");
+            parent2Tree = CreateRandomExpressionTree(maxTreeDepth);
+            parent2Name = string.Format("ChickenBot_{0:x}", parent2Tree.GetHashCode());
+          } else if (operation < MutationRate + CrossoverRate) {
+            parent2Tree = parents[1].Tree.Clone();
+            parent2Name = parents[1].Name;
+          } else {
+            if (generationInformation.Any(b => b.Tree == parents[0].Tree)) {
+              continue;
+            }
+            _log.TraceFormat("BreedGeneration: Copying bot {0} verbatim from previous generation.", parents[0].Name);
+            generationInformation.Add(parents[0]);
+            continue;
+          }
+          var child = CrossoverAndMutate(parent1Tree, parent2Tree);
 
           if (optimise != null) {
             _log.Trace("CreateBot: Optimising bot trees.");
-            child1 = optimise(child1);
-            Debug.Assert(child1 != null, Resources.ChromosomeOptimisationReturnedNull);
-            child2 = optimise(child2);
-            Debug.Assert(child2 != null, Resources.ChromosomeOptimisationReturnedNull);
+            child = optimise(child);
+            Debug.Assert(child != null, Resources.ChromosomeOptimisationReturnedNull);
           }
 
-          if (generationInformation.All(b => b.Tree != child1)) {
-            var childResult1 = new BotInformation<TBot>(CreateBotName(generationNumber, ++n), child1, parents[0].Name,
-                                                        parents[1].Name);
-            _log.TraceFormat("BreedGeneration: Adding bot '{0}' to the generation:{2}{1}", childResult1.Name,
-                             childResult1.Tree.ToString(), Environment.NewLine);
-            generationInformation.Add(childResult1);
+          if (generationInformation.Any(b => b.Tree == child)) {
+            continue;
           }
 
-          if (generationInformation.All(b => b.Tree != child2)) {
-            var childResult2 = new BotInformation<TBot>(CreateBotName(generationNumber, ++n), child2, parents[1].Name,
-                                                        parents[0].Name);
-            _log.TraceFormat("BreedGeneration: Adding bot {0} to the generation:{2}{1}", childResult2.Name,
-                             childResult2.Tree.ToString(), Environment.NewLine);
-            generationInformation.Add(childResult2);
-          }
+          var childResult = new BotInformation<TBot>(CreateBotName(generationNumber, ++n), child, parents[0].Name,
+                                                     parent2Name);
+          _log.TraceFormat("BreedGeneration: Adding bot '{0}' to the generation:{2}{1}", childResult.Name,
+                           childResult.Tree.ToString(), Environment.NewLine);
+          generationInformation.Add(childResult);
         }
       }
-      _log.TraceFormat("BreedGeneration: Completed breeding generation {0}.", generationNumber);
+      var end = DateTime.Now;
+      _log.TraceFormat("BreedGeneration: Completed breeding generation {0}. Time taken: {1:T}.", generationNumber,
+                       end - start);
 
       return generationInformation;
     }
@@ -373,7 +394,7 @@ namespace GeneCodeCS
     /// <param name="chromosome1"> The first chromosome to combine. </param>
     /// <param name="chromosome2"> The second chromosome to combine. </param>
     /// <returns> An array of the two combined <see cref="Chromosome" /> classes. </returns>
-    private Chromosome[] CrossoverAndMutate(Chromosome chromosome1, Chromosome chromosome2) {
+    private Chromosome CrossoverAndMutate(Chromosome chromosome1, Chromosome chromosome2) {
       _log.Trace("CrossoverAndMutate: Beginning crossover of chromosomes.");
 
       Debug.Assert(chromosome1 != null, "A non-null chromosome must be specified.");
@@ -386,10 +407,7 @@ namespace GeneCodeCS
       var crossoverPoint1 = _random.Next(0, chromosome1Nodes.Count);
       var crossoverPoint2 = _random.Next(0, chromosome2Nodes.Count);
 
-      var combination1 = TreeCombine(chromosome1, chromosome1Nodes[crossoverPoint1], chromosome2Nodes[crossoverPoint2]);
-      var combination2 = TreeCombine(chromosome2, chromosome2Nodes[crossoverPoint2], chromosome1Nodes[crossoverPoint1]);
-
-      return new[] { combination1, combination2 };
+      return TreeCombine(chromosome1, chromosome1Nodes[crossoverPoint1], chromosome2Nodes[crossoverPoint2]);
     }
 
     /// <summary>
@@ -617,25 +635,26 @@ namespace GeneCodeCS
     private BotInformation<TBot>[] SelectParents(ICollection<BotInformation<TBot>> bots) {
       Debug.Assert(bots != null, "A collection of bots must be specified.");
 
+      var parents = new BotInformation<TBot>[2];
       switch (SelectionMethod) {
         case Selection.FitnessProportionate:
-          var parents = new BotInformation<TBot>[2];
           parents[0] = SelectRandomBotWeightedByFitness(bots);
           parents[1] = SelectRandomBotWeightedByFitness(bots);
           return parents;
         case Selection.Tournament:
-          return SelectRandomBotsByTournament(bots);
+          parents[0] = SelectRandomBotByTournament(bots);
+          parents[1] = SelectRandomBotByTournament(bots);
+          return parents;
         default:
           throw new InvalidEnumArgumentException("SelectionMethod", (int)SelectionMethod, typeof(Selection));
       }
     }
 
-    private BotInformation<TBot>[] SelectRandomBotsByTournament(ICollection<BotInformation<TBot>> bots) {
-      Debug.Assert(bots != null && bots.Count > 1, "A collection of at least two bots must be specified.");
+    private BotInformation<TBot> SelectRandomBotByTournament(ICollection<BotInformation<TBot>> bots) {
+      Debug.Assert(bots != null && bots.Count > 0, "A collection of at least one bot must be specified.");
 
-      var tournamentSize = Math.Min(Math.Max(bots.Count / 2, 3), bots.Count);
-      return
-        bots.OrderBy(b => _random.Next()).Take(tournamentSize).OrderByDescending(b => b.Bot.Fitness).Take(2).ToArray();
+      var tournamentSize = Math.Max(bots.Count / 50, 1);
+      return bots.OrderBy(b => _random.Next()).Take(tournamentSize).OrderByDescending(b => b.Bot.Fitness).First();
     }
 
     /// <summary>

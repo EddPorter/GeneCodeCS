@@ -119,9 +119,11 @@ namespace GeneCodeCS
         latestOrderedEvaluation = starterBots.OrderByDescending(b => b.Bot.Fitness).ToList();
       }
 
+      var simulationStart = DateTime.Now;
       var bestBots = new List<BotInformation<TBot>>();
       for (var generationNumber = 0; generationNumber < generationLimit; ++generationNumber) {
-        _log.InfoFormat("Starting generation {0:N}", generationNumber);
+        _log.InfoFormat("Starting generation {0}", generationNumber);
+        var generationStart = DateTime.Now;
 
         // 1. Generate expression trees for generation.
         _log.Trace("SimulateGenerations`1: Breeding generation.");
@@ -130,7 +132,7 @@ namespace GeneCodeCS
 
         // 2. Convert expression trees to code.
         _log.Trace("SimulateGenerations`1: Compiling bot code.");
-        if (_compiler.CompileBots(generationInformation, generationNumber)) {
+        if (!_compiler.CompileBots(generationInformation, generationNumber)) {
           throw new BotCompileException();
         }
 
@@ -142,16 +144,20 @@ namespace GeneCodeCS
         _log.Trace("SimulateGenerations`1: Evaluating bot fitness.");
         latestOrderedEvaluation = generationInformation.OrderByDescending(report => report.Bot.Fitness).ToList();
 
+        var generationEnd = DateTime.Now;
+
         // We use First() and Last() since the list is sorted.
         var bestFitness = latestOrderedEvaluation.First().Bot.Fitness;
-        var worstFitness = latestOrderedEvaluation.Last().Bot.Fitness;
-        var meanFitness = latestOrderedEvaluation.Average(fp => fp.Bot.Fitness);
+        if (_log.IsInfoEnabled) {
+          var worstFitness = latestOrderedEvaluation.Last().Bot.Fitness;
+          var meanFitness = latestOrderedEvaluation.Average(fp => fp.Bot.Fitness);
 
-        _log.InfoFormat("Generation {0} report: Best {1:N} / Mean average {2:N2} / Worst {3:N}", generationNumber,
-                        bestFitness, meanFitness, worstFitness);
+          _log.InfoFormat("Generation {0} report: Best {1:N} / Mean average {2:N2} / Worst {3:N}. Time taken: {4:T}.",
+                          generationNumber, bestFitness, meanFitness, worstFitness, generationEnd - generationStart);
 
-        bestBots = latestOrderedEvaluation.TakeWhile(b => b.Bot.Fitness == bestFitness).ToList();
-        _log.InfoFormat("Best bots: '{0}'", string.Join("', '", bestBots.Select(b => b.Name)));
+          bestBots = latestOrderedEvaluation.TakeWhile(b => b.Bot.Fitness == bestFitness).ToList();
+          _log.InfoFormat("Best bots: '{0}'", string.Join("', '", bestBots.Select(b => b.Name)));
+        }
 
         generationHistory.Add(latestOrderedEvaluation);
 
@@ -161,7 +167,9 @@ namespace GeneCodeCS
         }
       }
 
-      _log.Info("Bot creation complete.");
+      var simulationEnd = DateTime.Now;
+
+      _log.InfoFormat("Bot creation complete. Time taken: {0:T}.", simulationEnd - simulationStart);
       foreach (var bot in bestBots) {
         _log.InfoFormat("Bot '{0}': Fitness = {1:N}", bot.Name, bot.Bot.Fitness);
       }

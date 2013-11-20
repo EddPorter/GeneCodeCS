@@ -18,7 +18,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using Common.Logging;
 using GeneCodeCS.Genetics;
 using GeneCodeCS.Properties;
@@ -50,12 +49,12 @@ namespace GeneCodeCS
     /// </summary>
     /// <param name="bots"> The bots to execute. </param>
     /// <param name="parameters"> A custom value that is passed to each bot's <c>Initialise</c> method. </param>
-    public void Run(IEnumerable<BotInformation<TBot>> bots, object parameters) {
+    public void Run(List<BotInformation<TBot>> bots, object parameters) {
       if (bots == null) {
         throw new ArgumentNullException("bots", Resources.ValidBotCollectionRequired);
       }
 
-      Parallel.ForEach(bots, bot => Run(bot, parameters));
+      bots.ForEach(bot => Run(bot, parameters));
     }
 
     /// <summary>

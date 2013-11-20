@@ -190,4 +190,7 @@
   <data name="MethodMustReturnVoid">
     <value xml:space="preserve">A terminal method must return void.</value>
   </data>
+  <data name="CrossoverRateValidRange">
+    <value xml:space="preserve">The crossover rate must be between 0 and 100 inclusive.</value>
+  </data>
 </root>
