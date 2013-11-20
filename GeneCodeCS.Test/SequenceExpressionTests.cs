@@ -56,17 +56,16 @@ namespace GeneCodeCS.Test
 
     [TestMethod]
     public void Sequence_ToString_Returns_list_of_method_names() {
-      const string name = "Terminal_ToString_Returns_method_name";
       const BindingFlags flags = BindingFlags.Public | BindingFlags.Instance;
       var methods = typeof(TerminalExpressionTests).GetMethods(flags);
-      var method = methods.First(m => m.Name == name);
+      var method = methods.First(m => m.ReturnType == typeof(void));
       var tree = new[] {
                          new Chromosome { Node = new TerminalExpression(method) },
                          new Chromosome { Node = new TerminalExpression(method) }
                        };
       var sequence = new SequenceExpression(tree);
       var output = sequence.ToString();
-      var expected = string.Format("[{1}* {0}(){1}* {0}(){1}]", name, Environment.NewLine);
+      var expected = string.Format("[{1}* {0}(){1}* {0}(){1}]", method.Name, Environment.NewLine);
       Assert.AreEqual(expected, output);
     }
   }
