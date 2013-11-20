@@ -62,6 +62,9 @@ namespace GeneCodeCS
     /// <param name="parameters"> The parameters to be passed. </param>
     public virtual void Initialise(object parameters) { }
 
+    /// <summary>
+    /// Calculate the fitness of the bot after execution against the data.
+    /// </summary>
     protected abstract void Evaluate();
 
     /// <summary>

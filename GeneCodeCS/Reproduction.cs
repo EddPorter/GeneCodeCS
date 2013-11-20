@@ -69,11 +69,6 @@ namespace GeneCodeCS
     private int _crossoverRate = 90;
 
     /// <summary>
-    ///   The percentage of the best bots to copy from one generation to the next without modification (0-100). Defaults to 10.
-    /// </summary>
-    private int _elitePercentage = 10;
-
-    /// <summary>
     ///   The mutation rate (chance) to use during breeding (0-100). Defaults to 5.
     /// </summary>
     private int _mutationRate = 5;
@@ -116,20 +111,6 @@ namespace GeneCodeCS
         }
         _log.TraceFormat("get_CrossoverRate: Crossover rate set to {0}.", value);
         _crossoverRate = value;
-      }
-    }
-
-    /// <summary>
-    ///   Gets or sets the percentage of the best bots to copy from one generation to the next without modification (0-100). Defaults to 10.
-    /// </summary>
-    public int ElitePercentage {
-      get { return _elitePercentage; }
-      set {
-        if (_elitePercentage < 0 || _elitePercentage > 100) {
-          throw new ArgumentOutOfRangeException("value", value, Resources.ElitePercentageValidRange);
-        }
-        _log.TraceFormat("get_ElitePercentage: Elite percentage set to {0}.", value);
-        _elitePercentage = value;
       }
     }
 
