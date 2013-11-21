@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -31,31 +32,20 @@ namespace GeneCodeCS
   ///   This class generates new bots using random generation and fitness-based breeding. The provided <typeparamref
   ///    name="TBot" /> type parameter determines the genes used to express each new bots behaviour.
   /// </summary>
-  /// <typeparam name="TBot"> The bot class type to breed. It must inherit from <see type="T:GeneCodeCS.BaseBot" /> . Its public void-type (actions) and bool-type (decision points) methods will be used to construct the genes for the bot; their parameters must derive from <see
-  ///    cref="T:GeneCodeCS.Genetics.IParameter`1" /> . </typeparam>
+  /// <typeparam name="TBot"> The bot class type to breed. It must inherit from <see cref="BaseBot" /> . Its public void-type (actions) and bool-type (decision points) methods will be used to construct the genes for the bot; their parameters must derive from <see
+  ///    cref="IParameter{T}" /> . See the <see cref="BaseBot" /> documentation for restrictions and requirements of implementing this class type. </typeparam>
   /// <remarks>
-  ///   This class makes use of the <see cref="T:System.Random" /> class and so should not be considered cryptographically secure.
+  ///   This class makes use of the <see cref="Random" /> class and so should not be considered cryptographically secure.
   /// </remarks>
   public sealed class Reproduction<TBot> where TBot : BaseBot
   {
-    #region Delegates
-
-    /// <summary>
-    ///   A method that optimises a given <see cref="T:GeneCodeCS.Genetics.Chromosome" /> (gene expression tree). It removes redundant code and consolidates statements. The purpose is to reduce the time taken to evaluate a bot's fitness and to reduce the likelihood that identical bots are created.
-    /// </summary>
-    /// <param name="c"> The <see cref="T:GeneCodeCS.Genetics.Chromosome" /> to optimise. </param>
-    /// <returns> An optimised <see cref="T:GeneCodeCS.Genetics.Chromosome" /> . This can reuse objects from the original tree, but no circular references must have been introduced. </returns>
-    public delegate Chromosome ChromosomeOptimiser(Chromosome c);
-
-    #endregion
-
     /// <summary>
     ///   Used to log status information.
     /// </summary>
     /// <remarks>
     ///   Not null.
     /// </remarks>
-    private readonly ILog _log;
+    private readonly ILog _log = LogManager.GetCurrentClassLogger();
 
     /// <summary>
     ///   A list of non-terminal genes, formed from the branch methods found in the <typeparamref name="TBot" /> type and constructed sequence genes.
@@ -74,9 +64,9 @@ namespace GeneCodeCS
     private readonly List<TerminalGene> _terminals = new List<TerminalGene>();
 
     /// <summary>
-    ///   The percentage of the best bots to copy from one generation to the next without modification (0-100). Defaults to 10.
+    ///   The crossover rate (chance) to use during breeding (0-100). Defaults to 90.
     /// </summary>
-    private int _elitePercentage = 10;
+    private int _crossoverRate = 90;
 
     /// <summary>
     ///   The mutation rate (chance) to use during breeding (0-100). Defaults to 5.
@@ -97,36 +87,37 @@ namespace GeneCodeCS
     private int _randomBotPercentage = 20;
 
     /// <summary>
-    ///   Initialises a new instance of the <see cref="T:GeneCodeCS.Reproduction`1" /> class. The provided <typeparamref
-    ///    name="TBot" /> type is inspected and the qualifying terminal and non-terminal methods are extracted and stored.
+    ///   Initialises a new instance of the <see cref="Reproduction{TBot}" /> class. The provided <typeparamref name="TBot" /> type is inspected and the qualifying terminal and non-terminal methods are extracted and stored.
     /// </summary>
-    /// <param name="log"> An instance of an <see cref="T:Common.Logging.ILog" /> interface. This is used to log the status of the population during simulation. </param>
     /// <param name="randomSeed"> A value to use to seed the randomiser used within the class. This allows for reproducibility if required. If 0, then the current time is used to seed the randomiser. </param>
-    public Reproduction(ILog log, int randomSeed = 0) {
-      if (log == null) {
-        throw new ArgumentNullException("log", Resources.NonNullLogClassRequired);
-      }
+    public Reproduction(int randomSeed = 0) {
+      InitialisationMethod = Initialisation.Full;
+      _log.Trace("ctor: Constructing class.");
 
-      log.Trace("GeneCodeCS.Reproduction`1.ctor: Constructing class.");
-
-      _log = log;
+      InitialisationMethod = Initialisation.Grow;
+      SelectionMethod = Selection.Tournament;
 
       Initialise(randomSeed);
     }
 
     /// <summary>
-    ///   Gets or sets the percentage of the best bots to copy from one generation to the next without modification (0-100). Defaults to 10.
+    ///   Gets or sets the crossover rate (chance) to use during breeding (0-100). Defaults to 90.
     /// </summary>
-    public int ElitePercentage {
-      get { return _elitePercentage; }
+    public int CrossoverRate {
+      get { return _crossoverRate; }
       set {
-        if (_elitePercentage < 0 || _elitePercentage > 100) {
-          throw new ArgumentOutOfRangeException("value", value, Resources.ElitePercentageValidRange);
+        if (_crossoverRate < 0 || _crossoverRate > 100) {
+          throw new ArgumentOutOfRangeException("value", value, Resources.CrossoverRateValidRange);
         }
-        _log.TraceFormat("GeneCodeCS.Reproduction`1.get_ElitePercentage: Elite percentage set to {0}.", value);
-        _elitePercentage = value;
+        _log.TraceFormat("get_CrossoverRate: Crossover rate set to {0}.", value);
+        _crossoverRate = value;
       }
     }
+
+    /// <summary>
+    ///   Gets and sets the tree creation method to use when generating new bots.
+    /// </summary>
+    public Initialisation InitialisationMethod { get; set; }
 
     /// <summary>
     ///   Gets or sets the mutation rate (chance) to use during breeding (0-100). Defaults to 5.
@@ -137,7 +128,7 @@ namespace GeneCodeCS
         if (_mutationRate < 0 || _mutationRate > 100) {
           throw new ArgumentOutOfRangeException("value", value, Resources.MutationRateValidRange);
         }
-        _log.TraceFormat("GeneCodeCS.Reproduction`1.get_MutationRate: Mutation rate set to {0}.", value);
+        _log.TraceFormat("get_MutationRate: Mutation rate set to {0}.", value);
         _mutationRate = value;
       }
     }
@@ -151,10 +142,15 @@ namespace GeneCodeCS
         if (_randomBotPercentage < 0 || _randomBotPercentage > 100) {
           throw new ArgumentOutOfRangeException("value", value, Resources.RandomBotPercentageValidRange);
         }
-        _log.TraceFormat("GeneCodeCS.Reproduction`1.get_RandomBotPercentage: Random bot percentage set to {0}.", value);
+        _log.TraceFormat("get_RandomBotPercentage: Random bot percentage set to {0}.", value);
         _randomBotPercentage = value;
       }
     }
+
+    /// <summary>
+    ///   Gets or sets the method to use for selecting bots to breed from a population.
+    /// </summary>
+    public Selection SelectionMethod { get; set; }
 
     /// <summary>
     ///   Breeds a generation of <paramref name="botsPerGeneration" /> bots. If the <paramref name="generationNumber" /> is 0 then copies any bots provided in <paramref
@@ -168,12 +164,11 @@ namespace GeneCodeCS
     ///    name="generationNumber" /> is 0. </param>
     /// <param name="optimise"> A method that can optionally be provided to optimise the created expression tree, removing redundant code and consolidating statements. </param>
     /// <returns> A list of information about the new generation of bots. </returns>
-    public List<BotInformation> BreedGeneration(int generationNumber, int botsPerGeneration, int maxTreeDepth,
-                                                List<BotReport> previousGenerationReports,
-                                                ChromosomeOptimiser optimise = null) {
-      _log.TraceFormat(
-        "GeneCodeCS.Reproduction`1.BreedGeneration: Breeding generation {0} with {1} bots per generation and tree depth of {2}.",
-        generationNumber, botsPerGeneration, maxTreeDepth);
+    public List<BotInformation<TBot>> BreedGeneration(int generationNumber, int botsPerGeneration, int maxTreeDepth,
+                                                      List<BotInformation<TBot>> previousGenerationReports,
+                                                      Func<Chromosome, Chromosome> optimise = null) {
+      _log.TraceFormat("BreedGeneration: Breeding generation {0} with {1} bots per generation and tree depth of {2}.",
+                       generationNumber, botsPerGeneration, maxTreeDepth);
 
       if (generationNumber < 0) {
         throw new ArgumentOutOfRangeException("generationNumber", Resources.GenerationNumberValidRange);
@@ -185,72 +180,69 @@ namespace GeneCodeCS
         throw new ArgumentOutOfRangeException("maxTreeDepth", Resources.MaxTreeDepthValidRange);
       }
       if (generationNumber > 0 && previousGenerationReports == null) {
-        throw new ArgumentOutOfRangeException("previousGenerationReports", Resources.PreviousGenerationReportsRequired);
+        throw new ArgumentNullException("previousGenerationReports", Resources.PreviousGenerationReportsRequired);
       }
 
-      var generationInformation = new List<BotInformation>();
+      var start = DateTime.Now;
+
+      var generationInformation = new List<BotInformation<TBot>>();
       if (generationNumber == 0) {
         // First generation, no breeding is required.
         if (previousGenerationReports != null) {
           _log.InfoFormat("Pre-seeding initial generation with {0} bots.", previousGenerationReports.Count);
-          generationInformation.AddRange(previousGenerationReports.Select(report => report.Bot));
+          generationInformation.AddRange(previousGenerationReports);
         }
-        var botsToAdd = botsPerGeneration - generationInformation.Count;
+        var botsToAdd = Math.Max(botsPerGeneration - generationInformation.Count, 0);
         PopulateGenerationWithRandomBots(botsToAdd, generationInformation, generationNumber, maxTreeDepth, optimise);
       } else {
-        // Copy the elite bots verbatim.
-        var eliteBotCount = botsPerGeneration * ElitePercentage / 100;
-        _log.TraceFormat(
-          "GeneCodeCS.Reproduction`1.BreedGeneration: Copying {0} elite bots verbatim from previous generation.",
-          eliteBotCount);
-        generationInformation.AddRange(previousGenerationReports.Take(eliteBotCount).Select(report => report.Bot));
-
-        // Generate a percentage of the new population as random bots.
-        var newBotCount = botsPerGeneration * RandomBotPercentage / 100;
-        _log.TraceFormat("GeneCodeCS.Reproduction`1.BreedGeneration: Generating {0} random bots for this generation.",
-                         newBotCount);
-        PopulateGenerationWithRandomBots(newBotCount, generationInformation, generationNumber, maxTreeDepth, optimise);
-
-        // Select two parents and breed two children until this generation is full.
+        // Select two parents and breed a child until this generation is full.
         var n = generationInformation.Count - 1;
         while (generationInformation.Count < botsPerGeneration) {
           var parents = SelectParents(previousGenerationReports);
-          _log.TraceFormat("GeneCodeCS.Reproduction`1.BreedGeneration: Breeding bots {0} and {1}", parents[0].Name,
-                           parents[1].Name);
+          _log.TraceFormat("BreedGeneration: Breeding bots {0} and {1}", parents[0].Name, parents[1].Name);
 
+          var operation = _random.Next(100);
           var parent1Tree = parents[0].Tree.Clone();
-          var parent2Tree = parents[1].Tree.Clone();
+          Chromosome parent2Tree;
+          string parent2Name;
 
-          var children = CrossoverAndMutate(parent1Tree, parent2Tree);
-          var child1 = children[0];
-          var child2 = children[1];
+          if (operation < MutationRate) {
+            _log.Trace("BreedGeneration: Generating new random bot for headless chicken breeding.");
+            parent2Tree = CreateRandomExpressionTree(maxTreeDepth);
+            parent2Name = string.Format("ChickenBot_{0:x}", parent2Tree.GetHashCode());
+          } else if (operation < MutationRate + CrossoverRate) {
+            parent2Tree = parents[1].Tree.Clone();
+            parent2Name = parents[1].Name;
+          } else {
+            if (generationInformation.Any(b => b.Tree == parents[0].Tree)) {
+              continue;
+            }
+            _log.TraceFormat("BreedGeneration: Copying bot {0} verbatim from previous generation.", parents[0].Name);
+            generationInformation.Add(parents[0]);
+            continue;
+          }
+          var child = CrossoverAndMutate(parent1Tree, parent2Tree);
 
           if (optimise != null) {
-            _log.Trace("GeneCodeCS.Reproduction`1.CreateBot: Optimising bot trees.");
-            child1 = optimise(child1);
-            Debug.Assert(child1 != null, Resources.ChromosomeOptimisationReturnedNull);
-            child2 = optimise(child2);
-            Debug.Assert(child2 != null, Resources.ChromosomeOptimisationReturnedNull);
+            _log.Trace("CreateBot: Optimising bot trees.");
+            child = optimise(child);
+            Debug.Assert(child != null, Resources.ChromosomeOptimisationReturnedNull);
           }
 
-          if (generationInformation.All(b => b.Tree != child1)) {
-            var childResult1 = new BotInformation(CreateBotName(generationNumber, ++n), child1, parents[0].Name,
-                                                  parents[1].Name);
-            _log.TraceFormat("GeneCodeCS.Reproduction`1.BreedGeneration: Adding bot '{0}' to the generation:{2}{1}",
-                             childResult1.Name, childResult1.Tree.ToString(), Environment.NewLine);
-            generationInformation.Add(childResult1);
+          if (generationInformation.Any(b => b.Tree == child)) {
+            continue;
           }
 
-          if (generationInformation.All(b => b.Tree != child2)) {
-            var childResult2 = new BotInformation(CreateBotName(generationNumber, ++n), child2, parents[1].Name,
-                                                  parents[0].Name);
-            _log.TraceFormat("GeneCodeCS.Reproduction`1.BreedGeneration: Adding bot {0} to the generation:{2}{1}",
-                             childResult2.Name, childResult2.Tree.ToString(), Environment.NewLine);
-            generationInformation.Add(childResult2);
-          }
+          var childResult = new BotInformation<TBot>(CreateBotName(generationNumber, ++n), child, parents[0].Name,
+                                                     parent2Name);
+          _log.TraceFormat("BreedGeneration: Adding bot '{0}' to the generation:{2}{1}", childResult.Name,
+                           childResult.Tree.ToString(), Environment.NewLine);
+          generationInformation.Add(childResult);
         }
       }
-      _log.TraceFormat("GeneCodeCS.Reproduction`1.BreedGeneration: Completed breeding generation {0}.", generationNumber);
+      var end = DateTime.Now;
+      _log.TraceFormat("BreedGeneration: Completed breeding generation {0}. Time taken: {1:T}.", generationNumber,
+                       end - start);
 
       return generationInformation;
     }
@@ -261,9 +253,8 @@ namespace GeneCodeCS
     /// <param name="maxTreeDepth"> The maximum tree depth to allow in the generated bot. </param>
     /// <param name="optimise"> A method that can optionally be provided to optimise the created expression tree, removing redundant code and consolidating statements. </param>
     /// <returns> Information describing the generated bot. </returns>
-    public BotInformation CreateBot(int maxTreeDepth, ChromosomeOptimiser optimise = null) {
-      _log.TraceFormat("GeneCodeCS.Reproduction`1.CreateBot: Creating single bot with maximum tree depth {0}.",
-                       maxTreeDepth);
+    public BotInformation<TBot> CreateBot(int maxTreeDepth, Func<Chromosome, Chromosome> optimise = null) {
+      _log.TraceFormat("CreateBot: Creating single bot with maximum tree depth {0}.", maxTreeDepth);
 
       if (maxTreeDepth < 0) {
         throw new ArgumentOutOfRangeException("maxTreeDepth", Resources.MaxTreeDepthValidRange);
@@ -272,17 +263,16 @@ namespace GeneCodeCS
       var tree = CreateRandomExpressionTree(maxTreeDepth);
 
       if (optimise != null) {
-        _log.Trace("GeneCodeCS.Reproduction`1.CreateBot: Optimising bot tree.");
+        _log.Trace("CreateBot: Optimising bot tree.");
         tree = optimise(tree);
         Debug.Assert(tree != null, Resources.ChromosomeOptimisationReturnedNull);
       }
 
       var botName = string.Format("Bot{0:X}", tree.GetHashCode());
 
-      _log.TraceFormat("GeneCodeCS.Reproduction`1.CreateBot: Generated bot '{0}':{2}{1}", botName, tree.ToString(),
-                       Environment.NewLine);
+      _log.TraceFormat("CreateBot: Generated bot '{0}':{2}{1}", botName, tree.ToString(), Environment.NewLine);
 
-      return new BotInformation(botName, tree);
+      return new BotInformation<TBot>(botName, tree);
     }
 
     /// <summary>
@@ -299,8 +289,7 @@ namespace GeneCodeCS
     }
 
     /// <summary>
-    ///   Constructs an array containing a pointer to each gene expression in the original <see
-    ///    cref="T:GeneCodeCS.Genetics.Chromosome" /> tree. The construction is done using depth-first search.
+    ///   Constructs an array containing a pointer to each gene expression in the original <see cref="Chromosome" /> tree. The construction is done using depth-first search.
     /// </summary>
     /// <param name="tree"> The tree to flatten. </param>
     /// <returns> The flattened tree. Since each element is a pointer to the original tree, the branching structures and their children can be accessed directly from the relevant entries in the array. </returns>
@@ -332,23 +321,40 @@ namespace GeneCodeCS
     }
 
     /// <summary>
-    ///   Constructs a random expression tree of <see cref="T:GeneCodeCS.Genetics.Chromosome" /> classes with the maximum specfied depth..
+    ///   Constructs a random expression tree of <see cref="Chromosome" /> classes with the maximum specfied depth..
     /// </summary>
     /// <remarks>
     ///   This function is recursively called via one of the Instantiate* methods.
     /// </remarks>
     /// <param name="maxTreeDepth"> The maximum tree depth to allow in the generated bot. </param>
-    /// <param name="parent"> The parent <see cref="T:GeneCodeCS.Genetics.Chromosome" /> for the newly constructed tree, or null if this is the root <see
-    ///    cref="T:GeneCodeCS.Genetics.Chromosome" /> . </param>
-    /// <returns> The constructed <see cref="T:GeneCodeCS.Genetics.Chromosome" /> tree. </returns>
+    /// <param name="parent"> The parent <see cref="Chromosome" /> for the newly constructed tree, or null if this is the root <see
+    ///    cref="Chromosome" /> . </param>
+    /// <returns> The constructed <see cref="Chromosome" /> tree. </returns>
     private Chromosome CreateRandomExpressionTree(int maxTreeDepth, Chromosome parent = null) {
       _log.TraceFormat(
-        "GeneCodeCS.Reproduction`1.CreateRandomExpressionTree: Creating expression tree with maximum tree depth {0} and {1} parent.",
-        maxTreeDepth, parent == null ? "null" : "non-null");
+        "CreateRandomExpressionTree: Creating expression tree with maximum tree depth {0} and {1} parent.", maxTreeDepth,
+        parent == null ? "null" : "non-null");
 
       Debug.Assert(maxTreeDepth >= 0, Resources.MaxTreeDepthValidRange);
 
-      var node = maxTreeDepth > 0 ? GetRandomFunctionOrTerminal() : GetRandomTerminal();
+      IGene node;
+      if (maxTreeDepth <= 0) {
+        node = GetRandomTerminal();
+      } else {
+        switch (InitialisationMethod) {
+          case Initialisation.Full:
+            node = GetRandomFunction();
+            break;
+
+          case Initialisation.Grow:
+            node = GetRandomFunctionOrTerminal();
+            break;
+
+          default:
+            throw new InvalidEnumArgumentException("InitialisationMethod", (int)InitialisationMethod,
+                                                   typeof(Initialisation));
+        }
+      }
 
       if (node is BranchGene) {
         return InstantiateBranch(node as BranchGene, maxTreeDepth, parent);
@@ -364,13 +370,13 @@ namespace GeneCodeCS
     }
 
     /// <summary>
-    ///   Takes two cloned <see cref="T:GeneCodeCS.Genetics.Chromosome" /> instances, picks two random points on their expression trees, and switches the sub-trees around. Mutations are also introduced at this stage with a configurable percentage chance.
+    ///   Takes two cloned <see cref="Chromosome" /> instances, picks two random points on their expression trees, and switches the sub-trees around. Mutations are also introduced at this stage with a configurable percentage chance.
     /// </summary>
     /// <param name="chromosome1"> The first chromosome to combine. </param>
     /// <param name="chromosome2"> The second chromosome to combine. </param>
-    /// <returns> An array of the two combined <see cref="T:GeneCodeCS.Genetics.Chromosome" /> classes. </returns>
-    private Chromosome[] CrossoverAndMutate(Chromosome chromosome1, Chromosome chromosome2) {
-      _log.Trace("GeneCodeCS.Reproduction`1.CrossoverAndMutate: Beginning crossover of chromosomes.");
+    /// <returns> An array of the two combined <see cref="Chromosome" /> classes. </returns>
+    private Chromosome CrossoverAndMutate(Chromosome chromosome1, Chromosome chromosome2) {
+      _log.Trace("CrossoverAndMutate: Beginning crossover of chromosomes.");
 
       Debug.Assert(chromosome1 != null, "A non-null chromosome must be specified.");
       Debug.Assert(chromosome2 != null, "A non-null chromosome must be specified.");
@@ -382,20 +388,17 @@ namespace GeneCodeCS
       var crossoverPoint1 = _random.Next(0, chromosome1Nodes.Count);
       var crossoverPoint2 = _random.Next(0, chromosome2Nodes.Count);
 
-      var combination1 = TreeCombine(chromosome1, chromosome1Nodes[crossoverPoint1], chromosome2Nodes[crossoverPoint2]);
-      var combination2 = TreeCombine(chromosome2, chromosome2Nodes[crossoverPoint2], chromosome1Nodes[crossoverPoint1]);
-
-      return new[] { combination1, combination2 };
+      return TreeCombine(chromosome1, chromosome1Nodes[crossoverPoint1], chromosome2Nodes[crossoverPoint2]);
     }
 
     /// <summary>
     ///   Initialises parameters to a method call. An instance of the parameter type is first created passing a <see
-    ///    cref="T:System.Random" /> object. The generated value is extracted and returned in the parameter array.
+    ///    cref="Random" /> object. The generated value is extracted and returned in the parameter array.
     /// </summary>
     /// <param name="methodParameters"> The parameters to generate values for. </param>
     /// <returns> An array of generated parameter values. </returns>
     private object[] GenerateParameters(IEnumerable<ParameterInfo> methodParameters) {
-      _log.Trace("GeneCodeCS.Reproduction`1.GenerateParameters: Generating method parameters.");
+      _log.Trace("GenerateParameters: Generating method parameters.");
 
       Debug.Assert(methodParameters != null, "A non-null set of method parameters must be specified.");
 
@@ -405,20 +408,22 @@ namespace GeneCodeCS
     }
 
     /// <summary>
-    ///   Returns a random <see cref="T:GeneCodeCS.Genetics.IGene" /> from the list (based on <typeparamref name="TBot" /> ) calculated when the class was first instantiated.
+    ///   Returns a random <see cref="IGene" /> from the list (based on <typeparamref name="TBot" /> ) of functions calculated when the class was first instantiated.
     /// </summary>
-    /// <returns> A randomly selected <see cref="T:GeneCodeCS.Genetics.IGene" /> instance. </returns>
-    private IGene GetRandomFunctionOrTerminal() {
-      return _nonTerminals.Union(_terminals).OrderBy(x => _random.Next()).First();
-    }
+    /// <returns> A randomly selected <see cref="IGene" /> instance. </returns>
+    private IGene GetRandomFunction() { return _nonTerminals.OrderBy(x => _random.Next()).First(); }
 
     /// <summary>
-    ///   Returns a random <see cref="T:GeneCodeCS.Genetics.TerminalGene" /> from the list (based on <typeparamref name="TBot" /> ) calculated when the class was first instantiated.
+    ///   Returns a random <see cref="IGene" /> from the list (based on <typeparamref name="TBot" /> ) calculated when the class was first instantiated.
     /// </summary>
-    /// <returns> A randomly selected <see cref="T:GeneCodeCS.Genetics.TerminalGene" /> instance. </returns>
-    private TerminalGene GetRandomTerminal() {
-      return _terminals.OrderBy(x => _random.Next()).First();
-    }
+    /// <returns> A randomly selected <see cref="IGene" /> instance. </returns>
+    private IGene GetRandomFunctionOrTerminal() { return _nonTerminals.Union(_terminals).OrderBy(x => _random.Next()).First(); }
+
+    /// <summary>
+    ///   Returns a random <see cref="TerminalGene" /> from the list (based on <typeparamref name="TBot" /> ) calculated when the class was first instantiated.
+    /// </summary>
+    /// <returns> A randomly selected <see cref="TerminalGene" /> instance. </returns>
+    private TerminalGene GetRandomTerminal() { return _terminals.OrderBy(x => _random.Next()).First(); }
 
     /// <summary>
     ///   Configures the randomiser and analyses the given bot base type in order to ses up the internal fields used by class.
@@ -428,29 +433,27 @@ namespace GeneCodeCS
     /// </remarks>
     /// <param name="randomSeed"> A value to use to seed the randomiser used within the class. This allows for reproducibility if required. If 0, then the current time is used to seed the randomiser. </param>
     private void Initialise(int randomSeed) {
-      _log.TraceFormat("GeneCodeCS.Reproduction`1.Initialise: Initialising the Reproduction class with bot type {0}.",
-                       typeof(TBot).Name);
+      _log.TraceFormat("Initialise: Initialising the Reproduction class with bot type {0}.", typeof(TBot).Name);
 
       RandomiseSeed(randomSeed);
 
       // Locate all the terminals and branching methods in the base class.
       const BindingFlags flags = BindingFlags.Public | BindingFlags.Instance;
       var botClassMethods = typeof(TBot).GetMethods(flags);
+      // Can be parallelised. Need to change List data structures to thread-safe ones.
       foreach (var mi in botClassMethods.Where(mi => mi.DeclaringType != typeof(object))) {
         if (mi.ReturnType == typeof(void)) {
           // Terminals are void methods.
           if (mi.Name != "Execute" && mi.Name != "Initialise" && !mi.Name.StartsWith("set_") &&
               !mi.Name.StartsWith("get_")) {
             // TODO: Check valid parameter types.
-            _log.TraceFormat("GeneCodeCS.Reproduction`1.Initialise: Found terminal gene {0} ({1} parameters).", mi.Name,
-                             mi.GetParameters().Length);
+            _log.TraceFormat("Initialise: Found terminal gene {0} ({1} parameters).", mi.Name, mi.GetParameters().Length);
             _terminals.Add(new TerminalGene(mi));
           }
         } else if (mi.ReturnType == typeof(bool)) {
           // Branching methods are bool methods.
           // TODO: Check valid parameter types.
-          _log.TraceFormat("GeneCodeCS.Reproduction`1.Initialise: Found branch gene {0} ({1} parameters).", mi.Name,
-                           mi.GetParameters().Length);
+          _log.TraceFormat("Initialise: Found branch gene {0} ({1} parameters).", mi.Name, mi.GetParameters().Length);
           _nonTerminals.Add(new BranchGene(mi));
         }
       }
@@ -462,27 +465,25 @@ namespace GeneCodeCS
         _nonTerminals.Add(new SequenceGene(n));
       }
 
-      _log.TraceFormat("GeneCodeCS.Reproduction`1.Initialise: Found {0} terminal and {1} non-terminal genes.",
-                       _terminals.Count, _nonTerminals.Count);
+      _log.TraceFormat("Initialise: Found {0} terminal and {1} non-terminal genes.", _terminals.Count,
+                       _nonTerminals.Count);
     }
 
     /// <summary>
-    ///   Creates an expression instance of the specified <see cref="T:GeneCodeCS.Genetics.BranchGene" /> and wraps it in a <see
-    ///    cref="T:GeneCodeCS.Genetics.Chromosome" /> . Since this is a branching gene, "true" and "false" <see
-    ///    cref="T:GeneCodeCS.Genetics.Chromosome" /> instances will be randomly created too.
+    ///   Creates an expression instance of the specified <see cref="BranchGene" /> and wraps it in a <see cref="Chromosome" /> . Since this is a branching gene, "true" and "false" <see
+    ///    cref="Chromosome" /> instances will be randomly created too.
     /// </summary>
     /// <param name="branchGene"> The gene to construct an expression for. </param>
     /// <param name="maxTreeDepth"> The maximum tree depth to allow in the generated expression, including the expression created by this method. </param>
-    /// <param name="parent"> The parent <see cref="T:GeneCodeCS.Genetics.Chromosome" /> for the newly constructed gene expression, or null if this is the root <see
-    ///    cref="T:GeneCodeCS.Genetics.Chromosome" /> . </param>
-    /// <returns> A new <see cref="T:GeneCodeCS.Genetics.Chromosome" /> containing the constructed <see
-    ///    cref="T:GeneCodeCS.Genetics.BranchExpression" /> . </returns>
+    /// <param name="parent"> The parent <see cref="Chromosome" /> for the newly constructed gene expression, or null if this is the root <see
+    ///    cref="Chromosome" /> . </param>
+    /// <returns> A new <see cref="Chromosome" /> containing the constructed <see cref="BranchExpression" /> . </returns>
     private Chromosome InstantiateBranch(BranchGene branchGene, int maxTreeDepth, Chromosome parent) {
       Debug.Assert(branchGene != null, "A non-null branch gene must be specified.");
       Debug.Assert(maxTreeDepth >= 0, Resources.MaxTreeDepthValidRange);
 
       _log.TraceFormat(
-        "GeneCodeCS.Reproduction`1.InstantiateBranch: Creating branch expression for {0} with maximum tree depth {1} and {2} parent.",
+        "InstantiateBranch: Creating branch expression for {0} with maximum tree depth {1} and {2} parent.",
         branchGene.MethodInfo.Name, maxTreeDepth, parent == null ? "null" : "non-null");
 
       var methodParameters = branchGene.MethodInfo.GetParameters();
@@ -490,10 +491,10 @@ namespace GeneCodeCS
 
       var newTree = new Chromosome();
 
-      _log.Trace("GeneCodeCS.Reproduction`1.InstantiateBranch: Creating \"true\" Chromosome branch.");
+      _log.Trace("InstantiateBranch: Creating \"true\" Chromosome branch.");
       var trueBranch = CreateRandomExpressionTree(maxTreeDepth - 1, newTree);
 
-      _log.Trace("GeneCodeCS.Reproduction`1.InstantiateBranch: Creating \"false\" Chromosome branch.");
+      _log.Trace("InstantiateBranch: Creating \"false\" Chromosome branch.");
       var falseBranch = CreateRandomExpressionTree(maxTreeDepth - 1, newTree);
 
       newTree.Node = new BranchExpression(branchGene.MethodInfo, parameters, trueBranch, falseBranch);
@@ -502,21 +503,19 @@ namespace GeneCodeCS
     }
 
     /// <summary>
-    ///   Creates an expression instance of the specified <see cref="T:GeneCodeCS.Genetics.SequenceGene" /> and wraps it in a <see
-    ///    cref="T:GeneCodeCS.Genetics.Chromosome" /> . Since the new sequence may contain branches, a maximum tree depth must also be specified.
+    ///   Creates an expression instance of the specified <see cref="SequenceGene" /> and wraps it in a <see cref="Chromosome" /> . Since the new sequence may contain branches, a maximum tree depth must also be specified.
     /// </summary>
     /// <param name="sequenceGene"> The gene to construct an expression for. </param>
     /// <param name="maxTreeDepth"> The maximum tree depth to allow in the generated expression, including the expression created by this method. </param>
-    /// <param name="parent"> The parent <see cref="T:GeneCodeCS.Genetics.Chromosome" /> for the newly constructed gene expression, or null if this is the root <see
-    ///    cref="T:GeneCodeCS.Genetics.Chromosome" /> . </param>
-    /// <returns> A new <see cref="T:GeneCodeCS.Genetics.Chromosome" /> containing the constructed <see
-    ///    cref="T:GeneCodeCS.Genetics.SequenceExpression" /> . </returns>
+    /// <param name="parent"> The parent <see cref="Chromosome" /> for the newly constructed gene expression, or null if this is the root <see
+    ///    cref="Chromosome" /> . </param>
+    /// <returns> A new <see cref="Chromosome" /> containing the constructed <see cref="SequenceExpression" /> . </returns>
     private Chromosome InstantiateSequence(SequenceGene sequenceGene, int maxTreeDepth, Chromosome parent) {
       Debug.Assert(sequenceGene != null, "A non-null sequence gene must be specified.");
       Debug.Assert(maxTreeDepth >= 0, Resources.MaxTreeDepthValidRange);
 
       _log.TraceFormat(
-        "GeneCodeCS.Reproduction`1.InstantiateSequence: Creating sequence expression of length {0} with maximum tree depth {1} and {2} parent.",
+        "InstantiateSequence: Creating sequence expression of length {0} with maximum tree depth {1} and {2} parent.",
         sequenceGene.Length, maxTreeDepth, parent == null ? "null" : "non-null");
 
       var newTree = new Chromosome { Parent = parent };
@@ -524,7 +523,7 @@ namespace GeneCodeCS
 
       var expressions = new Chromosome[sequenceCount];
       for (var n = 0; n < sequenceCount; ++n) {
-        _log.TraceFormat("GeneCodeCS.Reproduction`1.InstantiateSequence: Creating Chromosome sequence element {0}.", n);
+        _log.TraceFormat("InstantiateSequence: Creating Chromosome sequence element {0}.", n);
         expressions[n] = CreateRandomExpressionTree(maxTreeDepth - 1, newTree);
       }
 
@@ -533,20 +532,17 @@ namespace GeneCodeCS
     }
 
     /// <summary>
-    ///   Creates an expression instance of the specified <see cref="T:GeneCodeCS.Genetics.TerminalGene" /> and wraps it in a <see
-    ///    cref="T:GeneCodeCS.Genetics.Chromosome" /> .
+    ///   Creates an expression instance of the specified <see cref="TerminalGene" /> and wraps it in a <see cref="Chromosome" /> .
     /// </summary>
     /// <param name="terminalGene"> The gene to construct an expression for. </param>
-    /// <param name="parent"> The parent <see cref="T:GeneCodeCS.Genetics.Chromosome" /> for the newly constructed gene expression, or null if this is the root <see
-    ///    cref="T:GeneCodeCS.Genetics.Chromosome" /> . </param>
-    /// <returns> A new <see cref="T:GeneCodeCS.Genetics.Chromosome" /> containing the constructed <see
-    ///    cref="T:GeneCodeCS.Genetics.TerminalExpression" /> . </returns>
+    /// <param name="parent"> The parent <see cref="Chromosome" /> for the newly constructed gene expression, or null if this is the root <see
+    ///    cref="Chromosome" /> . </param>
+    /// <returns> A new <see cref="Chromosome" /> containing the constructed <see cref="TerminalExpression" /> . </returns>
     private Chromosome InstantiateTerminal(TerminalGene terminalGene, Chromosome parent) {
       Debug.Assert(terminalGene != null, "A non-null terminal gene must be specified.");
 
-      _log.TraceFormat(
-        "GeneCodeCS.Reproduction`1.InstantiateTerminal: Creating branch expression for {0} with {1} parent.",
-        terminalGene.MethodInfo.Name, parent == null ? "null" : "non-null");
+      _log.TraceFormat("InstantiateTerminal: Creating branch expression for {0} with {1} parent.",
+                       terminalGene.MethodInfo.Name, parent == null ? "null" : "non-null");
 
       var methodParameters = terminalGene.MethodInfo.GetParameters();
       var parameters = GenerateParameters(methodParameters);
@@ -559,47 +555,46 @@ namespace GeneCodeCS
     ///   Adds a specified number of random bots to a generation.
     /// </summary>
     /// <param name="botsToAdd"> The number of bots to add to the generation. </param>
-    /// <param name="thisGeneration"> The generation to append to. </param>
+    /// <param name="generation"> The generation to append to. </param>
     /// <param name="generationNumber"> The number of the generation to create the bots in. Used for creating the bot class names. </param>
     /// <param name="maxTreeDepth"> The maximum tree depth to allow during randomised bot generation. </param>
     /// <param name="optimise"> A method that can optionally be provided to optimise the created expression tree, removing redundant code and consolidating statements. </param>
-    private void PopulateGenerationWithRandomBots(int botsToAdd, ICollection<BotInformation> thisGeneration,
-                                                  int generationNumber, int maxTreeDepth, ChromosomeOptimiser optimise) {
-      _log.TraceFormat(
-        "GeneCodeCS.Reproduction`1.PopulateGenerationWithRandomBots: Adding {0} bots to generation {1} with max tree depth {2}.",
-        botsToAdd, generationNumber, maxTreeDepth);
+    private void PopulateGenerationWithRandomBots(int botsToAdd, ICollection<BotInformation<TBot>> generation,
+                                                  int generationNumber, int maxTreeDepth,
+                                                  Func<Chromosome, Chromosome> optimise) {
+      _log.TraceFormat("PopulateGenerationWithRandomBots: Adding {0} bots to generation {1} with max tree depth {2}.",
+                       botsToAdd, generationNumber, maxTreeDepth);
 
       if (botsToAdd == 0) {
-        _log.Trace("GeneCodeCS.Reproduction`1.PopulateGenerationWithRandomBots: No bots to add.");
+        _log.Trace("PopulateGenerationWithRandomBots: No bots to add.");
         return;
       }
 
       Debug.Assert(botsToAdd > 0, "The number of bots to add must be non-negative.");
-      Debug.Assert(thisGeneration != null, "A valid generation must be specified to append to.");
+      Debug.Assert(generation != null, "A valid generation must be specified to append to.");
       Debug.Assert(generationNumber >= 0, Resources.GenerationNumberValidRange);
       Debug.Assert(maxTreeDepth >= 0, Resources.MaxTreeDepthValidRange);
 
-      var targetBotCount = thisGeneration.Count + botsToAdd;
-      while (thisGeneration.Count < targetBotCount) {
+      var targetBotCount = generation.Count + botsToAdd;
+      while (generation.Count < targetBotCount) {
         var newTree = CreateRandomExpressionTree(maxTreeDepth);
         if (optimise != null) {
-          _log.Trace("GeneCodeCS.Reproduction`1.PopulateGenerationWithRandomBots: Optimising bot tree.");
+          _log.Trace("PopulateGenerationWithRandomBots: Optimising bot tree.");
           newTree = optimise(newTree);
           Debug.Assert(newTree != null, Resources.ChromosomeOptimisationReturnedNull);
         }
 
-        if (thisGeneration.Any(b => b.Tree == newTree)) {
+        if (generation.Any(b => b.Tree == newTree)) {
           // This is a potential infinite loop if the base bot model is simple, e.g. one terminal with no parameters.
           // TODO: Add a maximum iteration counter before throwing an exception.
           continue;
         }
 
-        var name = CreateBotName(generationNumber, thisGeneration.Count);
+        var name = CreateBotName(generationNumber, generation.Count);
 
-        _log.TraceFormat(
-          "GeneCodeCS.Reproduction`1.PopulateGenerationWithRandomBots: Adding bot '{0}' to the generation:{2}{1}", name,
-          newTree.ToString(), Environment.NewLine);
-        thisGeneration.Add(new BotInformation(name, newTree));
+        _log.TraceFormat("PopulateGenerationWithRandomBots: Adding bot '{0}' to the generation:{2}{1}", name,
+                         newTree.ToString(), Environment.NewLine);
+        generation.Add(new BotInformation<TBot>(name, newTree));
       }
     }
 
@@ -618,14 +613,29 @@ namespace GeneCodeCS
     /// </summary>
     /// <param name="bots"> The list of bots to pick from. </param>
     /// <returns> An array of information about the two selected bots. </returns>
-    private BotInformation[] SelectParents(ICollection<BotReport> bots) {
+    private BotInformation<TBot>[] SelectParents(ICollection<BotInformation<TBot>> bots) {
+      Debug.Assert(bots != null, "A collection of bots must be specified.");
+
+      var parents = new BotInformation<TBot>[2];
+      switch (SelectionMethod) {
+        case Selection.FitnessProportionate:
+          parents[0] = SelectRandomBotWeightedByFitness(bots);
+          parents[1] = SelectRandomBotWeightedByFitness(bots);
+          return parents;
+        case Selection.Tournament:
+          parents[0] = SelectRandomBotByTournament(bots);
+          parents[1] = SelectRandomBotByTournament(bots);
+          return parents;
+        default:
+          throw new InvalidEnumArgumentException("SelectionMethod", (int)SelectionMethod, typeof(Selection));
+      }
+    }
+
+    private BotInformation<TBot> SelectRandomBotByTournament(ICollection<BotInformation<TBot>> bots) {
       Debug.Assert(bots != null && bots.Count > 0, "A collection of at least one bot must be specified.");
-      var parents = new BotInformation[2];
 
-      parents[0] = SelectRandomBotWeightedByFitness(bots);
-      parents[1] = SelectRandomBotWeightedByFitness(bots);
-
-      return parents;
+      var tournamentSize = Math.Max(bots.Count / 50, 1);
+      return bots.OrderBy(b => _random.Next()).Take(tournamentSize).OrderByDescending(b => b.Bot.Fitness).First();
     }
 
     /// <summary>
@@ -633,25 +643,25 @@ namespace GeneCodeCS
     /// </summary>
     /// <param name="bots"> The list of bots to pick from. </param>
     /// <returns> Information about the chosen bot. </returns>
-    private BotInformation SelectRandomBotWeightedByFitness(ICollection<BotReport> bots) {
+    private BotInformation<TBot> SelectRandomBotWeightedByFitness(ICollection<BotInformation<TBot>> bots) {
       Debug.Assert(bots != null && bots.Count > 0, "A collection of at least one bot must be specified.");
 
       // Make all fitnesses positive.
-      var fitnessAdjustment = 1 - bots.Min(g => g.Fitness);
+      var fitnessAdjustment = 1 - bots.Min(g => g.Bot.Fitness);
 
-      var totalSumFitness = bots.Sum(g => g.Fitness + fitnessAdjustment);
+      var totalSumFitness = bots.Sum(g => g.Bot.Fitness + fitnessAdjustment);
       var targetFitness = _random.NextDouble() * totalSumFitness;
 
       var currentSumFitness = 0.0d;
       var parent = bots.SkipWhile(g => {
-                                    currentSumFitness += g.Fitness + fitnessAdjustment;
-                                    return currentSumFitness < targetFitness;
-                                  }).First();
-      return parent.Bot;
+        currentSumFitness += g.Bot.Fitness + fitnessAdjustment;
+        return currentSumFitness < targetFitness;
+      }).First();
+      return parent;
     }
 
     /// <summary>
-    ///   Replaces a node in a <see cref="T:GeneCodeCS.Genetics.Chromosome" /> tree with another tree.
+    ///   Replaces a node in a <see cref="Chromosome" /> tree with another tree.
     /// </summary>
     /// <param name="source"> The tree to modify. </param>
     /// <param name="cutPoint"> The point on the <paramref name="source" /> tree to remove. </param>
@@ -659,7 +669,7 @@ namespace GeneCodeCS
     /// <returns> The updated <paramref name="source" /> tree. </returns>
     private Chromosome TreeCombine(Chromosome source, Chromosome cutPoint, Chromosome insertionMaterial) {
       if (ReferenceEquals(source, cutPoint)) {
-        return Chromosome.ReplaceNodeWithCopy(source, insertionMaterial);
+        return new Chromosome { Node = insertionMaterial.Node, Parent = source.Parent };
       }
 
       var terminal = source.Node as TerminalExpression;

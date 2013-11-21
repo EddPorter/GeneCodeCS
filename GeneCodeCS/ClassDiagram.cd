@@ -3,49 +3,42 @@
   <Class Name="GeneCodeCS.BaseBot" Collapsed="true">
     <Position X="1" Y="1.25" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAQQAAAAAAAAAAAAAAQAAIAAAAACAAAA=</HashCode>
+      <HashCode>AAAgAAAAAAAAAQQAAAAAAgAAAAAAAAAAIAAAAACAgAA=</HashCode>
       <FileName>BaseBot.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GeneCodeCS.Reproduction&lt;TBot&gt;" Collapsed="true">
     <Position X="3.25" Y="0.75" Width="1.75" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAQAAUQAAICCAEgUAAAAABAAABAAAEgkAIU=</HashCode>
+      <HashCode>EQAAoAAQAAwAAURAAKAiAEgcAAAAABAAABAAAEggAKU=</HashCode>
       <FileName>Reproduction.cs</FileName>
-    </TypeIdentifier>
-  </Class>
-  <Class Name="GeneCodeCS.BotReport" Collapsed="true">
-    <Position X="2.75" Y="4" Width="1.5" />
-    <TypeIdentifier>
-      <HashCode>AAAgAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAgAA=</HashCode>
-      <FileName>BotReport.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GeneCodeCS.Execution&lt;TBot&gt;" Collapsed="true">
     <Position X="3.75" Y="2.25" Width="1.75" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAgAAAAAAA=</HashCode>
+      <HashCode>AAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAI=</HashCode>
       <FileName>Execution.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GeneCodeCS.Compilation&lt;TBot&gt;" Collapsed="true">
     <Position X="3.5" Y="1.5" Width="2" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAhAAIAEAIAAAIBAAQAQAAAAAAAACAAAAAAAA=</HashCode>
+      <HashCode>AgAAEAAAAAAIAEAJAAAIAAAAAQAAAAAAAACAAAAAEAA=</HashCode>
       <FileName>Compilation.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GeneCodeCS.Population&lt;TBot&gt;" Collapsed="true">
     <Position X="0.5" Y="0.5" Width="1.75" />
     <TypeIdentifier>
-      <HashCode>ACAAAAACAAAAAEAIAAIAAAAAAABAAAAAAIAAAAAAAAA=</HashCode>
+      <HashCode>ACAAAAACAAAAAEAAAAAAAAAIAAQABAAAAAAAAIAAAAA=</HashCode>
       <FileName>Population.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GeneCodeCS.Genetics.Chromosome" Collapsed="true">
     <Position X="6.25" Y="0.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAEhAAAQAAAAAAAAIAAAAAAAAEAAjA=</HashCode>
+      <HashCode>AAAAAAAAAAAAAAAEgAAAQAAAAAAAAIAAAAAAAAEAAjA=</HashCode>
       <FileName>Genetics\Chromosome.cs</FileName>
     </TypeIdentifier>
     <Lollipop Position="0.2" />
@@ -98,10 +91,10 @@
     </TypeIdentifier>
     <Lollipop Position="0.2" />
   </Class>
-  <Class Name="GeneCodeCS.BotInformation" Collapsed="true">
-    <Position X="2.5" Y="3.25" Width="1.5" />
+  <Class Name="GeneCodeCS.BotInformation&lt;TBot&gt;" Collapsed="true">
+    <Position X="2.5" Y="3.25" Width="2" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAACAAAAAAAAAAAQAAAAAMAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AAAAAAAAACCAAAAAAAAAAAQAAAIAMAAAAAAAAAAAAAA=</HashCode>
       <FileName>BotInformation.cs</FileName>
     </TypeIdentifier>
   </Class>

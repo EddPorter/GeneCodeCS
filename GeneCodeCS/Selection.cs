@@ -1,4 +1,4 @@
-﻿//
+//
 // GeneCodeCS - Genetic programming library for code bot natural selection.
 // Copyright (C) 2013 Edd Porter <genecodecs@eddporter.com>
 //
@@ -16,21 +16,21 @@
 // along with this program.  If not, see {http://www.gnu.org/licenses/}.
 //
 
-using System;
-
-namespace GeneCodeCS.Genetics
+namespace GeneCodeCS
 {
   /// <summary>
-  ///   The expression of a gene in a chromosome. This is an actual instance of a gene rather than just the definition (see <see
-  ///    cref="IGene" /> ). It contributes to the life (running) of the bot to which it belongs.
+  ///   Defines the method to use for selection of bots to breed to create the next generation.
   /// </summary>
-  public interface IGeneExpression : IEquatable<IGeneExpression>
+  public enum Selection
   {
     /// <summary>
-    ///   Creates a new, independent instance of the <see cref="IGeneExpression" /> , which may contain other <see
-    ///    cref="IGeneExpression" /> instances.
+    ///   Picks bots more often in proportion to their calculated fitness.
     /// </summary>
-    /// <returns> A new, memory-independent copy of this <see cref="IGeneExpression" /> . </returns>
-    IGeneExpression Clone();
+    FitnessProportionate,
+
+    /// <summary>
+    ///   Plays a selection of bots against each other, picking those with high fitnesses.
+    /// </summary>
+    Tournament
   }
 }

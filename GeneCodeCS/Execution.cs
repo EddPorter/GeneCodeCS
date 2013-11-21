@@ -18,9 +18,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Common.Logging;
+using GeneCodeCS.Genetics;
 using GeneCodeCS.Properties;
 
 namespace GeneCodeCS
@@ -28,31 +27,56 @@ namespace GeneCodeCS
   /// <summary>
   ///   This class runs generated bot code and evaluates its performance against a given criteria.
   /// </summary>
-  /// <typeparam name="TBot"> The bot class type to breed. Must inherit from BaseBot. </typeparam>
+  /// <typeparam name="TBot"> The bot class type to breed. It must inherit from <see cref="BaseBot" /> . Its public void-type (actions) and bool-type (decision points) methods will be used to construct the genes for the bot; their parameters must derive from <see
+  ///    cref="IParameter{T}" /> . See the <see cref="BaseBot" /> documentation for restrictions and requirements of implementing this class type. </typeparam>
   internal sealed class Execution<TBot> where TBot : BaseBot
   {
-    private readonly ILog _log;
+    /// <summary>
+    ///   Used to log status information.
+    /// </summary>
+    /// <remarks>
+    ///   Not null.
+    /// </remarks>
+    private readonly ILog _log = LogManager.GetCurrentClassLogger();
 
-    public Execution(ILog log) {
-      if (log == null) {
-        throw new ArgumentNullException("log", Resources.NonNullLogClassRequired);
+    /// <summary>
+    ///   Initialises a new instance of the <see cref="Execution{TBot}" /> class.
+    /// </summary>
+    public Execution() { _log.Trace("ctor: Constructing class."); }
+
+    /// <summary>
+    ///   Executes a collection of bots in parallel.
+    /// </summary>
+    /// <param name="bots"> The bots to execute. </param>
+    /// <param name="parameters"> A custom value that is passed to each bot's <c>Initialise</c> method. </param>
+    public void Run(List<BotInformation<TBot>> bots, object parameters) {
+      if (bots == null) {
+        throw new ArgumentNullException("bots", Resources.ValidBotCollectionRequired);
       }
 
-      log.Trace("GeneCodeCS.Execution`1: Constructing class.");
-
-      _log = log;
+      bots.ForEach(bot => Run(bot, parameters));
     }
 
-    public List<TBot> Run(IList<TBot> bots, object parameters) {
-      // take each type in the assembly, and invoke its Execute() method
-      Parallel.ForEach(bots, a2 => {
-                               a2.Initialise(parameters);
-                               a2.Execute();
-                               _log.Info(string.Format("{0} completed execution.", a2.FitnessReport.Bot.Name));
-                             });
-      return bots.ToList();
+    /// <summary>
+    ///   Executes a bot by first initialising it and then calling its <c>Execute</c> method.
+    /// </summary>
+    /// <param name="bot"> The bot to execute. If an uncaught exception is thrown during execution, it is stored in the bot information class. </param>
+    /// <param name="parameters"> A custom value that is passed to the bot's <c>Initialise</c> method. </param>
+    public void Run(BotInformation<TBot> bot, object parameters) {
+      if (bot == null) {
+        throw new ArgumentNullException("bot", Resources.ValidBotRequired);
+      }
 
-      // TODO: Ensure we don't return null!
+      try {
+        bot.Bot.Initialise(parameters);
+        bot.Bot.Execute();
+        bot.ExecutionException = null;
+        _log.InfoFormat("Bot '{0}' completed execution with fitness {1}.", bot.Name, bot.Bot.Fitness);
+      } catch (Exception ex) {
+        bot.ExecutionException = ex;
+        _log.WarnFormat("Bot '{0}' threw an exception: {1}{2}{3}", bot.Name, ex, Environment.NewLine, ex.StackTrace);
+        throw;
+      }
     }
   }
 }

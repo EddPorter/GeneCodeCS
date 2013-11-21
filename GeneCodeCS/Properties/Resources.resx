@@ -151,7 +151,7 @@
   <data name="TerminalMethodsValidRange" xml:space="preserve">
     <value>At least one candidate terminal method must be provided by the TBot class.</value>
   </data>
-  <data name="StarterBotsFitenessReportMustNotBeNull" xml:space="preserve">
+  <data name="StarterBotsFitnessReportMustNotBeNull" xml:space="preserve">
     <value>Starter bots must contain valid fitness reports.</value>
   </data>
   <data name="BotsPerGenerationValidRange" xml:space="preserve">
@@ -162,5 +162,35 @@
   </data>
   <data name="PreviousGenerationReportsRequired" xml:space="preserve">
     <value>The reports for the prevoius generation must be provided when breeding subsequent generations.</value>
+  </data>
+  <data name="ValidBotCollectionRequired" xml:space="preserve">
+    <value>A valid collection of bots is required.</value>
+  </data>
+  <data name="ValidBotRequired" xml:space="preserve">
+    <value>A valid bot must be provided.</value>
+  </data>
+  <data name="BotFitnessFunctionRequired" xml:space="preserve">
+    <value>A bot fitness evaluation function must be provided.</value>
+  </data>
+  <data name="BotNameValidRange" xml:space="preserve">
+    <value>A bot's name cannot be blank.</value>
+  </data>
+  <data name="ChromosomeRequired" xml:space="preserve">
+    <value>A valid chromose tree must be provided.</value>
+  </data>
+  <data name="MethodParametersRequired" xml:space="preserve">
+    <value>The correct number of parameters must be provided to methods that require them.</value>
+  </data>
+  <data name="SequenceLengthValidRange">
+    <value xml:space="preserve">The sequence length must be positive.</value>
+  </data>
+  <data name="MethodInfoRequired">
+    <value xml:space="preserve">A valid information about the method must be provided.</value>
+  </data>
+  <data name="MethodMustReturnVoid">
+    <value xml:space="preserve">A terminal method must return void.</value>
+  </data>
+  <data name="CrossoverRateValidRange">
+    <value xml:space="preserve">The crossover rate must be between 0 and 100 inclusive.</value>
   </data>
 </root>
