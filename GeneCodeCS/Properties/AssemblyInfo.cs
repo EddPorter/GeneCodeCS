@@ -19,6 +19,7 @@
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Resources;
 
 [assembly: AssemblyTitle("GeneCodeCS")]
 [assembly: AssemblyDescription("Genetic programming library for code bot natural selection.")]
@@ -30,6 +31,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCulture("")]
 [assembly: ComVisible(false)]
 [assembly: Guid("ae3176e4-8047-4915-bb4b-0cd49a29b89f")]
-[assembly: AssemblyVersion("0.0.1.1")]
-[assembly: AssemblyFileVersion("0.0.1.1")]
+[assembly: AssemblyVersion("0.0.1.0")]
+[assembly: AssemblyFileVersion("0.0.1.0")]
 [assembly: InternalsVisibleTo("GeneCodeCS.Test")]
+[assembly: NeutralResourcesLanguageAttribute("en-GB")]

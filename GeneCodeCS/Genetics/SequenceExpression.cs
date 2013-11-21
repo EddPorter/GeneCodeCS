@@ -55,9 +55,6 @@ namespace GeneCodeCS.Genetics
     /// <returns> <c>true</c> if the value of the <paramref name="value" /> parameter is the same as this instance; otherwise, false. </returns>
     /// <param name="value"> The sequence to compare to this instance. </param>
     public bool Equals(SequenceExpression value) {
-      if (this == null) {
-        throw new NullReferenceException();
-      }
       if (value == null) {
         return false;
       }
@@ -130,9 +127,6 @@ namespace GeneCodeCS.Genetics
     /// <param name="obj"> The sequence expression to compare to this instance. </param>
     /// <returns> true if <paramref name="obj" /> is a <see cref="SequenceExpression" /> and its value is the same as this instance; otherwise, false. </returns>
     public override bool Equals(object obj) {
-      if (this == null) {
-        throw new NullReferenceException();
-      }
       var seB = obj as SequenceExpression;
       if (seB == null) {
         return false;

@@ -44,9 +44,6 @@ namespace GeneCodeCS.Genetics
     /// <returns> <c>true</c> if the value of the <paramref name="value" /> parameter is the same as this instance; otherwise, false. </returns>
     /// <param name="value"> The branch to compare to this instance. </param>
     public bool Equals(Chromosome value) {
-      if (this == null) {
-        throw new NullReferenceException();
-      }
       if (value == null) {
         return false;
       }
@@ -111,9 +108,6 @@ namespace GeneCodeCS.Genetics
     /// <param name="obj"> The branch expression to compare to this instance. </param>
     /// <returns> true if <paramref name="obj" /> is a <see cref="BranchExpression" /> and its value is the same as this instance; otherwise, false. </returns>
     public override bool Equals(object obj) {
-      if (this == null) {
-        throw new NullReferenceException();
-      }
       var cB = obj as Chromosome;
       if (cB == null) {
         return false;

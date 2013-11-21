@@ -24,6 +24,7 @@ namespace GeneCodeCS
   /// <summary>
   ///   Thrown when an unknown genotype ( <see cref="GeneCodeCS.Genetics.IGene" /> implementation) is encountered.
   /// </summary>
+  [Serializable]
   internal class UnknownGenotypeException : Exception
   {
     /// <summary>

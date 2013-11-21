@@ -24,6 +24,7 @@ namespace GeneCodeCS
   /// <summary>
   ///   Thrown when the compilation phase of bot generation fails.
   /// </summary>
+  [Serializable]
   public class BotCompileException : Exception
   {
     /// <summary>

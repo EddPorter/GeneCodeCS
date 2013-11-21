@@ -67,9 +67,6 @@ namespace GeneCodeCS.Genetics
     /// <returns> <c>true</c> if the value of the <paramref name="value" /> parameter is the same as this instance; otherwise, false. </returns>
     /// <param name="value"> The terminal to compare to this instance. </param>
     public bool Equals(TerminalExpression value) {
-      if (this == null) {
-        throw new NullReferenceException();
-      }
       if (value == null) {
         return false;
       }
@@ -145,9 +142,6 @@ namespace GeneCodeCS.Genetics
     /// <param name="obj"> The terminal expression to compare to this instance. </param>
     /// <returns> true if <paramref name="obj" /> is a <see cref="TerminalExpression" /> and its value is the same as this instance; otherwise, false. </returns>
     public override bool Equals(object obj) {
-      if (this == null) {
-        throw new NullReferenceException();
-      }
       var teB = obj as TerminalExpression;
       if (teB == null) {
         return false;

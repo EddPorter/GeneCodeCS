@@ -285,11 +285,10 @@ namespace GeneCodeCS
 
       const bool noAppend = false;
 
-      using (var sw = new StreamWriter(string.Format("{0}.cs", filename), noAppend)) {
-        using (var itw = new IndentedTextWriter(sw, "  ")) {
-          using (var codeProvider = new CSharpCodeProvider()) {
-            codeProvider.GenerateCodeFromCompileUnit(codeUnit, itw, new CodeGeneratorOptions());
-          }
+      var sw = new StreamWriter(string.Format("{0}.cs", filename), noAppend);
+      using (var itw = new IndentedTextWriter(sw, "  ")) {
+        using (var codeProvider = new CSharpCodeProvider()) {
+          codeProvider.GenerateCodeFromCompileUnit(codeUnit, itw, new CodeGeneratorOptions());
         }
       }
     }
