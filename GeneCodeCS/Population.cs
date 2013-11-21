@@ -100,7 +100,6 @@ namespace GeneCodeCS
     /// <param name="fitnessThreshold"> The fitness threshold that, if exceeded, will cause simulation to end at the current generation. </param>
     /// <param name="starterBots"> A list of bot information to use in the first generation. Any shortfall in the initial generation after incorporating these bots will be filled with randomly created bots. </param>
     /// <returns> The best bot(s) from the final generation is/are returned. </returns>
-    // TODO: Expose mutation rate property in Reproduction class.
     public List<BotInformation<TBot>> SimulateGenerations<T>(T parameters = default(T), int generationLimit = 20,
                                                              int botsPerGeneration = 30, int maxTreeDepth = 3,
                                                              int fitnessThreshold = int.MaxValue,
