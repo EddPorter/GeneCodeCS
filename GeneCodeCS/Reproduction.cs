@@ -351,7 +351,7 @@ namespace GeneCodeCS
             break;
 
           default:
-            throw new InvalidEnumArgumentException("_initialisationMethod", (int)InitialisationMethod,
+            throw new InvalidEnumArgumentException("InitialisationMethod", (int)InitialisationMethod,
                                                    typeof(Initialisation));
         }
       }
