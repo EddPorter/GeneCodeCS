@@ -3,6 +3,44 @@ GeneCodeCS
 
 A genetic programming library for performing breeding and natural selection on code bots.
 
+Quick start
+-----------
+
+Evolve a bot that reaches a target number using increments and decrements. The public `void` methods are the actions, and the public `bool` methods are the decision points:
+
+```csharp
+public class CounterBot : BaseBot
+{
+  private int _steps;
+  public int Counter { get; private set; }
+
+  // Terminals (actions).
+  public void Increment(StepParameter step) { Counter += step.Value; }
+  public void Decrement(StepParameter step) { Counter -= step.Value; }
+
+  // Function (decision point).
+  public bool BelowTarget() { return Counter < 10; }
+
+  protected override bool NotFinished() { return ++_steps <= 20; }
+  protected override void Evaluate() { Fitness = 1000 - Math.Abs(10 - Counter); }
+}
+
+// An evolvable constant, restricted to the range 1 to 3.
+public class StepParameter : IParameter<int>
+{
+  public StepParameter(Random random) { Value = random.Next(1, 4); }
+  public StepParameter(int value) { Value = value; }
+  public int Value { get; private set; }
+}
+
+var population = new Population<CounterBot>();
+var best = population.SimulateGenerations<object>(null, generationLimit: 30, botsPerGeneration: 60,
+                                                  fitnessThreshold: 999);
+Console.WriteLine(best.First().Tree);   // The evolved program.
+```
+
+A working version of this is in `GeneCodeCS.Test/Helpers/CounterBot.cs` and `PopulationTests.cs`.
+
 Usage
 -----
 

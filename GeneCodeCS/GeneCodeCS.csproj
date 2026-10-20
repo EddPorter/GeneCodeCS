@@ -14,7 +14,16 @@
     <Description>Genetic programming library for code bot natural selection.</Description>
     <Copyright>Copyright © Edd Porter 2013</Copyright>
     <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
+    <PackageId>GeneCodeCS</PackageId>
+    <PackageTags>genetic-programming;evolutionary-computation;machine-learning</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/EddPorter/GeneCodeCS</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Common.Logging" Version="3.4.1" />
