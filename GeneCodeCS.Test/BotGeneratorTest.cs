@@ -26,13 +26,11 @@ namespace GeneCodeCS.Test
   public class BotGeneratorTest
   {
     [TestMethod]
-    [DeploymentItem("GeneCodeCS.dll")]
     public void BotGeneratorCreateBotNameCreatesExpectedNameGivenParameters1() {
       BotGeneratorCreateBotNameCreatesExpectedNameGivenParameters1Helper<BaseBot>();
     }
 
     [TestMethod]
-    [DeploymentItem("GeneCodeCS.dll")]
     public void BotGeneratorCreateBotNameCreatesExpectedNameGivenParameters2() {
       BotGeneratorCreateBotNameCreatesExpectedNameGivenParameters2Helper<BaseBot>();
     }
@@ -42,19 +40,19 @@ namespace GeneCodeCS.Test
       BotGeneratorCreateRandomBotReturnsNonNullBotTreeHelper<TestBot>();
     }
 
-    private static void BotGeneratorCreateBotNameCreatesExpectedNameGivenParameters1Helper<TBot>() {
+    private static void BotGeneratorCreateBotNameCreatesExpectedNameGivenParameters1Helper<TBot>() where TBot : BaseBot {
       const int generation = 0;
       const int populus = 0;
       const string expected = "BaseBot_Gen0_Bot0";
-      var actual = Reproduction_Accessor<TBot>.CreateBotName(generation, populus);
+      var actual = Reproduction<TBot>.CreateBotName(generation, populus);
       Assert.AreEqual(expected, actual);
     }
 
-    private static void BotGeneratorCreateBotNameCreatesExpectedNameGivenParameters2Helper<TBot>() {
+    private static void BotGeneratorCreateBotNameCreatesExpectedNameGivenParameters2Helper<TBot>() where TBot : BaseBot {
       const int generation = 4;
       const int populus = 5;
       const string expected = "BaseBot_Gen4_Bot5";
-      var actual = Reproduction_Accessor<TBot>.CreateBotName(generation, populus);
+      var actual = Reproduction<TBot>.CreateBotName(generation, populus);
       Assert.AreEqual(expected, actual);
     }
 
