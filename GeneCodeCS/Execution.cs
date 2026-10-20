@@ -37,7 +37,7 @@ namespace GeneCodeCS
     /// <remarks>
     ///   Not null.
     /// </remarks>
-    private readonly ILog _log = LogManager.GetCurrentClassLogger();
+    private readonly ILog _log = LogManager.GetLogger(typeof(Execution<TBot>));
 
     /// <summary>
     ///   Initialises a new instance of the <see cref="Execution{TBot}" /> class.

@@ -16,6 +16,8 @@
 // along with this program.  If not, see {http://www.gnu.org/licenses/}.
 //
 
+using System;
+using System.Reflection;
 using Common.Logging;
 using GeneCodeCS.Genetics;
 
@@ -32,6 +34,18 @@ namespace GeneCodeCS
   /// </remarks>
   public abstract class BaseBot
   {
+    /// <summary>
+    ///   The <see cref="NotFinished" /> method, for use by the generated code.
+    /// </summary>
+    internal static readonly MethodInfo NotFinishedMethod = typeof(BaseBot).GetMethod("IsNotFinished",
+                                                                                    BindingFlags.Instance |
+                                                                                    BindingFlags.NonPublic);
+
+    /// <summary>
+    ///   The compiled chromosome, set when the bot is created from its expression tree.
+    /// </summary>
+    private Action _logic;
+
     /// <summary>
     ///   Gets custom information about the bot as configured by the bot's implementation of the <see cref="Execute" /> method.
     /// </summary>
@@ -74,9 +88,24 @@ namespace GeneCodeCS
     protected abstract bool NotFinished();
 
     /// <summary>
+    ///   Allows the generated code to call <see cref="NotFinished" /> without it being public.
+    /// </summary>
+    internal bool IsNotFinished() { return NotFinished(); }
+
+    /// <summary>
+    ///   Sets the compiled chromosome that <see cref="RunBotLogic" /> will run.
+    /// </summary>
+    internal void SetLogic(Action logic) { _logic = logic; }
+
+    /// <summary>
     ///   Contains the bot logic. Implemented by running <see cref="Population{TBot}.SimulateGenerations{T}" /> or <see
     ///    cref="Population{TBot}.SimulateIndividuals{T}" /> .
     /// </summary>
-    protected abstract void RunBotLogic();
+    protected virtual void RunBotLogic() {
+      if (_logic == null) {
+        throw new InvalidOperationException("The bot has not been compiled.");
+      }
+      _logic();
+    }
   }
 }

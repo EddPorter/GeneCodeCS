@@ -54,7 +54,7 @@ namespace GeneCodeCS
     /// <remarks>
     ///   Not null.
     /// </remarks>
-    private readonly ILog _log = LogManager.GetCurrentClassLogger();
+    private readonly ILog _log = LogManager.GetLogger(typeof(Population<TBot>));
 
     /// <summary>
     ///   An optional method that optimises a given <see cref="Chromosome" /> (gene expression tree). It removes redundant code and consolidates statements. The purpose is to reduce the time taken to evaluate a bot's fitness and to reduce the likelihood that identical bots are created. The resulting <see
@@ -131,7 +131,7 @@ namespace GeneCodeCS
 
         // 2. Convert expression trees to code.
         _log.Trace("SimulateGenerations`1: Compiling bot code.");
-        if (!_compiler.CompileBots(generationInformation, generationNumber)) {
+        if (!_compiler.CompileBots(generationInformation)) {
           throw new BotCompileException();
         }
 
@@ -147,6 +147,7 @@ namespace GeneCodeCS
 
         // We use First() and Last() since the list is sorted.
         var bestFitness = latestOrderedEvaluation.First().Bot.Fitness;
+        bestBots = latestOrderedEvaluation.TakeWhile(b => b.Bot.Fitness == bestFitness).ToList();
         if (_log.IsInfoEnabled) {
           var worstFitness = latestOrderedEvaluation.Last().Bot.Fitness;
           var meanFitness = latestOrderedEvaluation.Average(fp => fp.Bot.Fitness);
@@ -154,7 +155,6 @@ namespace GeneCodeCS
           _log.InfoFormat("Generation {0} report: Best {1:N} / Mean average {2:N2} / Worst {3:N}. Time taken: {4:T}.",
                           generationNumber, bestFitness, meanFitness, worstFitness, generationEnd - generationStart);
 
-          bestBots = latestOrderedEvaluation.TakeWhile(b => b.Bot.Fitness == bestFitness).ToList();
           _log.InfoFormat("Best bots: '{0}'", string.Join("', '", bestBots.Select(b => b.Name)));
         }
 
@@ -194,8 +194,7 @@ namespace GeneCodeCS
 
         // 2. Convert expression tree to code.
         _log.Trace("SimulateIndividuals`1: Compiling bot code.");
-        const int generationNumber = 0;
-        if (!_compiler.CompileBot(botInformation, generationNumber)) {
+        if (!_compiler.CompileBot(botInformation)) {
           throw new BotCompileException();
         }
 

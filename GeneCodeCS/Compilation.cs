@@ -1,4 +1,4 @@
-//
+﻿//
 // GeneCodeCS - Genetic programming library for code bot natural selection.
 // Copyright (C) 2013 Edd Porter <genecodecs@eddporter.com>
 //
@@ -17,37 +17,31 @@
 //
 
 using System;
-using System.CodeDom;
-using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
-using System.Text;
 using Common.Logging;
 using GeneCodeCS.Genetics;
 using GeneCodeCS.Properties;
-using Microsoft.CSharp;
 
 namespace GeneCodeCS
 {
   /// <summary>
-  ///   This class converts Chromosomes into C# code and then compiles them into an assembly.
+  ///   This class converts Chromosomes into executable delegates by building and compiling expression trees in memory.
   /// </summary>
-  /// <typeparam name="TBot"> The bot class type to breed. It must inherit from <see cref="BaseBot" /> . Its public void-type (actions) and bool-type (decision points) methods will be used to construct the genes for the bot; their parameters must derive from <see
+  /// <typeparam name="TBot"> The bot class type to breed. It must inherit from <see cref="BaseBot" /> and have a public parameterless constructor. Its public void-type (actions) and bool-type (decision points) methods will be used to construct the genes for the bot; their parameters must derive from <see
   ///    cref="IParameter{T}" /> . See the <see cref="BaseBot" /> documentation for restrictions and requirements of implementing this class type. </typeparam>
   internal sealed class Compilation<TBot> where TBot : BaseBot
   {
-    // TODO: Allow specification of source code and DLL output destinations.
-
     /// <summary>
     ///   Used to log status information.
     /// </summary>
     /// <remarks>
     ///   Not null.
     /// </remarks>
-    private readonly ILog _log = LogManager.GetCurrentClassLogger();
+    private readonly ILog _log = LogManager.GetLogger(typeof(Compilation<TBot>));
 
     /// <summary>
     ///   Initialises a new instance of the <see cref="Compilation{TBot}" /> class.
@@ -55,292 +49,124 @@ namespace GeneCodeCS
     public Compilation() { _log.Trace("ctor: Constructing class."); }
 
     /// <summary>
-    ///   Converts a bot into C# code and compiles it into an assembly. The code and assembly file names are constructed from the <typeparamref
-    ///    name="TBot" /> class name and the <paramref name="generationNumber" /> .
+    ///   Compiles a bot's chromosome and creates the bot instance that will run it.
     /// </summary>
-    /// <param name="bot"> The bot to compile. The compiled bot type is added in-place to this object. </param>
-    /// <param name="generationNumber"> The generation number of the bot. This is used to create the file name and namespace for the compiled bot. </param>
+    /// <param name="bot"> The bot to compile. The bot instance is added in-place to this object. </param>
     /// <returns> If the compilation was successful, returns <c>true</c> ; otherwise returns <c>false</c> . </returns>
-    public bool CompileBot(BotInformation<TBot> bot, int generationNumber) {
+    public bool CompileBot(BotInformation<TBot> bot) {
       if (bot == null || string.IsNullOrWhiteSpace(bot.Name) || bot.Tree == null) {
         throw new ArgumentNullException("bot", Resources.ValidBotRequired);
       }
 
-      return CompileBots(new List<BotInformation<TBot>> { bot }, generationNumber);
+      return CompileBots(new List<BotInformation<TBot>> { bot });
     }
 
     /// <summary>
-    ///   Takes a list of bots, converts them into C# code, and compiles into an assembly. The code and assembly file names are constructed from the <typeparamref
-    ///    name="TBot" /> class name and the <paramref name="generationNumber" /> .
+    ///   Compiles the chromosome of each bot into a delegate and creates the bot instances that will run them.
     /// </summary>
-    /// <param name="bots"> The bots to compile. The compiled bot types are added in-place to the bot objects in this list. </param>
-    /// <param name="generationNumber"> The generation number of the bots. This is used to create the file names and namespace for the compiled bots. </param>
+    /// <param name="bots"> The bots to compile. The bot instances are added in-place to the bot objects in this list. </param>
     /// <returns> If the compilation was successful, returns <c>true</c> ; otherwise returns <c>false</c> . </returns>
-    public bool CompileBots(IList<BotInformation<TBot>> bots, int generationNumber) {
+    public bool CompileBots(IList<BotInformation<TBot>> bots) {
       if (bots == null || bots.Count == 0 || bots.Any(b => string.IsNullOrWhiteSpace(b.Name) || b.Tree == null)) {
         throw new ArgumentNullException("bots", Resources.ValidBotCollectionRequired);
       }
-      if (generationNumber < 0) {
-        throw new ArgumentNullException("generationNumber", Resources.GenerationNumberValidRange);
-      }
 
-      _log.TraceFormat("CompileBots: Compiling {0} bots in generation {1}.", bots.Count, generationNumber);
+      _log.TraceFormat("CompileBots: Compiling {0} bots.", bots.Count);
 
-      var namespaceName = string.Format("{0}{1}", typeof(TBot).Namespace, generationNumber);
-      _log.InfoFormat("Compiling into namespace {0}.", namespaceName);
-
-      _log.Trace("CompileBots: Generating code.");
-      var codeCompileUnit = BuildCompileUnit(bots, namespaceName);
-      GenerateCode(namespaceName, codeCompileUnit);
-
-      _log.Trace("CompileBots: Compiling code.");
-      var compiledBots = CompileCode(namespaceName);
-      if (compiledBots == null) {
-        return false;
-      }
-
-      _log.Trace("CompileBots: Creating bots from assembly.");
-      var types = compiledBots.CompiledAssembly.GetTypes();
-      foreach (var type in types) {
-        bots.Single(bot => bot.Name == type.Name).Bot = (TBot)Activator.CreateInstance(type);
+      foreach (var bot in bots) {
+        try {
+          var logic = BuildBotLogic(bot.Tree).Compile();
+          var instance = Activator.CreateInstance<TBot>();
+          instance.SetLogic(() => logic(instance));
+          bot.Bot = instance;
+        } catch (Exception ex) {
+          _log.ErrorFormat("Errors compiling bot '{0}': {1}", ex, bot.Name, ex.Message);
+          return false;
+        }
       }
       return true;
     }
 
     /// <summary>
-    ///   Builds the class container for the bot. Essentially this is the bot itself: it contains the constructor and an implementation of the bot's <paramref
-    ///    name="chromosome" /> . The <typeparamref name="TBot" /> type is used as the base class.
+    ///   Builds the bot's main loop: <c>while (bot.NotFinished()) { /* execute the Chromosome instructions */ }</c> .
     /// </summary>
-    /// <param name="name"> The name of the class to create. </param>
-    /// <param name="chromosome"> The <see cref="Chromosome" /> to encapsulate in the class's <c>RunBotLogic</c> method. </param>
-    /// <returns> The class declaration. </returns>
-    private static CodeTypeDeclaration BuildClass(string name, Chromosome chromosome) {
-      Debug.Assert(!string.IsNullOrWhiteSpace(name), "A name for the class must be specified.");
-      Debug.Assert(chromosome != null, "A valid Chromosome must be provided to build into a class.");
+    /// <param name="chromosome"> The instruction tree to convert. </param>
+    /// <returns> A lambda that runs the instructions against a bot instance. </returns>
+    private static Expression<Action<TBot>> BuildBotLogic(Chromosome chromosome) {
+      Debug.Assert(chromosome != null, "A valid chromosome must be provided.");
 
-      var codeType = new CodeTypeDeclaration(name);
-      codeType.BaseTypes.Add(typeof(TBot).Name);
-      codeType.Members.Add(BuildRunBotLogicMethod(chromosome));
-      return codeType;
+      var bot = Expression.Parameter(typeof(TBot), "bot");
+      var exit = Expression.Label("exit");
+      var loop = Expression.Loop(Expression.IfThenElse(Expression.Call(bot, BaseBot.NotFinishedMethod),
+                                                       BuildGeneExpression(bot, chromosome), Expression.Break(exit)), exit);
+      return Expression.Lambda<Action<TBot>>(loop, bot);
     }
 
     /// <summary>
-    ///   Converts bots into code compilation units within a specified <paramref name="namespace" /> .
+    ///   Converts the genes within the <paramref name="chromosome" /> into an expression.
     /// </summary>
-    /// <param name="bots"> The bots to compile. </param>
-    /// <param name="namespace"> The namespace in which to place the code. </param>
-    /// <returns> The compilation unit for the bots. </returns>
-    private static CodeCompileUnit BuildCompileUnit(IEnumerable<BotInformation<TBot>> bots, string @namespace) {
-      Debug.Assert(bots != null, Resources.ValidBotCollectionRequired);
-      Debug.Assert(!string.IsNullOrWhiteSpace(@namespace), "A valid namespace name must be provided.");
-
-      var codeCompileUnit = new CodeCompileUnit();
-      codeCompileUnit.ReferencedAssemblies.Add(typeof(TBot).Assembly.FullName);
-      codeCompileUnit.ReferencedAssemblies.Add(typeof(ILog).Assembly.FullName);
-
-      // namespace Namespace {
-      var namespaces = new CodeNamespace(@namespace);
-      //   using TBot.Namespace;
-      namespaces.Imports.Add(new CodeNamespaceImport(typeof(TBot).Namespace));
-      //   using Common.Logging;
-      namespaces.Imports.Add(new CodeNamespaceImport("Common.Logging"));
-
-      foreach (var botType in bots.Select(b => BuildClass(b.Name, b.Tree))) {
-        // public class Bot {
-        namespaces.Types.Add(botType);
-        // }
-      }
-      // }
-
-      codeCompileUnit.Namespaces.Add(namespaces);
-      return codeCompileUnit;
-    }
-
-    /// <summary>
-    ///   Converts the genes within the <paramref name="chromosome" /> into code statements.
-    /// </summary>
+    /// <param name="bot"> The parameter expression holding the bot instance on which to invoke the gene methods. </param>
     /// <param name="chromosome"> The chromosome to interpret. </param>
-    /// <returns> An array of code statements. </returns>
-    private static CodeStatement[] BuildGeneStatements(Chromosome chromosome) {
+    /// <returns> An expression of type <c>void</c> . </returns>
+    private static Expression BuildGeneExpression(ParameterExpression bot, Chromosome chromosome) {
       Debug.Assert(chromosome != null, "A valid chromosome must be provided.");
       Debug.Assert(chromosome.Node != null, "The chromosome must contain a valid genotype.");
 
-      var codeStatements = new CodeStatementCollection();
       var node = chromosome.Node;
 
-      // The while loop acts as a control statement that can be broken out of once the correct expression type has
-      // finished processing. If the bottom of the while loop is reached, then an unknown IGene implementation has been
-      // encountered, so an exception is thrown. This method, whilst the same as, means a goto statement doesn't need
-      // to be used, nor does evaluation need to continue once the correct IGene implementation has been processed.
-      while (true) {
-        var branch = node as BranchExpression;
-        if (branch != null) {
-          // if (this.Method(params)) {
-          var ifCondition = new CodeMethodInvokeExpression(new CodeThisReferenceExpression(), branch.MethodInfo.Name,
-                                                           BuildParametersArray(branch.MethodInfo.GetParameters(),
-                                                                                branch.Parameters));
-          //   // execute true branch
-          var ifTrue = BuildGeneStatements(branch.TrueBranch);
-          // } else {
-          //   // execute false branch
-          var ifFalse = BuildGeneStatements(branch.FalseBranch);
-          // }
-
-          var ifStatement = new CodeConditionStatement(ifCondition, ifTrue, ifFalse);
-          codeStatements.Add(ifStatement);
-          break;
-        }
-
-        var sequence = node as SequenceExpression;
-        if (sequence != null) {
-          foreach (var expression in sequence.Expressions) {
-            codeStatements.AddRange(BuildGeneStatements(expression));
-          }
-          break;
-        }
-
-        var terminal = node as TerminalExpression;
-        if (terminal != null) {
-          // this.Method(params);
-          var expression = new CodeMethodInvokeExpression(new CodeThisReferenceExpression(), terminal.MethodInfo.Name,
-                                                          BuildParametersArray(terminal.MethodInfo.GetParameters(),
-                                                                               terminal.Parameters));
-          codeStatements.Add(expression);
-          break;
-        }
-
-        throw new UnknownGenotypeException("An unknown Genotype was encountered.");
+      var branch = node as BranchExpression;
+      if (branch != null) {
+        // if (bot.Method(params)) { /* true branch */ } else { /* false branch */ }
+        var condition = BuildMethodCall(bot, branch.MethodInfo, branch.Parameters);
+        return Expression.IfThenElse(condition, BuildGeneExpression(bot, branch.TrueBranch),
+                                     BuildGeneExpression(bot, branch.FalseBranch));
       }
 
-      var statementArray = new CodeStatement[codeStatements.Count];
-      codeStatements.CopyTo(statementArray, 0);
-      return statementArray;
+      var sequence = node as SequenceExpression;
+      if (sequence != null) {
+        var statements = sequence.Expressions.Select(e => BuildGeneExpression(bot, e)).ToList();
+        return statements.Count == 0 ? (Expression)Expression.Empty() : Expression.Block(typeof(void), statements);
+      }
+
+      var terminal = node as TerminalExpression;
+      if (terminal != null) {
+        // bot.Method(params);
+        return Expression.Block(typeof(void), BuildMethodCall(bot, terminal.MethodInfo, terminal.Parameters));
+      }
+
+      throw new UnknownGenotypeException("An unknown Genotype was encountered.");
     }
 
     /// <summary>
-    ///   Converts an array of parameter <see name="ParameterInfo" /> and corresponding entries in an array of <paramref
-    ///    name="values" /> into an array of <see cref="CodeExpression" /> s that can be passed to a <see
-    ///    cref="CodeMethodInvokeExpression" /> .
+    ///   Builds a call of a gene's method on the bot, constructing each <see cref="IParameter{T}" /> from its stored value.
     /// </summary>
-    /// <remarks>
-    ///   The arrays <paramref name="parameterInfo" /> and <paramref name="values" /> must contain the same number of entries.
-    /// </remarks>
-    /// <param name="parameterInfo"> An array of information describing the parameters. </param>
-    /// <param name="values"> The values that each parameter will take. </param>
-    /// <returns> An array of code expressions. </returns>
-    private static CodeExpression[] BuildParametersArray(IList<ParameterInfo> parameterInfo, IList<object> values) {
-      Debug.Assert(parameterInfo != null, "A valid list of parameters must be provided.");
+    private static MethodCallExpression BuildMethodCall(Expression bot, MethodInfo method, IList<object> values) {
+      Debug.Assert(method != null, "A valid method must be provided.");
       Debug.Assert(values != null, "A valid list of parameter values must be provided");
-      Debug.Assert(parameterInfo.Count == values.Count, "Array lengths not equal.");
 
-      var parameterCollection = new CodeExpressionCollection();
-      for (var index = 0; index < parameterInfo.Count; ++index) {
-        var expression = new CodeObjectCreateExpression(new CodeTypeReference(parameterInfo[index].ParameterType.Name),
-                                                        new CodePrimitiveExpression(values[index]));
-        parameterCollection.Add(expression);
+      var parameters = method.GetParameters();
+      var arguments = new Expression[parameters.Length];
+      for (var index = 0; index < parameters.Length; ++index) {
+        arguments[index] = index < values.Count
+                             ? BuildParameter(parameters[index].ParameterType, values[index])
+                             : Expression.Constant(parameters[index].DefaultValue, parameters[index].ParameterType);
       }
-
-      var parameters = new CodeExpression[parameterCollection.Count];
-      parameterCollection.CopyTo(parameters, 0);
-      return parameters;
+      return Expression.Call(bot, method, arguments);
     }
 
     /// <summary>
-    ///   Builds the <c>RunBotLogic</c> method that will run the instructions encoded in the specified <paramref
-    ///    name="chromosome" /> .
+    ///   Builds an expression that creates an <see cref="IParameter{T}" /> of the given type, passing it the stored value.
     /// </summary>
-    /// <param name="chromosome"> The instruction tree to convert to code. </param>
-    /// <returns> The code member for the RunBotLogic method. </returns>
-    private static CodeTypeMember BuildRunBotLogicMethod(Chromosome chromosome) {
-      Debug.Assert(chromosome != null, "A valid chromosome must be provided.");
-
-      // protected override void RunBotLogic() {
-      var method = new CodeMemberMethod {
-                                          ReturnType = new CodeTypeReference(typeof(void)),
-                                          Attributes = (MemberAttributes.Family + (int)MemberAttributes.Override),
-                                          Name = "RunBotLogic"
-                                        };
-
-      //   for ( ; this.NotFinished(); ) {
-      //     // execute the Chromosome instructions
-      //   }
-      var noop = new CodeSnippetStatement("");
-      var notFinishedCall = new CodeMethodInvokeExpression(new CodeThisReferenceExpression(), "NotFinished");
-      var whileLoop = new CodeIterationStatement(noop, notFinishedCall, noop, BuildGeneStatements(chromosome));
-
-      method.Statements.Add(whileLoop);
-      return method;
-
-      // }
-    }
-
-    /// <summary>
-    ///   Writes the built namespace to C# code. The file is output in the working directory with the name <c>&lt;filename&gt;.cs</c> .
-    /// </summary>
-    /// <param name="filename"> The name of the </param>
-    /// <param name="codeUnit"> The code unit to write to C#. </param>
-    private static void GenerateCode(string filename, CodeCompileUnit codeUnit) {
-      Debug.Assert(!string.IsNullOrWhiteSpace(filename), "A valid destination filename must be provided.");
-      Debug.Assert(codeUnit != null, "A valid code unit must be provieded.");
-
-      const bool noAppend = false;
-
-      var sw = new StreamWriter(string.Format("{0}.cs", filename), noAppend);
-      using (var itw = new IndentedTextWriter(sw, "  ")) {
-        using (var codeProvider = new CSharpCodeProvider()) {
-          codeProvider.GenerateCodeFromCompileUnit(codeUnit, itw, new CodeGeneratorOptions());
-        }
+    private static Expression BuildParameter(Type parameterType, object value) {
+      // The value constructor is the single-argument constructor accepting the stored value (not the Random one).
+      var constructor = parameterType.GetConstructors()
+                                     .Where(c => c.GetParameters().Length == 1)
+                                     .FirstOrDefault(c => c.GetParameters()[0].ParameterType.IsInstanceOfType(value));
+      if (constructor == null) {
+        throw new BotCompileException(string.Format("{0} has no public constructor accepting a {1}.",
+                                                    parameterType.Name, value == null ? "null" : value.GetType().Name));
       }
-    }
-
-    /// <summary>
-    ///   Compiles a generated C# bot code file into a DLL.
-    /// </summary>
-    /// <param name="filename"> The C# bot code file name. </param>
-    /// <returns> The results of the compilation, including a reference to the compiled assembly. </returns>
-    private CompilerResults CompileCode(string filename) {
-      Debug.Assert(!string.IsNullOrWhiteSpace(filename), "A valid source filename must be provided.");
-
-      var provider = new CSharpCodeProvider();
-      var options = new CompilerParameters
-                    { GenerateInMemory = true, GenerateExecutable = false, IncludeDebugInformation = false };
-      options.ReferencedAssemblies.Add("System.dll");
-      options.ReferencedAssemblies.Add("Common.Logging.dll");
-      options.ReferencedAssemblies.Add(Assembly.GetExecutingAssembly().ManifestModule.ScopeName);
-
-      // Ensure that the assembly in which the provided TBot type is declared is included, along with any classes from
-      // which it inherits (which may included generics).
-      var botType = typeof(TBot);
-      while (botType != null && botType != typeof(object)) {
-        options.ReferencedAssemblies.Add(Assembly.GetAssembly(botType).ManifestModule.ScopeName);
-        if (botType.IsGenericType) {
-          foreach (var gt in botType.GetGenericArguments()) {
-            options.ReferencedAssemblies.Add(Assembly.GetAssembly(gt).ManifestModule.ScopeName);
-          }
-        }
-        botType = botType.BaseType;
-      }
-      options.OutputAssembly = string.Format("{0}.dll", filename);
-
-      // Invoke compilation.
-      var sourceFile = string.Format("{0}.cs", filename);
-      Debug.Assert(File.Exists(sourceFile), "The code file must exist.");
-      var results = provider.CompileAssemblyFromFile(options, sourceFile);
-
-      if (results.Errors.Count <= 0) {
-        _log.InfoFormat("Source {0} built successfully.", sourceFile);
-        return results;
-      }
-
-      // Display compilation errors.
-      _log.ErrorFormat("Errors building {0} into {1}", sourceFile, results.PathToAssembly);
-      var errors = new StringBuilder();
-      errors.AppendLine("Build encountered the following errors:");
-      foreach (CompilerError ce in results.Errors) {
-        errors.AppendLine(string.Format("  {0}", ce));
-      }
-      _log.TraceFormat("CompileCode: {0}", errors);
-      return null;
+      return Expression.New(constructor, Expression.Constant(value, constructor.GetParameters()[0].ParameterType));
     }
   }
 }

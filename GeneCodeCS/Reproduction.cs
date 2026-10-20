@@ -45,7 +45,7 @@ namespace GeneCodeCS
     /// <remarks>
     ///   Not null.
     /// </remarks>
-    private readonly ILog _log = LogManager.GetCurrentClassLogger();
+    private readonly ILog _log = LogManager.GetLogger(typeof(Reproduction<TBot>));
 
     /// <summary>
     ///   A list of non-terminal genes, formed from the branch methods found in the <typeparamref name="TBot" /> type and constructed sequence genes.
@@ -281,7 +281,7 @@ namespace GeneCodeCS
     /// <param name="generationNumber"> The generation number that the bot is in. </param>
     /// <param name="botIndex"> The index of the bot in its generation. </param>
     /// <returns> A name for the bot. </returns>
-    private static string CreateBotName(int generationNumber, int botIndex) {
+    internal static string CreateBotName(int generationNumber, int botIndex) {
       Debug.Assert(generationNumber >= 0, Resources.GenerationNumberValidRange);
       Debug.Assert(botIndex >= 0, Resources.BotIndexValidRange);
 

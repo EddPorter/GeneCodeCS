@@ -6,7 +6,9 @@ A genetic programming library for performing breeding and natural selection on c
 Usage
 -----
 
-Instantiate a new object of `Population<>` passing a custom sub-class of `BaseBot`. Define public methods in the sub-class for:
+Requires .NET 8. Build and test with `dotnet test`.
+
+Instantiate a new object of `Population<>` passing a custom sub-class of `BaseBot`. The sub-class must be concrete and have a public parameterless constructor. Define public methods in the sub-class for:
 * Functions - these return bool;
 * Terminals - there return void.
 An optimisation function can optionally be passed to the `Population<>` constructor. When a new `Chromosome` is created, it can be reduced and optimised (for example, by removing any impossible branches). Care must be taken that this doesn't reduce the possible search space of the tree.
@@ -24,8 +26,4 @@ Each bot will have Initialise called, then Execute, and then Evaluate. The bot s
 To run the genetic program, call `SimulateGenerations`.
 
 
-TODO
-----
-
-* The code currently outputs CSharp code and compiles DLLs into the working directory, which thus must be writeable to. This should be made a configuration option.
-* The generated assemblies are loaded into the same assembly as the executing program and isn't unloaded. For larger populations, this might cause a problem.
+Bots are compiled in memory from expression trees to delegates, so nothing is written to disk and no assemblies are loaded that cannot be collected.
