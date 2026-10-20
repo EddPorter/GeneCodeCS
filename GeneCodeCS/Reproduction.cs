@@ -106,7 +106,7 @@ namespace GeneCodeCS
     public int CrossoverRate {
       get { return _crossoverRate; }
       set {
-        if (_crossoverRate < 0 || _crossoverRate > 100) {
+        if (value < 0 || value > 100) {
           throw new ArgumentOutOfRangeException("value", value, Resources.CrossoverRateValidRange);
         }
         _log.TraceFormat("get_CrossoverRate: Crossover rate set to {0}.", value);
@@ -125,7 +125,7 @@ namespace GeneCodeCS
     public int MutationRate {
       get { return _mutationRate; }
       set {
-        if (_mutationRate < 0 || _mutationRate > 100) {
+        if (value < 0 || value > 100) {
           throw new ArgumentOutOfRangeException("value", value, Resources.MutationRateValidRange);
         }
         _log.TraceFormat("get_MutationRate: Mutation rate set to {0}.", value);
@@ -139,7 +139,7 @@ namespace GeneCodeCS
     public int RandomBotPercentage {
       get { return _randomBotPercentage; }
       set {
-        if (_randomBotPercentage < 0 || _randomBotPercentage > 100) {
+        if (value < 0 || value > 100) {
           throw new ArgumentOutOfRangeException("value", value, Resources.RandomBotPercentageValidRange);
         }
         _log.TraceFormat("get_RandomBotPercentage: Random bot percentage set to {0}.", value);

@@ -1,0 +1,733 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GeneCodeCS – evolve programs in C#</title>
+<meta name="description" content="GeneCodeCS is a genetic programming library for .NET. Write the small methods your bot may call; it breeds, compiles and ranks programs that combine them.">
+<style>
+:root {
+  --bg: #fbfaf7; --surface: #ffffff; --surface-2: #f2f0ea; --ink: #1d1f24; --ink-2: #565b66; --line: #dedbd2;
+  --accent: #4f46e5; --accent-ink: #ffffff; --accent-soft: #e8e7fb;
+  --inc: #0f7b6c; --inc-soft: #d9f0ec; --dec: #b45309; --dec-soft: #fbe8cf; --seq: #6b7280; --seq-soft: #e7e8ec;
+  --good: #15803d; --bad: #b91c1c; --code-bg: #14161c; --code-ink: #e6e8ee; --code-dim: #8b93a7;
+  --shadow: 0 1px 2px rgba(20,22,28,.06), 0 4px 16px rgba(20,22,28,.06);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #101216; --surface: #181b21; --surface-2: #1f232b; --ink: #eceef3; --ink-2: #a3a9b6; --line: #2e333d;
+    --accent: #8b85ff; --accent-ink: #0f1020; --accent-soft: #272a52;
+    --inc: #4cc9b4; --inc-soft: #12403a; --dec: #f0a04b; --dec-soft: #47300f; --seq: #9aa1af; --seq-soft: #2a2e37;
+    --good: #4ade80; --bad: #f87171; --code-bg: #0b0c10; --shadow: 0 1px 2px rgba(0,0,0,.4), 0 4px 16px rgba(0,0,0,.35);
+  }
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; -webkit-font-smoothing: antialiased; }
+a { color: var(--accent); }
+code, pre, .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 20px; }
+section { padding: 64px 0; }
+h1, h2, h3 { line-height: 1.2; margin: 0 0 .5em; letter-spacing: -.02em; }
+h1 { font-size: clamp(2.2rem, 5.5vw, 3.6rem); }
+h2 { font-size: clamp(1.6rem, 3.4vw, 2.2rem); }
+h3 { font-size: 1.1rem; letter-spacing: -.01em; }
+p { margin: 0 0 1em; }
+.lede { font-size: 1.2rem; color: var(--ink-2); max-width: 46rem; }
+.eyebrow { font-size: .8rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin-bottom: .75rem; }
+
+/* nav + hero */
+nav { display: flex; justify-content: space-between; align-items: center; padding: 18px 0; gap: 16px; }
+nav .brand { font-weight: 800; letter-spacing: -.02em; color: var(--ink); text-decoration: none; }
+nav .links { display: flex; gap: 20px; font-size: .95rem; flex-wrap: wrap; justify-content: flex-end; }
+nav .links a { color: var(--ink-2); text-decoration: none; }
+nav .links a:hover { color: var(--ink); }
+.hero { padding: 40px 0 32px; }
+.hero h1 em { font-style: normal; color: var(--accent); }
+.cta { display: flex; gap: 12px; flex-wrap: wrap; margin: 28px 0 24px; }
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 11px 20px; border-radius: 10px; font: inherit; font-weight: 600; text-decoration: none; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; }
+.btn:hover { border-color: var(--accent); }
+.btn:focus-visible, select:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.small { padding: 8px 14px; font-size: .9rem; }
+.install { background: var(--code-bg); color: var(--code-ink); border-radius: 12px; padding: 16px 20px; font-size: .9rem; overflow-x: auto; max-width: 40rem; margin: 0; }
+.install .c { color: var(--code-dim); }
+.badges { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
+.badge { font-size: .8rem; padding: 3px 10px; border: 1px solid var(--line); border-radius: 99px; color: var(--ink-2); background: var(--surface); }
+
+/* demo */
+.demo { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); padding: 20px; }
+.demo-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; margin-bottom: 14px; }
+.problem { flex: 1 1 380px; min-width: 0; margin: 0; color: var(--ink-2); max-width: 42rem; font-size: .95rem; }
+.controls { flex: 0 1 auto; min-width: 0; display: flex; gap: 8px; flex-wrap: wrap; }
+.stages { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+.stage { font-size: .8rem; font-weight: 600; padding: 4px 12px; border-radius: 99px; background: var(--surface-2); color: var(--ink-2); border: 1px solid transparent; transition: all .25s; }
+.stage.on { background: var(--accent); color: var(--accent-ink); }
+.stage.done { border-color: var(--line); }
+.genlabel { margin-left: auto; font-size: .85rem; color: var(--ink-2); align-self: center; font-variant-numeric: tabular-nums; }
+.caption { min-height: 3.2em; margin: 0 0 14px; font-size: .98rem; }
+.grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.card { position: relative; background: var(--surface-2); border: 2px solid transparent; border-radius: 12px; padding: 8px 8px 10px; transition: opacity .4s, border-color .3s, background .3s; will-change: transform; }
+.card.parent { border-color: var(--accent); background: var(--accent-soft); }
+.card.dim { opacity: .38; }
+.card.born { animation: born .55s ease-out; }
+.card.winner { border-color: var(--good); }
+@keyframes born { from { opacity: 0; transform: scale(.88) translateY(8px); } to { opacity: 1; transform: none; } }
+.card-head { display: flex; justify-content: space-between; align-items: baseline; font-size: .78rem; color: var(--ink-2); gap: 6px; }
+.card-head b { color: var(--ink); font-size: .85rem; }
+.tag { font-size: .7rem; padding: 1px 7px; border-radius: 99px; background: var(--surface); border: 1px solid var(--line); white-space: nowrap; }
+.tag.elite { color: var(--good); border-color: var(--good); }
+.tag.new { color: var(--dec); border-color: var(--dec); }
+.card svg.tree { display: block; width: 100%; height: 150px; }
+.bar { height: 7px; border-radius: 4px; background: var(--line); overflow: hidden; margin-top: 4px; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--accent); border-radius: 4px; transition: width .7s cubic-bezier(.2,.8,.2,1); }
+.card.winner .bar > i { background: var(--good); }
+.score { display: flex; justify-content: space-between; font-size: .75rem; color: var(--ink-2); margin-top: 4px; font-variant-numeric: tabular-nums; }
+.n-rect { stroke-width: 1.5; }
+.n-text { font: 600 12px ui-monospace, Menlo, Consolas, monospace; text-anchor: middle; dominant-baseline: central; fill: var(--ink); pointer-events: none; }
+.edge { stroke: var(--line); stroke-width: 1.5; fill: none; }
+.edge-l { font: 10px system-ui, sans-serif; fill: var(--ink-2); text-anchor: middle; }
+.k-if .n-shape { fill: var(--accent-soft); stroke: var(--accent); }
+.k-seq .n-shape { fill: var(--seq-soft); stroke: var(--seq); }
+.k-inc .n-shape { fill: var(--inc-soft); stroke: var(--inc); }
+.k-dec .n-shape { fill: var(--dec-soft); stroke: var(--dec); }
+.from-b .n-shape { stroke-dasharray: 4 2; stroke-width: 3; stroke: var(--bad); }
+.mut .n-shape { animation: pulse 1s ease-in-out 3; stroke-width: 3.5; stroke: #e11d48; }
+@keyframes pulse { 50% { transform: scale(1.35); } }
+.mut .n-shape, .from-b .n-shape { transform-box: fill-box; transform-origin: center; }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: .8rem; color: var(--ink-2); margin: 14px 0 0; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 14px; height: 14px; border-radius: 4px; border: 2px solid; display: inline-block; }
+.demo-bottom { display: grid; grid-template-columns: 1.1fr 1fr 1.1fr; gap: 14px; margin-top: 16px; }
+.panel { background: var(--surface-2); border-radius: 12px; padding: 12px 14px; min-width: 0; }
+.panel h3 { font-size: .85rem; color: var(--ink-2); margin-bottom: 6px; font-weight: 600; }
+.panel svg { width: 100%; height: auto; display: block; }
+.panel pre { margin: 0; font-size: .78rem; line-height: 1.5; overflow-x: auto; color: var(--ink); white-space: pre; }
+.axis { stroke: var(--line); stroke-width: 1; }
+.axis-t { font: 10px system-ui, sans-serif; fill: var(--ink-2); }
+.l-best { stroke: var(--accent); stroke-width: 2.5; fill: none; }
+.l-mean { stroke: var(--ink-2); stroke-width: 1.8; fill: none; stroke-dasharray: 4 3; }
+.l-trace { stroke: var(--accent); stroke-width: 2; fill: none; }
+.l-target { stroke: var(--good); stroke-width: 1.5; stroke-dasharray: 5 4; }
+.dot-best { fill: var(--accent); }
+
+/* how it works */
+.steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 28px; counter-reset: s; }
+.step { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px; position: relative; }
+.step::before { counter-increment: s; content: counter(s); display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); font-weight: 700; font-size: .9rem; margin-bottom: 10px; }
+.step p { margin: 0; color: var(--ink-2); font-size: .95rem; }
+
+/* code walkthrough */
+.walk { display: grid; grid-template-columns: 1.25fr 1fr; gap: 28px; align-items: start; margin-top: 28px; }
+pre.code { background: var(--code-bg); color: var(--code-ink); border-radius: 14px; padding: 20px 20px 20px 22px; margin: 0; overflow-x: auto; font-size: .84rem; line-height: 1.75; }
+pre.code .k { color: #c4a5ff; } pre.code .t { color: #7dd3fc; } pre.code .m { color: #fcd34d; } pre.code .s { color: #86efac; } pre.code .c { color: var(--code-dim); }
+.n { display: inline-grid; place-items: center; width: 19px; height: 19px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); font: 700 .7rem system-ui; margin-left: 8px; vertical-align: 1px; }
+.notes { list-style: none; padding: 0; margin: 0; display: grid; gap: 14px; }
+.notes li { display: grid; grid-template-columns: 28px 1fr; gap: 10px; }
+.notes .n { margin: 2px 0 0; width: 24px; height: 24px; font-size: .8rem; }
+.notes p { margin: 0; color: var(--ink-2); font-size: .95rem; }
+.notes strong { color: var(--ink); }
+.mapping { margin-top: 28px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: .93rem; }
+th, td { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: .78rem; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-2); background: var(--surface-2); }
+tr:last-child td { border-bottom: 0; }
+
+/* two-up + footer */
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 24px; }
+.box { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 22px; }
+.box ul { margin: 0; padding-left: 1.1em; color: var(--ink-2); }
+.box li { margin-bottom: .4em; }
+.box.good h3 { color: var(--good); } .box.warn h3 { color: var(--dec); }
+footer { border-top: 1px solid var(--line); padding: 32px 0 48px; color: var(--ink-2); font-size: .9rem; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+@media (max-width: 900px) {
+  .grid { grid-template-columns: repeat(2, 1fr); }
+  .demo-bottom, .walk, .two { grid-template-columns: 1fr; }
+  .steps { grid-template-columns: 1fr 1fr; }
+  section { padding: 44px 0; }
+}
+@media (max-width: 560px) { .steps { grid-template-columns: 1fr; } .genlabel { margin-left: 0; width: 100%; } }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .card, .bar > i, .stage { transition: none; }
+  .card.born, .mut .n-shape { animation: none; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav aria-label="Main">
+    <a class="brand" href="#top">GeneCodeCS</a>
+    <div class="links">
+      <a href="#demo">Live demo</a>
+      <a href="#how">How it works</a>
+      <a href="#code">The code</a>
+      <a href="#fit">Is it for you?</a>
+      <a href="https://github.com/EddPorter/GeneCodeCS">GitHub</a>
+    </div>
+  </nav>
+
+  <header class="hero" id="top">
+    <div class="eyebrow">Genetic programming for .NET</div>
+    <h1>Evolve <em>programs</em>,<br>not just parameters.</h1>
+    <p class="lede">Write the small methods your bot is allowed to call. GeneCodeCS breeds random programs from them, compiles each one in memory, scores it with your fitness function, and lets the best ones reproduce.</p>
+    <div class="cta">
+      <a class="btn primary" href="#demo">Watch a population evolve ↓</a>
+      <a class="btn" href="https://github.com/EddPorter/GeneCodeCS">View on GitHub</a>
+    </div>
+    <pre class="install"><span class="c"># .NET 8 SDK</span>
+git clone https://github.com/EddPorter/GeneCodeCS
+cd GeneCodeCS &amp;&amp; dotnet test</pre>
+    <div class="badges"><span class="badge">.NET 8</span><span class="badge">GPL-3.0-or-later</span><span class="badge">No code generation to disk</span><span class="badge">Reproducible with a seed</span></div>
+  </header>
+
+  <section id="demo" style="padding-top:40px">
+    <div class="eyebrow">Live demo</div>
+    <h2>A population, evolving</h2>
+    <p class="lede" style="margin-bottom:24px">This is a small working model of what the library does, running in your browser. Each card is one bot&rsquo;s program drawn as a tree. Press play, or step through a generation one stage at a time.</p>
+
+    <div class="demo" role="group" aria-label="Evolution demo">
+      <div class="demo-top">
+        <p class="problem"><strong>The task:</strong> a counter starts at 0. Each bot&rsquo;s program runs 20 times. The bot is fitter the closer the counter finishes to <strong>10</strong> (fitness&nbsp;=&nbsp;1000&nbsp;&minus;&nbsp;distance). The building blocks are <code>Increment(n)</code>, <code>Decrement(n)</code> and the question <code>BelowTarget()</code>. No bot is told how to combine them.</p>
+        <div class="controls">
+          <button class="btn small primary" id="play" type="button">Play</button>
+          <button class="btn small" id="step" type="button">Next stage</button>
+          <button class="btn small" id="restart" type="button">New population</button>
+        </div>
+      </div>
+      <div class="stages" id="stages" aria-hidden="true">
+        <span class="stage" data-s="0">1 Evaluate</span>
+        <span class="stage" data-s="1">2 Select</span>
+        <span class="stage" data-s="2">3 Cross over</span>
+        <span class="stage" data-s="3">4 Mutate</span>
+        <span class="genlabel" id="genlabel">Generation 0</span>
+      </div>
+      <p class="caption" id="caption" aria-live="polite"></p>
+      <div class="grid" id="grid"></div>
+      <div class="legend" aria-hidden="true">
+        <span><i class="sw" style="border-color:var(--accent);background:var(--accent-soft)"></i>Decision (<code>bool</code> method)</span>
+        <span><i class="sw" style="border-color:var(--inc);background:var(--inc-soft)"></i>Increment</span>
+        <span><i class="sw" style="border-color:var(--dec);background:var(--dec-soft)"></i>Decrement</span>
+        <span><i class="sw" style="border-color:var(--seq);background:var(--seq-soft)"></i>Do these in order</span>
+        <span><i class="sw" style="border-color:var(--bad);border-style:dashed"></i>Subtree swapped in from the other parent</span>
+        <span><i class="sw" style="border-color:#e11d48"></i>Mutated node</span>
+      </div>
+      <div class="demo-bottom">
+        <div class="panel"><h3>Fitness by generation</h3><svg id="chart" viewBox="0 0 300 150" role="img" aria-label="Best and mean fitness by generation"></svg></div>
+        <div class="panel"><h3>Best bot&rsquo;s counter over its 20 runs</h3><svg id="trace" viewBox="0 0 300 150" role="img" aria-label="Counter value at each of the 20 runs of the best bot"></svg></div>
+        <div class="panel"><h3>The best bot, as C#</h3><pre id="csharp" aria-live="off"></pre></div>
+      </div>
+    </div>
+    <p style="color:var(--ink-2);font-size:.9rem;margin-top:14px">The demo is a miniature written in JavaScript for this page. It uses the same ingredients as the library (tree genomes, tournament selection, subtree crossover, mutation, elitism and random newcomers) but isn&rsquo;t the library itself. The C# below is.</p>
+  </section>
+
+  <section id="how">
+    <div class="eyebrow">How it works</div>
+    <h2>Four steps, one loop</h2>
+    <p class="lede">You supply the vocabulary and the scoring. The library does the evolving.</p>
+    <div class="steps">
+      <div class="step"><h3>Describe</h3><p>Public <code>void</code> methods on your bot become actions. Public <code>bool</code> methods become decisions. Parameters are evolvable constants you control the range of.</p></div>
+      <div class="step"><h3>Grow</h3><p>The first generation is random expression trees built from those parts, with <em>Grow</em> or <em>Full</em> initialisation up to a depth you choose.</p></div>
+      <div class="step"><h3>Compile</h3><p>Each tree is turned into a delegate with <code>System.Linq.Expressions</code>, in memory. There are no files to write and no assemblies to leak.</p></div>
+      <div class="step"><h3>Select &amp; breed</h3><p>Your <code>Evaluate</code> sets <code>Fitness</code>. Fitter bots are more likely to be parents; subtrees are swapped, nodes occasionally mutated, and the loop repeats.</p></div>
+    </div>
+  </section>
+
+  <section id="code">
+    <div class="eyebrow">The code</div>
+    <h2>This is the whole bot</h2>
+    <p class="lede">The demo above is this C# class. Nothing else describes the problem.</p>
+    <div class="walk">
+<pre class="code"><span class="k">public class</span> <span class="t">CounterBot</span> : <span class="t">BaseBot</span>
+{
+  <span class="k">private int</span> _steps;
+  <span class="k">public int</span> Counter { <span class="k">get</span>; <span class="k">private set</span>; }
+
+  <span class="c">// Actions: public void methods</span><span class="n">1</span>
+  <span class="k">public void</span> <span class="m">Increment</span>(<span class="t">StepParameter</span> s)<span class="n">2</span>
+  { Counter += s.Value; }
+  <span class="k">public void</span> <span class="m">Decrement</span>(<span class="t">StepParameter</span> s)
+  { Counter -= s.Value; }
+
+  <span class="c">// Decisions: public bool methods</span><span class="n">3</span>
+  <span class="k">public bool</span> <span class="m">BelowTarget</span>() { <span class="k">return</span> Counter &lt; 10; }
+
+  <span class="k">protected override bool</span> <span class="m">NotFinished</span>()<span class="n">4</span>
+  { <span class="k">return</span> ++_steps &lt;= 20; }
+
+  <span class="k">protected override void</span> <span class="m">Evaluate</span>()<span class="n">5</span>
+  { Fitness = 1000 - Math.Abs(10 - Counter); }
+}
+
+<span class="c">// An evolvable constant, kept to the range 1 to 3</span>
+<span class="k">public class</span> <span class="t">StepParameter</span> : <span class="t">IParameter</span>&lt;<span class="k">int</span>&gt;
+{
+  <span class="k">public</span> StepParameter(<span class="t">Random</span> r)<span class="n">6</span>
+  { Value = r.Next(1, 4); }
+  <span class="k">public</span> StepParameter(<span class="k">int</span> value)
+  { Value = value; }
+  <span class="k">public int</span> Value { <span class="k">get</span>; <span class="k">private set</span>; }
+}
+
+<span class="c">// Evolve</span>
+<span class="k">var</span> population = <span class="k">new</span> <span class="t">Population</span>&lt;<span class="t">CounterBot</span>&gt;();
+<span class="k">var</span> best = population.SimulateGenerations&lt;<span class="k">object</span>&gt;(<span class="k">null</span>,
+    generationLimit: 30, botsPerGeneration: 60,
+    fitnessThreshold: 999);<span class="n">7</span></pre>
+      <ol class="notes">
+        <li><span class="n">1</span><p><strong>Your methods are the gene pool.</strong> The library finds them by reflection. <code>void</code> methods become the leaves of a program tree.</p></li>
+        <li><span class="n">2</span><p><strong>Parameters are part of the genome.</strong> Each <code>Increment</code> in a tree carries its own evolved step size.</p></li>
+        <li><span class="n">3</span><p><strong>Decisions make branches.</strong> A <code>bool</code> method becomes an <code>if</code>/<code>else</code> with a subtree on each side.</p></li>
+        <li><span class="n">4</span><p><strong>You say when a bot is done.</strong> The evolved program runs in a loop until <code>NotFinished</code> returns <code>false</code>.</p></li>
+        <li><span class="n">5</span><p><strong>You define &ldquo;good&rdquo;.</strong> Set <code>Fitness</code> from whatever the bot did. Higher is better. A bot that throws is scored <code>int.MinValue</code>.</p></li>
+        <li><span class="n">6</span><p><strong>Two constructors.</strong> One takes a <code>Random</code> to pick the starting value, so you control the range. The other restores a stored value when the tree is compiled.</p></li>
+        <li><span class="n">7</span><p><strong>One call evolves it.</strong> You get back the best bot or bots, each with its tree, name, parents and compiled instance.</p></li>
+      </ol>
+    </div>
+
+    <div class="mapping">
+      <table>
+        <thead><tr><th>You write</th><th>The library treats it as</th><th>Shown in the demo as</th></tr></thead>
+        <tbody>
+          <tr><td><code>public void Increment(StepParameter step)</code></td><td>A terminal gene (a leaf), with one evolvable parameter</td><td>A green <code>+n</code> node</td></tr>
+          <tr><td><code>public bool BelowTarget()</code></td><td>A branch gene: <code>if</code> / <code>else</code></td><td>A blue <code>Below?</code> node with yes and no subtrees</td></tr>
+          <tr><td>Several genes in a row</td><td>A sequence, run top to bottom</td><td>A grey <code>then</code> node</td></tr>
+          <tr><td><code>Evaluate()</code></td><td>The fitness function</td><td>The bar on each card</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="knobs">
+    <div class="eyebrow">Control</div>
+    <h2>The knobs that matter</h2>
+    <div class="mapping" style="margin-top:20px">
+      <table>
+        <thead><tr><th>Setting</th><th>What it does</th><th>Default</th></tr></thead>
+        <tbody>
+          <tr><td><code>botsPerGeneration</code>, <code>generationLimit</code>, <code>maxTreeDepth</code></td><td>Population size, how long to run, how large the first random programs can be</td><td>30, 20, 3</td></tr>
+          <tr><td><code>fitnessThreshold</code></td><td>Stop early once a bot beats this fitness</td><td>Never</td></tr>
+          <tr><td><code>InitialisationMethod</code></td><td><code>Grow</code> mixes functions and terminals; <code>Full</code> fills every level</td><td>Grow</td></tr>
+          <tr><td><code>SelectionMethod</code></td><td><code>Tournament</code>, or <code>FitnessProportionate</code> (chance of parenthood in proportion to fitness)</td><td>Tournament</td></tr>
+          <tr><td><code>CrossoverRate</code>, <code>MutationRate</code></td><td>Chance, 0&ndash;100, of swapping subtrees or mutating during breeding</td><td>90, 5</td></tr>
+          <tr><td><code>RandomBotPercentage</code></td><td>Share of each new generation made of fresh random bots, to keep diversity up</td><td>20</td></tr>
+          <tr><td><code>starterBots</code></td><td>Seed the first generation with programs you already have, or the output of an earlier run</td><td>None</td></tr>
+          <tr><td>Optimise callback</td><td>Simplify each new tree (for example, remove impossible branches) before it is compiled</td><td>None</td></tr>
+          <tr><td>Random seed</td><td>Make a run reproducible</td><td>Time-based</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="fit">
+    <div class="eyebrow">Is it for you?</div>
+    <h2>Good at some things, not all</h2>
+    <div class="two">
+      <div class="box good">
+        <h3>A good fit</h3>
+        <ul>
+          <li>Behaviour-style programs: trading rules, game agents, simulation controllers, scheduling heuristics.</li>
+          <li>Problems you can score automatically and cheaply, thousands of times.</li>
+          <li>When you want to <em>read</em> the answer. The result is a small program, not a weight matrix.</li>
+          <li>Prototyping: if you can write the building blocks, you can start evolving in an afternoon.</li>
+        </ul>
+      </div>
+      <div class="box warn">
+        <h3>Think twice</h3>
+        <ul>
+          <li>Numeric symbolic regression. The building blocks are <code>bool</code> and <code>void</code> methods, not typed expressions that return numbers.</li>
+          <li>Noisy or thin data. Evolution will happily overfit; score on held-out data.</li>
+          <li>Expensive fitness. Each bot in each generation must be run, so slow evaluation multiplies fast.</li>
+          <li>Anything needing a guarantee. Evolution gives you good candidates, not proofs.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</div>
+
+<footer>
+  <div class="wrap">
+    <p>GeneCodeCS &copy; Edd Porter 2013&ndash;2026. Free software under the <a href="https://github.com/EddPorter/GeneCodeCS/blob/master/LICENSE">GNU GPL, version 3 or later</a>. <a href="https://github.com/EddPorter/GeneCodeCS">Source on GitHub</a>.</p>
+  </div>
+</footer>
+
+<script>
+/* ---------- Mini genetic programming engine (pure; no DOM) ---------- */
+var GP = (function () {
+  var TARGET = 10, RUNS = 20, MAXD_INIT = 2, MAXD = 3;
+
+  function rng(seed) {                       // mulberry32
+    var a = seed >>> 0;
+    return function () {
+      a = (a + 0x6D2B79F5) >>> 0;
+      var t = a;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  function act(r) { return { t: 'act', m: r() < 0.5 ? 'Increment' : 'Decrement', p: 1 + Math.floor(r() * 3) }; }
+  function grow(r, d, max) {
+    if (d >= max || (d > 0 && r() < 0.35)) return act(r);
+    if (r() < 0.55) return { t: 'if', a: grow(r, d + 1, max), b: grow(r, d + 1, max) };
+    return { t: 'seq', k: [grow(r, d + 1, max), grow(r, d + 1, max)] };
+  }
+  function clone(n) {
+    if (n.t === 'act') return { t: 'act', m: n.m, p: n.p };
+    if (n.t === 'if') return { t: 'if', a: clone(n.a), b: clone(n.b) };
+    return { t: 'seq', k: n.k.map(clone) };
+  }
+  function kids(n) { return n.t === 'if' ? [n.a, n.b] : n.t === 'seq' ? n.k : []; }
+  function setKid(n, i, c) { if (n.t === 'if') { if (i === 0) n.a = c; else n.b = c; } else n.k[i] = c; }
+  function all(n, out, parent, idx, depth) {            // list every node with its parent, for subtree picking
+    out.push({ n: n, parent: parent, idx: idx, depth: depth });
+    kids(n).forEach(function (c, i) { all(c, out, n, i, depth + 1); });
+    return out;
+  }
+  function height(n) { return 1 + Math.max(0, Math.max.apply(null, kids(n).map(height).concat([-1])) ); }
+  function leafCount(n) { var k = kids(n); return k.length ? k.reduce(function (s, c) { return s + leafCount(c); }, 0) : 1; }
+
+  function run(tree) {
+    var c = 0, trace = [];
+    function ex(n) {
+      if (n.t === 'act') { c += n.m === 'Increment' ? n.p : -n.p; }
+      else if (n.t === 'if') { ex(c < TARGET ? n.a : n.b); }
+      else { n.k.forEach(ex); }
+    }
+    for (var i = 0; i < RUNS; i++) { ex(tree); trace.push(c); }
+    return { final: c, trace: trace, fitness: 1000 - Math.abs(TARGET - c) };
+  }
+
+  function tournament(pop, r, size) {
+    var best = null;
+    for (var i = 0; i < size; i++) { var c = pop[Math.floor(r() * pop.length)]; if (!best || c.fit > best.fit) best = c; }
+    return best;
+  }
+
+  // Cross over: copy A, replace a random subtree of A with a copy of a random subtree of B.
+  function crossover(a, b, r) {
+    for (var tries = 0; tries < 12; tries++) {
+      var child = clone(a.tree);
+      var spots = all(child, [], null, 0, 0);
+      var spot = spots[Math.floor(r() * spots.length)];
+      var donors = all(b.tree, [], null, 0, 0);
+      var donor = clone(donors[Math.floor(r() * donors.length)].n);
+      var rootSwap = spot.parent === null;
+      if (rootSwap) { if (height(donor) > MAXD + 1) continue; child = donor; }
+      else {
+        setKid(spot.parent, spot.idx, donor);
+        if (height(child) > MAXD + 1) { continue; }
+      }
+      if (leafCount(child) > 6) continue;
+      markB(donor);
+      return child;
+    }
+    return clone(a.tree);
+  }
+
+  function mutate(tree, r) {
+    var spots = all(tree, [], null, 0, 0);
+    var s = spots[Math.floor(r() * spots.length)];
+    if (s.n.t === 'act') {
+      if (r() < 0.5) { s.n.m = s.n.m === 'Increment' ? 'Decrement' : 'Increment'; } else { s.n.p = 1 + Math.floor(r() * 3); }
+      s.n.mut = true;
+    } else if (s.parent) {
+      var repl = grow(r, 0, 1); repl.mut = true; setKid(s.parent, s.idx, repl);
+    } else { var rep = grow(r, 0, 1); rep.mut = true; return rep; }
+    return tree;
+  }
+
+  function markB(n) { n.fromB = true; kids(n).forEach(markB); }
+  function strip(n) { delete n.fromB; delete n.mut; kids(n).forEach(strip); return n; }
+
+  function initial(seed, size) {
+    var r = rng(seed), pop = [];
+    for (var i = 0; i < size; i++) pop.push({ tree: grow(r, 0, MAXD_INIT) });
+    return { pop: pop, r: r };
+  }
+
+  /* Breed the next generation from an evaluated, fitness-sorted population. */
+  function breed(sorted, r, mutationRate) {
+    var size = sorted.length, next = [], picked = {}, mutated = 0;
+    var elite = sorted[0];
+    next.push({ tree: strip(clone(elite.tree)), origin: 'elite', from: elite.id });
+    var newcomers = 1;
+    var children = size - 1 - newcomers;
+    for (var i = 0; i < children; i++) {
+      var a = tournament(sorted, r, 3), b = tournament(sorted, r, 3);
+      var tries = 0; while (b === a && tries++ < 5) b = tournament(sorted, r, 3);
+      picked[a.id] = true; picked[b.id] = true;
+      var t = crossover(a, b, r), didMut = false;
+      if (r() < mutationRate) { t = mutate(t, r); didMut = true; mutated++; }
+      next.push({ tree: t, origin: 'child', pa: a.id, pb: b.id, mutated: didMut });
+    }
+    for (var j = 0; j < newcomers; j++) next.push({ tree: grow(r, 0, MAXD_INIT), origin: 'new' });
+    return { next: next, parents: picked, mutated: mutated };
+  }
+
+  function csharp(n, ind, lines) {
+    var pad = new Array(ind + 1).join(' ');
+    if (n.t === 'act') lines.push(pad + n.m + '(new StepParameter(' + n.p + '));');
+    else if (n.t === 'seq') n.k.forEach(function (c) { csharp(c, ind, lines); });
+    else {
+      lines.push(pad + 'if (BelowTarget()) {'); csharp(n.a, ind + 2, lines);
+      lines.push(pad + '} else {'); csharp(n.b, ind + 2, lines); lines.push(pad + '}');
+    }
+    return lines;
+  }
+
+  return { rng: rng, run: run, initial: initial, breed: breed, clone: clone, strip: strip, csharp: csharp, kids: kids, TARGET: TARGET, RUNS: RUNS };
+})();
+if (typeof module !== 'undefined') module.exports = GP;
+</script>
+
+<script>
+/* ---------- Demo UI ---------- */
+(function () {
+  if (typeof document === 'undefined' || !document.getElementById('grid')) return;
+  var POP = 8, MAX_GEN = 25, MUT_RATE = 0.3, GOOD_SEED = 487;
+  var $ = function (id) { return document.getElementById(id); };
+  var grid = $('grid'), caption = $('caption'), playBtn = $('play'), stepBtn = $('step'), restartBtn = $('restart');
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var NS = 'http://www.w3.org/2000/svg';
+  var seed = GOOD_SEED, state, playing = false, timer = null, nextId = 1;
+
+  function el(tag, attrs, parent) {
+    var e = document.createElementNS(NS, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+
+  /* --- tree drawing: tidy layout, leaves spaced evenly --- */
+  function layout(n, depth, st) {
+    var ks = GP.kids(n), node = { n: n, depth: depth, kids: [] };
+    if (!ks.length) { node.x = st.next++; }
+    else { node.kids = ks.map(function (c) { return layout(c, depth + 1, st); }); node.x = (node.kids[0].x + node.kids[node.kids.length - 1].x) / 2; }
+    st.maxD = Math.max(st.maxD, depth);
+    return node;
+  }
+  function label(n) {
+    if (n.t === 'if') return 'Below?';
+    if (n.t === 'seq') return 'then';
+    return (n.m === 'Increment' ? '+' : '−') + n.p;
+  }
+  function drawTree(tree, title) {
+    var st = { next: 0, maxD: 0 }, root = layout(tree, 0, st);
+    var W = Math.max(st.next, 4) * 66, H = Math.max(st.maxD + 1, 3) * 54 + 8;
+    var svg = el('svg', { 'class': 'tree', viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': title });
+    var span = (st.next - 1) * 66, off = (W - span) / 2 ;
+    function px(x) { return off + x * 66; }
+    function py(d) { return 22 + d * 54; }
+    (function edges(nd) {
+      nd.kids.forEach(function (c, i) {
+        el('path', { 'class': 'edge', d: 'M' + px(nd.x) + ',' + (py(nd.depth) + 12) + ' C' + px(nd.x) + ',' + (py(nd.depth) + 28) + ' ' + px(c.x) + ',' + (py(c.depth) - 28) + ' ' + px(c.x) + ',' + (py(c.depth) - 12) }, svg);
+        if (nd.n.t === 'if') {
+          var lx = (px(nd.x) + px(c.x)) / 2 + (i === 0 ? -8 : 8), ly = (py(nd.depth) + py(c.depth)) / 2;
+          var t = el('text', { 'class': 'edge-l', x: lx, y: ly }, svg); t.textContent = i === 0 ? 'yes' : 'no';
+        }
+        edges(c);
+      });
+    })(root);
+    (function nodes(nd) {
+      var n = nd.n, k = n.t === 'if' ? 'if' : n.t === 'seq' ? 'seq' : (n.m === 'Increment' ? 'inc' : 'dec');
+      var cls = 'k-' + k + (n.fromB ? ' from-b' : '') + (n.mut ? ' mut' : '');
+      var g = el('g', { 'class': cls }, svg);
+      var cx = px(nd.x), cy = py(nd.depth), w = n.t === 'if' ? 58 : n.t === 'seq' ? 44 : 38;
+      if (n.t === 'if') el('rect', { 'class': 'n-shape n-rect', x: cx - w / 2, y: cy - 13, width: w, height: 26, rx: 13 }, g);
+      else el('rect', { 'class': 'n-shape n-rect', x: cx - w / 2, y: cy - 12, width: w, height: 24, rx: n.t === 'seq' ? 4 : 8 }, g);
+      var tx = el('text', { 'class': 'n-text', x: cx, y: cy }, g); tx.textContent = label(n);
+      nd.kids.forEach(nodes);
+    })(root);
+    return svg;
+  }
+
+  /* --- cards --- */
+  function makeCard(bot, idx) {
+    var c = document.createElement('div');
+    c.className = 'card'; c.dataset.id = bot.id;
+    var head = document.createElement('div'); head.className = 'card-head';
+    var nm = document.createElement('b'); nm.textContent = 'Bot ' + (idx + 1);
+    var tag = document.createElement('span'); tag.className = 'tag'; tag.hidden = true;
+    head.appendChild(nm); head.appendChild(tag); c.appendChild(head);
+    c.appendChild(drawTree(bot.tree, 'Program for bot ' + (idx + 1)));
+    var bar = document.createElement('div'); bar.className = 'bar'; bar.innerHTML = '<i></i>';
+    var sc = document.createElement('div'); sc.className = 'score'; sc.innerHTML = '<span>fitness</span><span>&nbsp;</span>';
+    c.appendChild(bar); c.appendChild(sc);
+    return c;
+  }
+  function setTag(card, text, cls) { var t = card.querySelector('.tag'); t.hidden = !text; t.textContent = text || ''; t.className = 'tag' + (cls ? ' ' + cls : ''); }
+  function cardOf(id) { return grid.querySelector('[data-id="' + id + '"]'); }
+
+  function renderPop(pop) {
+    grid.innerHTML = '';
+    pop.forEach(function (b, i) { grid.appendChild(makeCard(b, i)); });
+  }
+
+  /* --- FLIP reorder --- */
+  function reorder(ids) {
+    var first = {}, cards = [].slice.call(grid.children);
+    cards.forEach(function (c) { first[c.dataset.id] = c.getBoundingClientRect(); });
+    ids.forEach(function (id) { grid.appendChild(cardOf(id)); });
+    if (reduce) return;
+    [].slice.call(grid.children).forEach(function (c) {
+      var a = first[c.dataset.id], b = c.getBoundingClientRect();
+      var dx = a.left - b.left, dy = a.top - b.top;
+      if (!dx && !dy) return;
+      c.style.transition = 'none'; c.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
+      requestAnimationFrame(function () { requestAnimationFrame(function () {
+        c.style.transition = 'transform .7s cubic-bezier(.2,.8,.2,1)'; c.style.transform = '';
+        setTimeout(function () { c.style.transition = ''; }, 750);
+      }); });
+    });
+  }
+
+  /* --- panels --- */
+  function drawChart() {
+    var s = $('chart'); s.innerHTML = '';
+    var W = 300, H = 150, L = 34, R = 8, T = 10, B = 24, lo = 980, hi = 1000, n = Math.max(state.hist.length, 2);
+    function X(i) { return L + (W - L - R) * i / Math.max(Math.min(MAX_GEN, 12) - 1, n - 1); }
+    function Y(v) { return T + (H - T - B) * (1 - (Math.max(v, lo) - lo) / (hi - lo)); }
+    [980, 990, 1000].forEach(function (v) {
+      el('line', { 'class': 'axis', x1: L, x2: W - R, y1: Y(v), y2: Y(v) }, s);
+      var t = el('text', { 'class': 'axis-t', x: L - 4, y: Y(v) + 3, 'text-anchor': 'end' }, s); t.textContent = v;
+    });
+    var tx = el('text', { 'class': 'axis-t', x: (L + W - R) / 2, y: H - 4, 'text-anchor': 'middle' }, s); tx.textContent = 'generation';
+    function path(k, cls) {
+      if (!state.hist.length) return;
+      el('path', { 'class': cls, d: state.hist.map(function (h, i) { return (i ? 'L' : 'M') + X(i) + ',' + Y(h[k]); }).join(' ') }, s);
+    }
+    path('mean', 'l-mean'); path('best', 'l-best');
+    var last = state.hist[state.hist.length - 1];
+    if (last) el('circle', { 'class': 'dot-best', cx: X(state.hist.length - 1), cy: Y(last.best), r: 4 }, s);
+  }
+  function drawTrace(bot) {
+    var s = $('trace'); s.innerHTML = '';
+    var W = 300, H = 150, L = 28, R = 8, T = 10, B = 24, tr = bot.trace;
+    var lo = Math.min(0, Math.min.apply(null, tr)), hi = Math.max(14, Math.max.apply(null, tr));
+    function X(i) { return L + (W - L - R) * i / (tr.length - 1); }
+    function Y(v) { return T + (H - T - B) * (1 - (v - lo) / (hi - lo)); }
+    el('line', { 'class': 'axis', x1: L, x2: W - R, y1: Y(0), y2: Y(0) }, s);
+    el('line', { 'class': 'l-target', x1: L, x2: W - R, y1: Y(GP.TARGET), y2: Y(GP.TARGET) }, s);
+    var t = el('text', { 'class': 'axis-t', x: L - 4, y: Y(GP.TARGET) + 3, 'text-anchor': 'end' }, s); t.textContent = 'target';
+    t.setAttribute('x', L - 3); t.setAttribute('font-size', '9');
+    var z = el('text', { 'class': 'axis-t', x: L - 4, y: Y(0) + 3, 'text-anchor': 'end' }, s); z.textContent = '0';
+    var tx = el('text', { 'class': 'axis-t', x: (L + W - R) / 2, y: H - 4, 'text-anchor': 'middle' }, s); tx.textContent = 'run 1 → 20';
+    el('path', { 'class': 'l-trace', d: tr.map(function (v, i) { return (i ? 'L' : 'M') + X(i) + ',' + Y(v); }).join(' ') }, s);
+    el('circle', { 'class': 'dot-best', cx: X(tr.length - 1), cy: Y(tr[tr.length - 1]), r: 4 }, s);
+  }
+  function drawCode(bot) {
+    var lines = ['while (NotFinished()) {'].concat(GP.csharp(bot.tree, 2, []), ['}']);
+    $('csharp').textContent = lines.join('\n');
+  }
+
+  /* --- state machine --- */
+  function setStage(i) {
+    [].forEach.call(document.querySelectorAll('.stage'), function (s) {
+      var v = +s.dataset.s; s.classList.toggle('on', v === i); s.classList.toggle('done', v < i);
+    });
+  }
+  function newRun(s) {
+    seed = s; var init = GP.initial(seed, POP);
+    while (init.pop.some(function (p) { return GP.run(p.tree).fitness === 1000; })) { seed = (seed * 7 + 13) % 9973; init = GP.initial(seed, POP); }
+    state = { r: init.r, gen: 0, stage: 0, hist: [], pop: init.pop.map(function (p) { p.id = nextId++; return p; }), solved: false, plan: null };
+    renderPop(state.pop); drawChart(); $('csharp').textContent = ''; $('trace').innerHTML = '';
+    $('genlabel').textContent = 'Generation 0'; setStage(-1);
+    caption.textContent = 'Eight random programs. Most are nonsense. Press play (or Next stage) and watch what selection does with them.';
+    playBtn.textContent = playing ? 'Pause' : 'Play'; stepBtn.disabled = false;
+  }
+  function stage0() {                                    // Evaluate
+    state.pop.forEach(function (b) { var r = GP.run(b.tree); b.fit = r.fitness; b.trace = r.trace; b.final = r.final; });
+    var sorted = state.pop.slice().sort(function (a, b) { return b.fit - a.fit; });
+    var best = sorted[0], mean = state.pop.reduce(function (s, b) { return s + b.fit; }, 0) / POP;
+    state.hist.push({ best: best.fit, mean: mean });
+    state.pop.forEach(function (b) {
+      var c = cardOf(b.id), pct = Math.max(3, 100 - Math.min(20, 1000 - b.fit) * 5);
+      c.querySelector('.bar > i').style.width = pct + '%';
+      c.querySelector('.score').lastChild.textContent = b.fit + ' (ends on ' + b.final + ')';
+    });
+    drawChart(); drawTrace(best); drawCode(best);
+    $('genlabel').textContent = 'Generation ' + state.gen;
+    setStage(0);
+    if (best.fit === 1000) {
+      cardOf(best.id).classList.add('winner');
+      state.solved = true;
+      caption.innerHTML = '<strong>Solved in generation ' + state.gen + '.</strong> The best bot finishes exactly on 10. Its whole program is shown as C# at the bottom right. Nobody wrote it.';
+      pause(); stepBtn.disabled = true; playBtn.textContent = 'Play again'; return;
+    }
+    if (state.gen >= MAX_GEN) {
+      caption.textContent = 'Stopping at generation ' + MAX_GEN + '. Try a new population.';
+      pause(); stepBtn.disabled = true; playBtn.textContent = 'Play again'; return;
+    }
+    caption.innerHTML = '<strong>Evaluate.</strong> Every program runs 20 times. The bar shows how close the counter finished to 10. Best so far: <strong>' + best.fit + '</strong>.';
+    state.sorted = sorted;
+  }
+  function stage1() {                                    // Select
+    setStage(1);
+    state.plan = GP.breed(state.sorted, state.r, MUT_RATE);
+    reorder(state.sorted.map(function (b) { return b.id; }));
+    state.pop.forEach(function (b) {
+      var c = cardOf(b.id), isElite = b.id === state.sorted[0].id, isParent = !!state.plan.parents[b.id];
+      c.classList.toggle('parent', isParent || isElite); c.classList.toggle('dim', !isParent && !isElite);
+      setTag(c, isElite ? 'elite · kept' : isParent ? 'parent' : 'out', isElite ? 'elite' : '');
+    });
+    var np = Object.keys(state.plan.parents).length;
+    caption.innerHTML = '<strong>Select.</strong> Bots are sorted fittest first. Parents are picked by small tournaments, so fitter bots are chosen more often, but weak ones occasionally are too. ' + np + ' bots were picked; the fittest is also kept unchanged (<em>elitism</em>).';
+  }
+  function stage2() {                                    // Cross over (replace population)
+    setStage(2);
+    var oldIdx = {}; state.sorted.forEach(function (b, i) { oldIdx[b.id] = i + 1; });
+    var oldNames = {}; state.pop.forEach(function (b) { oldNames[b.id] = 'Bot ' + (state.pop.indexOf(b) + 1); });
+    var rank = {}; state.sorted.forEach(function (b, i) { rank[b.id] = i + 1; });
+    var next = state.plan.next.map(function (p) { p.id = nextId++; return p; });
+    state.pop = next;
+    grid.innerHTML = '';
+    next.forEach(function (b, i) {
+      var c = makeCard(b, i); c.classList.add('born');
+      if (b.origin === 'elite') setTag(c, 'elite · kept', 'elite');
+      else if (b.origin === 'child') setTag(c, 'rank ' + rank[b.pa] + ' × rank ' + rank[b.pb]);
+      else setTag(c, 'random newcomer', 'new');
+      grid.appendChild(c);
+    });
+    state.gen++;
+    $('genlabel').textContent = 'Generation ' + state.gen + ' (bred)';
+    caption.innerHTML = '<strong>Cross over.</strong> Each child starts as a copy of one parent with one branch cut out and replaced by a branch copied from the other. The pasted branch is outlined in red dashes. One newcomer is random, to keep fresh ideas coming.';
+  }
+  function stage3() {                                    // Mutate
+    setStage(3);
+    var m = state.plan.mutated;
+    caption.innerHTML = '<strong>Mutate.</strong> ' + (m ? m + (m === 1 ? ' child has' : ' children have') + ' a single node randomly changed (pulsing, outlined in pink): a different operation, step size or little subtree. Mutation is rare, but it is how genuinely new material appears.' : 'No child was mutated this time. Mutation is rare, but it is how genuinely new material appears.') + ' Next: the new generation is evaluated.';
+  }
+  function advance() {
+    if (!state) return;
+    if (state.solved || stepBtn.disabled) return;
+    var s = state.stage;
+    if (s === 0) stage0(); else if (s === 1) stage1(); else if (s === 2) stage2(); else stage3();
+    if (state.solved) return;
+    state.stage = (s + 1) % 4;
+  }
+  function delay() { return reduce ? 2600 : state.stage === 0 ? 2200 : 2600; }
+  function loop() { if (!playing) return; advance(); if (playing) timer = setTimeout(loop, delay()); }
+  function play() { if (state.solved || stepBtn.disabled) { newRun(seed + 0); } playing = true; playBtn.textContent = 'Pause'; clearTimeout(timer); timer = setTimeout(loop, 250); }
+  function pause() { playing = false; clearTimeout(timer); if (!state.solved && !stepBtn.disabled) playBtn.textContent = 'Play'; }
+
+  playBtn.addEventListener('click', function () { if (playing) pause(); else play(); });
+  stepBtn.addEventListener('click', function () { pause(); advance(); });
+  restartBtn.addEventListener('click', function () { var p = playing; pause(); nextSeedValue(); newRun(seed); if (p) play(); });
+  function nextSeedValue() { seed = (seed * 7 + 13) % 9973; }
+
+  newRun(GOOD_SEED);
+
+  // Start automatically when the demo scrolls into view (once).
+  if ('IntersectionObserver' in window && !reduce) {
+    var io = new IntersectionObserver(function (es) {
+      if (es[0].isIntersecting) { io.disconnect(); if (!playing && state.hist.length === 0) play(); }
+    }, { threshold: 0.45 });
+    io.observe($('grid'));
+  }
+})();
+</script>
+</body>
+</html>
