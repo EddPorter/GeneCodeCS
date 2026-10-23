@@ -12,7 +12,9 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 10.0.x
+          dotnet-version: |
+            8.0.x
+            10.0.x
       - run: dotnet build --configuration Release
       - run: dotnet test --configuration Release --no-build
       - run: dotnet pack GeneCodeCS/GeneCodeCS.csproj --configuration Release --no-build --output artifacts
