@@ -46,7 +46,7 @@ A working version of this is in `GeneCodeCS.Test/Helpers/CounterBot.cs` and `Pop
 Usage
 -----
 
-Requires .NET 8. Build and test with `dotnet test`.
+Requires .NET 10. Build and test with `dotnet test`.
 
 Instantiate a new object of `Population<>` passing a custom sub-class of `BaseBot`. The sub-class must be concrete and have a public parameterless constructor. Define public methods in the sub-class for:
 * Functions - these return bool;
