@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" role="img" aria-labelledby="social-title social-desc">
+  <title id="social-title">GeneCodeCS: Evolve programs, not just parameters.</title>
+  <desc id="social-desc">A GitHub social preview featuring the GeneCodeCS program tree logo, wordmark and tagline.</desc>
+  <g id="card-background">
+    <rect width="1280" height="640" fill="#f8fafc"/>
+    <path d="M0 0H1280V12H0Z" fill="#4f46e5"/>
+    <circle cx="1130" cy="120" r="180" fill="#0f7b6c" opacity=".06"/>
+    <circle cx="1200" cy="550" r="220" fill="#b45309" opacity=".05"/>
+  </g>
+  <g id="hero-mark" transform="translate(128 172) scale(2.25)">
+    <g id="tree-branches" fill="none" stroke="#4f46e5" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M64 25 36 49 M64 25 92 49 M36 60 22 83 M36 60 50 83 M92 60 78 83 M92 60 106 83"/>
+    </g>
+    <g id="tree-root" fill="#4f46e5"><circle cx="64" cy="19" r="12"/></g>
+    <g id="tree-left-lineage" fill="#0f7b6c">
+      <circle cx="36" cy="54" r="11"/><circle cx="22" cy="94" r="9"/><circle cx="50" cy="94" r="9"/>
+    </g>
+    <g id="tree-right-lineage" fill="#b45309">
+      <circle cx="92" cy="54" r="11"/><circle cx="78" cy="94" r="9"/><circle cx="106" cy="94" r="9"/>
+    </g>
+  </g>
+  <text id="social-wordmark" x="480" y="326" font-family='system-ui, -apple-system, "Segoe UI", sans-serif' font-size="92" font-weight="750" letter-spacing="-3"><tspan fill="#4f46e5">Gene</tspan><tspan fill="#0f7b6c">Code</tspan><tspan fill="#b45309">CS</tspan></text>
+  <g id="social-tagline" font-family='system-ui, -apple-system, "Segoe UI", sans-serif' font-size="32" font-weight="450" fill="#334155">
+    <text x="484" y="389">Evolve programs, not just parameters.</text>
+  </g>
+  <g id="social-footer" font-family='system-ui, -apple-system, "Segoe UI", sans-serif' font-size="20" fill="#64748b">
+    <text x="484" y="452">Genetic programming for .NET</text>
+  </g>
+</svg>

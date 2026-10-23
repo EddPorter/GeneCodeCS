@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="fav-title">
+  <title id="fav-title">GeneCodeCS favicon</title>
+  <g id="branches" fill="none" stroke="#4f46e5" stroke-width="9" stroke-linecap="round">
+    <path d="M32 17 15 46 M32 17 49 46"/>
+  </g>
+  <circle id="root" cx="32" cy="15" r="12" fill="#4f46e5"/>
+  <circle id="teal-child" cx="14" cy="48" r="12" fill="#0f7b6c"/>
+  <circle id="amber-child" cx="50" cy="48" r="12" fill="#b45309"/>
+</svg>
