@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>GeneCodeCS – evolve programs in C#</title>
 <meta name="description" content="GeneCodeCS is a genetic programming library for .NET. Write the small methods your bot may call; it breeds, compiles and ranks programs that combine them.">
+<link rel="icon" href="assets/logo-mark.svg" type="image/svg+xml">
+<meta property="og:type" content="website">
+<meta property="og:title" content="GeneCodeCS: evolve programs, not just parameters">
+<meta property="og:description" content="Genetic programming for .NET. Write the small methods your bot may call; GeneCodeCS breeds, compiles and ranks programs that combine them.">
+<meta property="og:url" content="https://eddporter.github.io/GeneCodeCS/">
+<meta property="og:image" content="https://eddporter.github.io/GeneCodeCS/assets/social-preview.png">
+<meta name="twitter:card" content="summary_large_image">
 <style>
 :root {
   --bg: #fbfaf7; --surface: #ffffff; --surface-2: #f2f0ea; --ink: #1d1f24; --ink-2: #565b66; --line: #dedbd2;
@@ -38,7 +45,8 @@ p { margin: 0 0 1em; }
 
 /* nav + hero */
 nav { display: flex; justify-content: space-between; align-items: center; padding: 18px 0; gap: 16px; }
-nav .brand { font-weight: 800; letter-spacing: -.02em; color: var(--ink); text-decoration: none; }
+nav .brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 800; letter-spacing: -.02em; color: var(--ink); text-decoration: none; }
+nav .brand img { display: block; }
 nav .links { display: flex; gap: 20px; font-size: .95rem; flex-wrap: wrap; justify-content: flex-end; }
 nav .links a { color: var(--ink-2); text-decoration: none; }
 nav .links a:hover { color: var(--ink); }
@@ -159,7 +167,7 @@ footer { border-top: 1px solid var(--line); padding: 32px 0 48px; color: var(--i
 <body>
 <div class="wrap">
   <nav aria-label="Main">
-    <a class="brand" href="#top">GeneCodeCS</a>
+    <a class="brand" href="#top"><img src="assets/logo-mark.svg" alt="" width="32" height="32">GeneCodeCS</a>
     <div class="links">
       <a href="#demo">Live demo</a>
       <a href="#how">How it works</a>

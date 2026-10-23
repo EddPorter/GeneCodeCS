@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 104" role="img" aria-labelledby="horizontal-title horizontal-desc">
+  <title id="horizontal-title">GeneCodeCS</title>
+  <desc id="horizontal-desc">The GeneCodeCS branching program tree beside its coloured wordmark.</desc>
+  <g id="program-mark" transform="translate(0 0) scale(.8125)">
+    <g id="branches" fill="none" stroke="#4f46e5" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M64 25 36 49 M64 25 92 49 M36 60 22 83 M36 60 50 83 M92 60 78 83 M92 60 106 83"/>
+    </g>
+    <g id="root" fill="#4f46e5"><circle cx="64" cy="19" r="12"/></g>
+    <g id="left-lineage" fill="#0f7b6c">
+      <circle cx="36" cy="54" r="11"/><circle cx="22" cy="94" r="9"/><circle cx="50" cy="94" r="9"/>
+    </g>
+    <g id="right-lineage" fill="#b45309">
+      <circle cx="92" cy="54" r="11"/><circle cx="78" cy="94" r="9"/><circle cx="106" cy="94" r="9"/>
+    </g>
+  </g>
+  <text id="wordmark" x="104" y="61" font-family='system-ui, -apple-system, "Segoe UI", sans-serif' font-size="35" font-weight="700" letter-spacing="-1"><tspan fill="#4f46e5">Gene</tspan><tspan fill="#0f7b6c">Code</tspan><tspan fill="#b45309">CS</tspan></text>
+</svg>

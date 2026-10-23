@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="mono-title mono-desc">
+  <title id="mono-title">GeneCodeCS monochrome mark</title>
+  <desc id="mono-desc">A single-colour branching program tree.</desc>
+  <g id="program-tree" fill="currentColor" stroke="currentColor" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+    <path fill="none" d="M64 25 36 49 M64 25 92 49 M36 60 22 83 M36 60 50 83 M92 60 78 83 M92 60 106 83"/>
+    <circle cx="64" cy="19" r="12" stroke="none"/>
+    <circle cx="36" cy="54" r="11" stroke="none"/>
+    <circle cx="92" cy="54" r="11" stroke="none"/>
+    <circle cx="22" cy="94" r="9" stroke="none"/>
+    <circle cx="50" cy="94" r="9" stroke="none"/>
+    <circle cx="78" cy="94" r="9" stroke="none"/>
+    <circle cx="106" cy="94" r="9" stroke="none"/>
+  </g>
+</svg>

@@ -1,5 +1,4 @@
-GeneCodeCS
-==========
+<p align="center"><img src="https://raw.githubusercontent.com/EddPorter/GeneCodeCS/master/docs/assets/logo-horizontal.png" alt="GeneCodeCS" width="420"></p>
 
 A genetic programming library for performing breeding and natural selection on code bots.
 
